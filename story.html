@@ -424,6 +424,24 @@
             var DEFAULT_STAGE_IMAGE = "assets/images/ch-1.1.png";
             var DEFAULT_TITLE_IMAGE = "assets/images/story/title.png";
             var DEFAULT_CHARACTER_IMAGE = "";
+
+            var STORY_ASSET_VERSION = "2026-04-28-1";
+
+            function withAssetVersion(path) {
+                path = String(path || "").trim();
+                if (!path) return path;
+
+                if (path.indexOf("data:") === 0) return path;
+                if (path.indexOf("blob:") === 0) return path;
+                if (path.indexOf("v=") !== -1) return path;
+
+                if (path.indexOf("?") !== -1) {
+                    return path + "&v=" + STORY_ASSET_VERSION;
+                }
+
+                return path + "?v=" + STORY_ASSET_VERSION;
+            }
+
             var introReady = false;
             var backgroundMusicStarted = false;
             var backgroundMusicUserPrimed = false;
@@ -1161,19 +1179,25 @@
 
             function setupImageFallbacks() {
                 var chapterImage = document.getElementById("chapterImage");
+                var introImage = document.getElementById("introImage");
+                var characterSprite = document.getElementById("characterSprite");
 
                 if (chapterImage) {
                     chapterImage.addEventListener("error", function() {
-                        if (chapterImage.getAttribute("src") !== DEFAULT_STAGE_IMAGE) {
-                            chapterImage.src = DEFAULT_STAGE_IMAGE;
+                        var currentSrc = chapterImage.getAttribute("src") || "";
+
+                        if (currentSrc.indexOf(DEFAULT_STAGE_IMAGE) === -1) {
+                            chapterImage.src = withAssetVersion(DEFAULT_STAGE_IMAGE);
                         }
                     });
                 }
 
                 if (introImage) {
                     introImage.addEventListener("error", function() {
-                        if (introImage.getAttribute("src") !== DEFAULT_TITLE_IMAGE) {
-                            introImage.src = DEFAULT_TITLE_IMAGE;
+                        var currentSrc = introImage.getAttribute("src") || "";
+
+                        if (currentSrc.indexOf(DEFAULT_TITLE_IMAGE) === -1) {
+                            introImage.src = withAssetVersion(DEFAULT_TITLE_IMAGE);
                         }
                     });
                 }
@@ -1181,7 +1205,8 @@
                 if (characterSprite) {
                     characterSprite.addEventListener("error", function() {
                         characterSprite.classList.remove("is-visible");
-                        characterSprite.src = DEFAULT_CHARACTER_IMAGE;
+                        characterSprite.removeAttribute("src");
+                        characterSprite.setAttribute("alt", "");
                     });
                 }
             }
@@ -1324,8 +1349,10 @@
                     var img = document.getElementById("chapterImage");
                     if (!img) return;
                     if (!url || !String(url).trim()) return;
-                    img.src = String(url).trim();
+
+                    img.src = withAssetVersion(String(url).trim());
                 },
+
                 getImage: function() {
                     var img = document.getElementById("chapterImage");
                     return img ? img.getAttribute("src") || "" : "";
@@ -1355,7 +1382,7 @@
                     }
 
                     characterSprite.alt = String(alt || "Current speaking character");
-                    characterSprite.src = url;
+                    characterSprite.src = withAssetVersion(url);
                     characterSprite.classList.add("is-visible");
                 },
                 clearCharacter: function() {
@@ -1524,10 +1551,10 @@
                 "assets/images/ch-1.4.png",
                 "assets/images/ch-2.1.png",
                 "assets/images/ch-3.1.png"
-            ];
+            ].map(withAssetVersion);
 
             if (safeStorageGet(INTRO_STORAGE_KEY) === "1") {
-                setIntroReady();
+                setIntroReady(true);
                 closeIntro(false);
             } else {
                 openIntro();

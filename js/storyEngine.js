@@ -1,6 +1,23 @@
 (function() {
     "use strict";
 
+    var STORY_ASSET_VERSION = "2026-04-28-1";
+
+    function withAssetVersion(path) {
+        path = String(path || "").trim();
+        if (!path) return path;
+
+        if (path.indexOf("data:") === 0) return path;
+        if (path.indexOf("blob:") === 0) return path;
+        if (path.indexOf("v=") !== -1) return path;
+
+        if (path.indexOf("?") !== -1) {
+            return path + "&v=" + STORY_ASSET_VERSION;
+        }
+
+        return path + "?v=" + STORY_ASSET_VERSION;
+    }
+
     function $(id) {
         return document.getElementById(id);
     }
@@ -1349,19 +1366,23 @@
             }
 
             var src = candidates[index++];
+            var versionedSrc = withAssetVersion(src);
             var testImg = new Image();
 
             testImg.onload = function() {
                 if (token !== currentImageToken) return;
 
-                if (src === lastImageResolvedSrc && img.getAttribute("src") === src) {
+                if (
+                    versionedSrc === lastImageResolvedSrc &&
+                    img.getAttribute("src") === versionedSrc
+                ) {
                     img.style.opacity = "1";
                     return;
                 }
 
-                lastImageResolvedSrc = src;
+                lastImageResolvedSrc = versionedSrc;
                 img.style.opacity = "0.2";
-                img.src = src;
+                img.src = versionedSrc;
 
                 window.setTimeout(function() {
                     if (token !== currentImageToken) return;
@@ -1373,7 +1394,7 @@
                 tryNext();
             };
 
-            testImg.src = src;
+            testImg.src = versionedSrc;
         }
 
         tryNext();
