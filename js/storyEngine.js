@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    var STORY_ASSET_VERSION = String(Date.now());
+    var STORY_ASSET_VERSION = "2026-04-28-2";
 
     function withAssetVersion(path) {
         path = String(path || "").trim();
@@ -1326,31 +1326,7 @@
         ]);
     }
 
-    function preloadStoryImages() {
-        var allImages = [];
-        var key;
 
-        for (key in IMAGE_KEYS) {
-            if (Object.prototype.hasOwnProperty.call(IMAGE_KEYS, key)) {
-                if (Array.isArray(IMAGE_KEYS[key])) {
-                    allImages = allImages.concat(IMAGE_KEYS[key]);
-                } else if (IMAGE_KEYS[key]) {
-                    allImages.push(IMAGE_KEYS[key]);
-                }
-            }
-        }
-
-        allImages = uniqueList(allImages);
-
-        for (var i = 0; i < allImages.length; i++) {
-            var candidates = buildImageCandidates(allImages[i]);
-
-            for (var j = 0; j < candidates.length; j++) {
-                var img = new Image();
-                img.src = withAssetVersion(candidates[j]);
-            }
-        }
-    }
 
     function setStageImageByKey(imageKey) {
         imageKey = String(imageKey || "").trim();
@@ -3673,7 +3649,6 @@
         }
 
         ensureImageStage();
-        preloadStoryImages();
         bindStageNavButtons();
         bindKeyboardNav();
         bindSettingsAudioHooks();

@@ -167,7 +167,7 @@
                             <figure class="story-stage-figure">
                                 <div class="media-wrap">
                                     <div class="image-fallback" aria-hidden="true"></div>
-                                    <img id="chapterImage" src="assets/images/ch-1.1.png" alt="Chapter 1 artwork showing the spring festival setting" draggable="false" />
+                                    <img id="chapterImage" src="assets/images/story/ch-1.1.png" alt="Chapter 1 artwork showing the spring festival setting" draggable="false" />
                                     <div class="stage-overlay" aria-hidden="true"></div>
                                 </div>
 
@@ -416,16 +416,17 @@
 
             var storySkipBtn = document.getElementById("storySkipBtn");
             var storyNextArea = document.getElementById("storyNextArea");
+            var storyBgMusic = document.getElementById("storyBgMusic");
 
             var INTRO_STORAGE_KEY = "bca_story_intro_seen";
             var STORY_MUSIC_KEY = "bca_story_music_volume";
             var STORY_SFX_KEY = "bca_story_sfx_volume";
             var STORY_LANGUAGE_KEY = "bca_story_language";
-            var DEFAULT_STAGE_IMAGE = "assets/images/ch-1.1.png";
+            var DEFAULT_STAGE_IMAGE = "assets/images/story/ch-1.1.png";
             var DEFAULT_TITLE_IMAGE = "assets/images/story/title.png";
             var DEFAULT_CHARACTER_IMAGE = "";
 
-            var STORY_ASSET_VERSION = "2026-04-28-1";
+            var STORY_ASSET_VERSION = "2026-04-28-2";
 
             function withAssetVersion(path) {
                 path = String(path || "").trim();
@@ -1179,7 +1180,7 @@
 
             function setupImageFallbacks() {
                 var chapterImage = document.getElementById("chapterImage");
-                var introImage = document.getElementById("introImage");
+                var introImage = document.getElementById("storyIntroImage");
                 var characterSprite = document.getElementById("characterSprite");
 
                 if (chapterImage) {
@@ -1544,20 +1545,23 @@
             var preloadList = [
                 DEFAULT_TITLE_IMAGE,
                 DEFAULT_STAGE_IMAGE,
-                "assets/images/story/title.png",
-                "assets/images/ch-1.1.png",
-                "assets/images/ch-1.2.png",
-                "assets/images/ch-1.3.png",
-                "assets/images/ch-1.4.png",
-                "assets/images/ch-2.1.png",
-                "assets/images/ch-3.1.png"
+                "assets/images/story/ch-1.1.png",
+                "assets/images/story/ch-1.2.png",
+                "assets/images/story/ch-1.3.png",
+                "assets/images/story/ch-1.4.png"
             ].map(withAssetVersion);
 
             if (safeStorageGet(INTRO_STORAGE_KEY) === "1") {
-                setIntroReady(true);
+                setIntroReady();
                 closeIntro(false);
             } else {
                 openIntro();
+                setIntroReady();
+
+                /*
+                  Do not block the Play Story button while images preload.
+                  The story should be playable immediately.
+                */
                 preloadImages(preloadList);
             }
         })();
