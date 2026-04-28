@@ -1303,26 +1303,27 @@
         if (!key) return [];
 
         /*
-          FAST VERSION:
-          Your story images are inside:
+          IMPORTANT:
+          Your story images are now in:
           assets/images/story/
     
-          Examples:
-          ch-1.1          -> assets/images/story/ch-1.1.png
-          horse/ch-11.1   -> assets/images/story/horse/ch-11.1.png
-          dragon/ch-11.1  -> assets/images/story/dragon/ch-11.1.png
-          title.png       -> assets/images/story/title.png
+          So we should NOT check many folders.
+          Checking many wrong folders causes slow image loading on GitHub Pages.
         */
 
         if (key.indexOf("assets/") === 0) {
-            return [key];
+            return uniqueList([key]);
         }
 
         if (hasImageExtension(key)) {
-            return ["assets/images/story/" + key];
+            return uniqueList([
+                "assets/images/story/" + key
+            ]);
         }
 
-        return ["assets/images/story/" + key + ".png"];
+        return uniqueList([
+            "assets/images/story/" + key + ".png"
+        ]);
     }
 
     function preloadStoryImages() {
@@ -1358,24 +1359,27 @@
         var img = ensureImageStage();
         var candidates = buildImageCandidates(imageKey);
         var fallbackCandidates = buildImageCandidates(IMAGE_KEYS.fallback);
-        var src = candidates[0] || fallbackCandidates[0] || "";
 
+        var src = candidates[0] || fallbackCandidates[0] || "";
         if (!src) return;
 
-        var versionedSrc = withAssetVersion(src);
+        src = withAssetVersion(src);
 
-        if (img.getAttribute("src") === versionedSrc) {
+        if (img.getAttribute("src") === src) {
             img.style.opacity = "1";
             return;
         }
 
-        lastImageResolvedSrc = versionedSrc;
-        img.style.opacity = "0.2";
-        img.src = versionedSrc;
+        img.onerror = function() {
+            var fallbackSrc = fallbackCandidates[0] ? withAssetVersion(fallbackCandidates[0]) : "";
 
-        window.setTimeout(function() {
-            img.style.opacity = "1";
-        }, 30);
+            if (fallbackSrc && img.getAttribute("src") !== fallbackSrc) {
+                img.src = fallbackSrc;
+            }
+        };
+
+        img.style.opacity = "1";
+        img.src = src;
     }
 
     function setChapterImageFromStep(stepObj, stepIndex) {
