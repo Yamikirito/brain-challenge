@@ -2580,3 +2580,30 @@ html.theme-dark .cbc-settings-card {
         height: 76px !important;
     }
 }
+
+@media (max-width: 700px) {
+    .cbc-play-screen--stage-only,
+    .cbc-loading-screen,
+    .cbc-overlay,
+    .cbc-settings-backdrop,
+    .cbc-exit-confirm__backdrop,
+    .cbc-no-lives-modal,
+    .cbc-coin-reward-effect {
+        backdrop-filter: none !important;
+        filter: none !important;
+    }
+    .cbc-game-stage--only::before {
+        box-shadow: inset 32px 0 0 rgba(87, 97, 154, 0.22), inset -32px 0 0 rgba(87, 97, 154, 0.22) !important;
+    }
+    .cbc-level-core,
+    .cbc-bottom-dock,
+    .cbc-mobile-topbar,
+    .cbc-overlay-card,
+    .cbc-settings-card,
+    .cbc-exit-confirm__card {
+        box-shadow: none !important;
+    }
+    .cbc-top-mini-bubbles {
+        filter: none !important;
+    }
+}

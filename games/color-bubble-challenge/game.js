@@ -46,13 +46,13 @@
         aimMin: -Math.PI * 0.92,
         aimMax: -Math.PI * 0.08,
         pointerSmoothing: 0.25,
-        guideDots: 28,
+        guideDots: window.innerWidth <= 700 ? 14 : 28,
         bounceLimit: 8,
         bubbleHitDistance: 35,
         snapDistanceLimit: 58,
         launcherZoneRadius: 95,
         swipeThreshold: 22,
-        maxDpr: 2,
+        maxDpr: window.innerWidth <= 700 ? 1 : 1.5,
         canvasAspectRatio: 400 / 560,
         defaultColors: ["#098cff", "#e74316", "#ffbc21", "#19b943", "#b219cf", "#f28b13"]
     };
@@ -1784,7 +1784,7 @@
             writeProgress(state.progress);
 
             if (!unlocked) {
-                renderMap();
+                announce("Level locked.");
                 return;
             }
 
@@ -1859,6 +1859,11 @@
         window.scrollTo(0, 0);
 
         requestAnimationFrame(syncCanvasDisplaySize);
+
+        if (name === "play" && !state.rafId) {
+            state.lastTime = performance.now();
+            state.rafId = requestAnimationFrame(gameLoop);
+        }
     }
 
     function goToPlayPage(levelNumber) {
@@ -2184,7 +2189,7 @@
     }
 
     function buildGridForLevel(level) {
-        const totalRows = Math.max((level.rows || 5) + 10, 24);
+        const totalRows = Math.max((level.rows || 5) + 6, 16);
         const palette = getColorPalette(level);
 
         state.grid = createEmptyGrid(totalRows);
@@ -3305,7 +3310,11 @@
     }
 
     function burstBubble(bubble, falling) {
-        const count = state.settings.reducedMotion ? (falling ? 4 : 3) : (falling ? 12 : 8);
+        const isMobile = window.innerWidth <= 700;
+
+        const count = state.settings.reducedMotion || isMobile ?
+            (falling ? 4 : 3) :
+            (falling ? 12 : 8);
         const tint =
             bubble.type === "stone" ?
             "#c7c7c7" :
@@ -4162,13 +4171,12 @@
             }
 
             renderPlayCanvas();
+
+            state.rafId = requestAnimationFrame(gameLoop);
+            return;
         }
 
-        if (noLivesEls && isNoLivesModalOpen()) {
-            refreshNoLivesModal();
-        }
-
-        state.rafId = requestAnimationFrame(gameLoop);
+        state.rafId = 0;
     }
 
     function wireEvents() {
@@ -4561,7 +4569,9 @@
             openStartScreen();
         }
 
-        gameLoop();
+        if (state.activeScreen === "play") {
+            state.rafId = requestAnimationFrame(gameLoop);
+        }
     }
 
     init();
