@@ -295,6 +295,14 @@
         return Math.random() < p;
     }
 
+    function isMobilePerformanceMode() {
+        return window.innerWidth <= 700 || state.dpr <= 1;
+    }
+
+    function isVerySmallPhone() {
+        return window.innerWidth <= 430;
+    }
+
     function announce(message) {
         if (!liveRegion || !message) return;
 
@@ -1962,6 +1970,11 @@
         const availableHeight = Math.max(0, window.innerHeight - topbarHeight - bottomDockHeight);
 
         let displayWidth = availableWidth;
+
+        if (isVerySmallPhone()) {
+            displayWidth = Math.min(displayWidth, 360);
+        }
+
         let displayHeight = displayWidth / CONFIG.canvasAspectRatio;
 
         if (displayHeight > availableHeight) {
@@ -3747,6 +3760,44 @@
 
         ctx.save();
 
+        /*
+           Fast phone drawing:
+           - no radialGradient
+           - no extra shadow bubble
+           - fewer arcs
+           This removes most of the mobile delay.
+        */
+        if (isMobilePerformanceMode()) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(
+                x - radius * 0.32,
+                y - radius * 0.36,
+                radius * 0.22,
+                0,
+                Math.PI * 2
+            );
+            ctx.fillStyle = "rgba(255,255,255,0.65)";
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "rgba(0,0,0,0.16)";
+            ctx.stroke();
+
+            ctx.restore();
+            return;
+        }
+
+        /*
+           Desktop drawing:
+           Keep the nicer glossy bubble style.
+        */
         const shadow = ctx.createRadialGradient(
             x - radius * 0.35,
             y - radius * 0.35,
@@ -3904,9 +3955,12 @@
         let vx = Math.cos(state.angle) * 460;
         let vy = Math.sin(state.angle) * 460;
         let bounces = 0;
-        const step = 0.03;
 
-        for (let i = 0; i < CONFIG.guideDots; i++) {
+        const mobile = isMobilePerformanceMode();
+        const dotCount = mobile ? 10 : CONFIG.guideDots;
+        const step = mobile ? 0.04 : 0.03;
+
+        for (let i = 0; i < dotCount; i++) {
             gx += vx * step;
             gy += vy * step;
 
@@ -3921,15 +3975,59 @@
             if (gy < CONFIG.topMargin - 20) break;
 
             ctx.beginPath();
-            ctx.arc(gx, gy, 2.35, 0, Math.PI * 2);
-            ctx.fillStyle = "rgba(255,255,255," + (0.35 + i * 0.01) + ")";
+            ctx.arc(gx, gy, mobile ? 2.2 : 2.35, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255,255,255,0.62)";
             ctx.fill();
 
+            if (!mobile) {
+                ctx.beginPath();
+                ctx.arc(gx, gy, 3.7, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(5,100,190,0.72)";
+                ctx.lineWidth = 1.4;
+                ctx.stroke();
+            }
+        }
+    }
+
+    function drawAimGuide() {
+        if (state.paused || state.ended || state.activeShot) return;
+
+        let gx = CONFIG.logicalWidth / 2;
+        let gy = CONFIG.launcherY;
+        let vx = Math.cos(state.angle) * 460;
+        let vy = Math.sin(state.angle) * 460;
+        let bounces = 0;
+
+        const mobile = isMobilePerformanceMode();
+        const dotCount = mobile ? 10 : CONFIG.guideDots;
+        const step = mobile ? 0.04 : 0.03;
+
+        for (let i = 0; i < dotCount; i++) {
+            gx += vx * step;
+            gy += vy * step;
+
+            if (gx <= CONFIG.bubbleRadius || gx >= CONFIG.logicalWidth - CONFIG.bubbleRadius) {
+                vx *= -1;
+                gx = clamp(gx, CONFIG.bubbleRadius, CONFIG.logicalWidth - CONFIG.bubbleRadius);
+                bounces += 1;
+
+                if (bounces > 2) break;
+            }
+
+            if (gy < CONFIG.topMargin - 20) break;
+
             ctx.beginPath();
-            ctx.arc(gx, gy, 3.7, 0, Math.PI * 2);
-            ctx.strokeStyle = "rgba(5,100,190,0.72)";
-            ctx.lineWidth = 1.4;
-            ctx.stroke();
+            ctx.arc(gx, gy, mobile ? 2.2 : 2.35, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(255,255,255,0.62)";
+            ctx.fill();
+
+            if (!mobile) {
+                ctx.beginPath();
+                ctx.arc(gx, gy, 3.7, 0, Math.PI * 2);
+                ctx.strokeStyle = "rgba(5,100,190,0.72)";
+                ctx.lineWidth = 1.4;
+                ctx.stroke();
+            }
         }
     }
 
@@ -4163,7 +4261,10 @@
             if (!state.paused && !state.ended) {
                 updateShot(dt);
                 updateTutorial(dt);
-                updatePlayHUD();
+
+                if (state.hudDirty) {
+                    updatePlayHUD();
+                }
             }
 
             if (!state.paused) {
