@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    var STORY_ASSET_VERSION = "2026-04-28-2";
+    var STORY_ASSET_VERSION = "2026-04-28-1";
 
     function withAssetVersion(path) {
         path = String(path || "").trim();
@@ -1302,28 +1302,57 @@
         key = String(key || "").trim();
         if (!key) return [];
 
+        var candidates = [];
+
         /*
-          IMPORTANT:
-          Your story images are now in:
+          FAST PATH:
+          Your story chapter images are mainly inside:
           assets/images/story/
-    
-          So we should NOT check many folders.
-          Checking many wrong folders causes slow image loading on GitHub Pages.
+          So check this folder FIRST.
         */
+        var baseFolders = [
+            "assets/images/story/",
+            "assets/images/",
+            "assets/images/story/characters/",
+            "assets/images/story/horse/",
+            "assets/images/story/dragon/",
+            "assets/images/horse/",
+            "assets/images/dragon/",
+            ""
+        ];
 
-        if (key.indexOf("assets/") === 0) {
-            return uniqueList([key]);
-        }
-
+        /*
+          If the key already has an image extension, try direct paths first.
+          Example:
+          horse/ch-11.1.png
+        */
         if (hasImageExtension(key)) {
-            return uniqueList([
-                "assets/images/story/" + key
-            ]);
+            candidates.push(key);
+
+            for (var i = 0; i < baseFolders.length; i++) {
+                candidates.push(baseFolders[i] + key);
+            }
+
+            return uniqueList(candidates);
         }
 
-        return uniqueList([
-            "assets/images/story/" + key + ".png"
-        ]);
+        /*
+          If the key is like:
+          ch-1.1
+          horse/ch-11.1
+          dragon/ch-12.1
+    
+          Try .png first because your story files are PNG.
+        */
+        var exts = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+
+        for (var f = 0; f < baseFolders.length; f++) {
+            for (var e = 0; e < exts.length; e++) {
+                candidates.push(baseFolders[f] + key + exts[e]);
+            }
+        }
+
+        return uniqueList(candidates);
     }
 
 
@@ -1333,29 +1362,61 @@
         if (!imageKey) imageKey = IMAGE_KEYS.fallback;
 
         var img = ensureImageStage();
+        var token = ++currentImageToken;
         var candidates = buildImageCandidates(imageKey);
-        var fallbackCandidates = buildImageCandidates(IMAGE_KEYS.fallback);
+        var index = 0;
 
-        var src = candidates[0] || fallbackCandidates[0] || "";
-        if (!src) return;
-
-        src = withAssetVersion(src);
-
-        if (img.getAttribute("src") === src) {
-            img.style.opacity = "1";
-            return;
+        function applyFallbackVisual() {
+            if (token !== currentImageToken) return;
+            img.removeAttribute("src");
+            img.style.opacity = "0";
         }
 
-        img.onerror = function() {
-            var fallbackSrc = fallbackCandidates[0] ? withAssetVersion(fallbackCandidates[0]) : "";
+        function tryNext() {
+            if (token !== currentImageToken) return;
 
-            if (fallbackSrc && img.getAttribute("src") !== fallbackSrc) {
-                img.src = fallbackSrc;
+            if (index >= candidates.length) {
+                if (imageKey !== IMAGE_KEYS.fallback) {
+                    setStageImageByKey(IMAGE_KEYS.fallback);
+                } else {
+                    applyFallbackVisual();
+                }
+                return;
             }
-        };
 
-        img.style.opacity = "1";
-        img.src = src;
+            var src = candidates[index++];
+            var versionedSrc = withAssetVersion(src);
+            var testImg = new Image();
+
+            testImg.onload = function() {
+                if (token !== currentImageToken) return;
+
+                if (
+                    versionedSrc === lastImageResolvedSrc &&
+                    img.getAttribute("src") === versionedSrc
+                ) {
+                    img.style.opacity = "1";
+                    return;
+                }
+
+                lastImageResolvedSrc = versionedSrc;
+                img.style.opacity = "0.2";
+                img.src = versionedSrc;
+
+                window.setTimeout(function() {
+                    if (token !== currentImageToken) return;
+                    img.style.opacity = "1";
+                }, 30);
+            };
+
+            testImg.onerror = function() {
+                tryNext();
+            };
+
+            testImg.src = versionedSrc;
+        }
+
+        tryNext();
     }
 
     function setChapterImageFromStep(stepObj, stepIndex) {
@@ -3245,15 +3306,14 @@
                     {
                         text: {
                             en: "Go to Home Page",
-                            zh: "前往成就页面",
-                            ja: "実績ページへ進む",
-                            ko: "업적 페이지로 이동"
+                            zh: "返回首页",
+                            ja: "ホームページへ戻る",
+                            ko: "홈페이지로 돌아가기"
                         },
                         onClick: function() {
                             window.location.href = "index.html";
                         }
-                    },
-
+                    }
                 ]);
 
                 setStageNavVisibility(true, false);
