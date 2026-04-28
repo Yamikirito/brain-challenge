@@ -43,8 +43,8 @@
         leftMargin: 34,
         launcherY: 500,
         dangerLineY: 438,
-        aimMin: -Math.PI * 0.92,
-        aimMax: -Math.PI * 0.08,
+        aimMin: -Math.PI * 0.86,
+        aimMax: -Math.PI * 0.14,
         pointerSmoothing: 0.25,
         guideDots: window.innerWidth <= 700 ? 14 : 28,
         bounceLimit: 8,
@@ -2940,13 +2940,29 @@
 
                 if (distSq < bestDistSq) {
                     bestDistSq = distSq;
-                    best = { row: row, col: col, x: x, y: y };
+                    best = {
+                        row: row,
+                        col: col,
+                        x: x,
+                        y: y
+                    };
                 }
             }
         }
 
         if (best && bestDistSq <= CONFIG.snapDistanceLimit * CONFIG.snapDistanceLimit) {
             return best;
+        }
+
+        /*
+           If the shot is touching the side wall, do not allow the fallback
+           to stick it to a random side cell. Let the shot continue bouncing.
+        */
+        if (
+            shot.x <= CONFIG.bubbleRadius + 2 ||
+            shot.x >= CONFIG.logicalWidth - CONFIG.bubbleRadius - 2
+        ) {
+            return null;
         }
 
         let fallback = null;
@@ -2966,12 +2982,68 @@
 
                 if (distSq < bestDistSq) {
                     bestDistSq = distSq;
-                    fallback = { row: row, col: col, x: x, y: y };
+                    fallback = {
+                        row: row,
+                        col: col,
+                        x: x,
+                        y: y
+                    };
                 }
             }
         }
 
         return fallback;
+    }
+
+    function snapShotToTopWall() {
+        if (!state.activeShot) return;
+
+        const shot = state.activeShot;
+
+        let bestCol = 0;
+        let bestDist = Infinity;
+
+        for (let col = 0; col < CONFIG.cols; col++) {
+            if (state.grid[0][col]) continue;
+
+            const x = getCellX(0, col);
+            const dist = Math.abs(x - shot.x);
+
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestCol = col;
+            }
+        }
+
+        if (state.grid[0][bestCol]) {
+            for (let col = 0; col < CONFIG.cols; col++) {
+                if (!state.grid[0][col]) {
+                    bestCol = col;
+                    break;
+                }
+            }
+        }
+
+        const bubble = makeBubble(0, bestCol, {
+            type: shot.type,
+            color: shot.color
+        });
+
+        bubble.scale = state.settings.reducedMotion ? 1.05 : 1.15;
+        bubble.pulse = state.settings.reducedMotion ? 0.06 : 0.16;
+
+        state.grid[0][bestCol] = bubble;
+        state.activeShot = null;
+        state.canSwap = true;
+
+        playTone(430, 0.035, "triangle", 0.012);
+
+        resolvePlacedBubble(bubble);
+        updateObjectiveProgress();
+        updateStars();
+        checkEndConditions();
+
+        state.hudDirty = true;
     }
 
     function updateShot(dt) {
@@ -2982,22 +3054,43 @@
         shot.x += shot.vx * dt;
         shot.y += shot.vy * dt;
 
-        if (shot.x <= CONFIG.bubbleRadius || shot.x >= CONFIG.logicalWidth - CONFIG.bubbleRadius) {
-            shot.vx *= -1;
-            shot.x = clamp(shot.x, CONFIG.bubbleRadius, CONFIG.logicalWidth - CONFIG.bubbleRadius);
+        /*
+           Side walls should ONLY bounce the ball.
+           Do not snap the ball to the grid here.
+        */
+        if (shot.x <= CONFIG.bubbleRadius) {
+            shot.x = CONFIG.bubbleRadius + 0.5;
+            shot.vx = Math.abs(shot.vx);
             shot.bounces += 1;
-
             playTone(320, 0.025, "square", 0.008);
-
-            if (shot.bounces > CONFIG.bounceLimit) {
-                snapShotToGrid();
-                return;
-            }
         }
 
+        if (shot.x >= CONFIG.logicalWidth - CONFIG.bubbleRadius) {
+            shot.x = CONFIG.logicalWidth - CONFIG.bubbleRadius - 0.5;
+            shot.vx = -Math.abs(shot.vx);
+            shot.bounces += 1;
+            playTone(320, 0.025, "square", 0.008);
+        }
+
+        /*
+           Top wall should stick the ball to the top row.
+        */
         if (shot.y <= CONFIG.topMargin) {
-            snapShotToGrid();
+            shot.y = CONFIG.topMargin;
+            snapShotToTopWall();
             return;
+        }
+
+        /*
+           Safety: if the ball bounces too many times, push it upward.
+           Do not snap it to the side wall.
+        */
+        if (shot.bounces > CONFIG.bounceLimit) {
+            shot.vy = -Math.abs(shot.vy);
+
+            if (Math.abs(shot.vx) > 120) {
+                shot.vx *= 0.65;
+            }
         }
 
         const nearby = getNearOccupiedCells(shot.x, shot.y);
