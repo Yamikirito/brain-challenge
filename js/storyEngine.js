@@ -1303,32 +1303,49 @@
         if (!key) return [];
 
         var candidates = [];
+
+        /*
+          FAST PATH:
+          Your story chapter images are mainly inside:
+          assets/images/story/
+          So check this folder FIRST.
+        */
         var baseFolders = [
-            "",
-            "assets/",
-            "assets/images/",
-            "assets/image/",
-            "assets/img/",
-            "assets/story/",
             "assets/images/story/",
-            "assets/img/story/",
-            "assets/images/storygame/",
-            "assets/storygame/",
-            "assets/chapters/",
+            "assets/images/",
+            "assets/images/story/characters/",
+            "assets/images/story/horse/",
+            "assets/images/story/dragon/",
             "assets/images/horse/",
             "assets/images/dragon/",
-            "horse/",
-            "dragon/"
+            ""
         ];
 
+        /*
+          If the key already has an image extension, try direct paths first.
+          Example:
+          horse/ch-11.1.png
+        */
         if (hasImageExtension(key)) {
+            candidates.push(key);
+
             for (var i = 0; i < baseFolders.length; i++) {
                 candidates.push(baseFolders[i] + key);
             }
+
             return uniqueList(candidates);
         }
 
+        /*
+          If the key is like:
+          ch-1.1
+          horse/ch-11.1
+          dragon/ch-12.1
+    
+          Try .png first because your story files are PNG.
+        */
         var exts = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
+
         for (var f = 0; f < baseFolders.length; f++) {
             for (var e = 0; e < exts.length; e++) {
                 candidates.push(baseFolders[f] + key + exts[e]);
