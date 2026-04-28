@@ -2968,6 +2968,7 @@
         let fallback = null;
         bestDistSq = Infinity;
 
+
         for (let row = approxRow - 2; row <= approxRow + 2; row++) {
             if (row < 0 || row >= state.grid.length) continue;
 
