@@ -1,7 +1,7 @@
 (function() {
     "use strict";
 
-    var STORY_ASSET_VERSION = "2026-04-28-1";
+    var STORY_ASSET_VERSION = String(Date.now());
 
     function withAssetVersion(path) {
         path = String(path || "").trim();
@@ -1302,57 +1302,53 @@
         key = String(key || "").trim();
         if (!key) return [];
 
-        var candidates = [];
-
         /*
-          FAST PATH:
-          Your story chapter images are mainly inside:
+          FAST VERSION:
+          Your story images are inside:
           assets/images/story/
-          So check this folder FIRST.
-        */
-        var baseFolders = [
-            "assets/images/story/",
-            "assets/images/",
-            "assets/images/story/characters/",
-            "assets/images/story/horse/",
-            "assets/images/story/dragon/",
-            "assets/images/horse/",
-            "assets/images/dragon/",
-            ""
-        ];
-
-        /*
-          If the key already has an image extension, try direct paths first.
-          Example:
-          horse/ch-11.1.png
-        */
-        if (hasImageExtension(key)) {
-            candidates.push(key);
-
-            for (var i = 0; i < baseFolders.length; i++) {
-                candidates.push(baseFolders[i] + key);
-            }
-
-            return uniqueList(candidates);
-        }
-
-        /*
-          If the key is like:
-          ch-1.1
-          horse/ch-11.1
-          dragon/ch-12.1
     
-          Try .png first because your story files are PNG.
+          Examples:
+          ch-1.1          -> assets/images/story/ch-1.1.png
+          horse/ch-11.1   -> assets/images/story/horse/ch-11.1.png
+          dragon/ch-11.1  -> assets/images/story/dragon/ch-11.1.png
+          title.png       -> assets/images/story/title.png
         */
-        var exts = [".png", ".jpg", ".jpeg", ".webp", ".avif"];
 
-        for (var f = 0; f < baseFolders.length; f++) {
-            for (var e = 0; e < exts.length; e++) {
-                candidates.push(baseFolders[f] + key + exts[e]);
+        if (key.indexOf("assets/") === 0) {
+            return [key];
+        }
+
+        if (hasImageExtension(key)) {
+            return ["assets/images/story/" + key];
+        }
+
+        return ["assets/images/story/" + key + ".png"];
+    }
+
+    function preloadStoryImages() {
+        var allImages = [];
+        var key;
+
+        for (key in IMAGE_KEYS) {
+            if (Object.prototype.hasOwnProperty.call(IMAGE_KEYS, key)) {
+                if (Array.isArray(IMAGE_KEYS[key])) {
+                    allImages = allImages.concat(IMAGE_KEYS[key]);
+                } else if (IMAGE_KEYS[key]) {
+                    allImages.push(IMAGE_KEYS[key]);
+                }
             }
         }
 
-        return uniqueList(candidates);
+        allImages = uniqueList(allImages);
+
+        for (var i = 0; i < allImages.length; i++) {
+            var candidates = buildImageCandidates(allImages[i]);
+
+            for (var j = 0; j < candidates.length; j++) {
+                var img = new Image();
+                img.src = withAssetVersion(candidates[j]);
+            }
+        }
     }
 
     function setStageImageByKey(imageKey) {
@@ -1360,61 +1356,26 @@
         if (!imageKey) imageKey = IMAGE_KEYS.fallback;
 
         var img = ensureImageStage();
-        var token = ++currentImageToken;
         var candidates = buildImageCandidates(imageKey);
-        var index = 0;
+        var fallbackCandidates = buildImageCandidates(IMAGE_KEYS.fallback);
+        var src = candidates[0] || fallbackCandidates[0] || "";
 
-        function applyFallbackVisual() {
-            if (token !== currentImageToken) return;
-            img.removeAttribute("src");
-            img.style.opacity = "0";
+        if (!src) return;
+
+        var versionedSrc = withAssetVersion(src);
+
+        if (img.getAttribute("src") === versionedSrc) {
+            img.style.opacity = "1";
+            return;
         }
 
-        function tryNext() {
-            if (token !== currentImageToken) return;
+        lastImageResolvedSrc = versionedSrc;
+        img.style.opacity = "0.2";
+        img.src = versionedSrc;
 
-            if (index >= candidates.length) {
-                if (imageKey !== IMAGE_KEYS.fallback) {
-                    setStageImageByKey(IMAGE_KEYS.fallback);
-                } else {
-                    applyFallbackVisual();
-                }
-                return;
-            }
-
-            var src = candidates[index++];
-            var versionedSrc = withAssetVersion(src);
-            var testImg = new Image();
-
-            testImg.onload = function() {
-                if (token !== currentImageToken) return;
-
-                if (
-                    versionedSrc === lastImageResolvedSrc &&
-                    img.getAttribute("src") === versionedSrc
-                ) {
-                    img.style.opacity = "1";
-                    return;
-                }
-
-                lastImageResolvedSrc = versionedSrc;
-                img.style.opacity = "0.2";
-                img.src = versionedSrc;
-
-                window.setTimeout(function() {
-                    if (token !== currentImageToken) return;
-                    img.style.opacity = "1";
-                }, 30);
-            };
-
-            testImg.onerror = function() {
-                tryNext();
-            };
-
-            testImg.src = versionedSrc;
-        }
-
-        tryNext();
+        window.setTimeout(function() {
+            img.style.opacity = "1";
+        }, 30);
     }
 
     function setChapterImageFromStep(stepObj, stepIndex) {
@@ -3708,6 +3669,7 @@
         }
 
         ensureImageStage();
+        preloadStoryImages();
         bindStageNavButtons();
         bindKeyboardNav();
         bindSettingsAudioHooks();
