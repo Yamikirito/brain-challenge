@@ -1,0 +1,298 @@
+/* =========================================================
+   Brain Challenge Arcade - Components (components.css)
+   - Reusable UI pieces (modals, toasts, pills, HUD, etc.)
+   - Works with your HTML pages + game pages
+   ========================================================= */
+
+
+/* ---------- Links (optional) ---------- */
+
+a.link {
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+
+/* ---------- Small layout helpers ---------- */
+
+.flex {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.stack {
+    display: grid;
+    gap: 12px;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+}
+
+.wrap {
+    flex-wrap: wrap;
+}
+
+
+/* ---------- Separator ---------- */
+
+.hr {
+    height: 1px;
+    width: 100%;
+    background: var(--border);
+    border: none;
+    margin: 12px 0;
+}
+
+
+/* ---------- Pill / Tag ---------- */
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+
+/* ---------- Callout ---------- */
+
+.callout {
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    padding: 12px 14px;
+}
+
+.callout strong {
+    color: var(--text);
+}
+
+
+/* ---------- HUD (used in game pages / preview) ---------- */
+
+.hud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+
+/* ---------- Step list ---------- */
+
+.steps {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--muted);
+}
+
+.steps li {
+    padding: 2px 0;
+}
+
+
+/* ---------- Toast (optional JS) ---------- */
+
+
+/* Create in JS:
+     <div class="toast toast-show">Saved!</div>
+  */
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 14px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: opacity 160ms ease, transform 160ms ease;
+    max-width: min(520px, calc(100% - 32px));
+    text-align: center;
+}
+
+.toast-show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+
+/* ---------- Modal (optional JS) ---------- */
+
+
+/* Structure:
+     <div class="modal-backdrop hidden" id="modalX">
+       <div class="modal">
+         <div class="modal-head">...</div>
+         <div class="modal-body">...</div>
+         <div class="modal-foot">...</div>
+       </div>
+     </div>
+  */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: grid;
+    place-items: center;
+    z-index: 9998;
+    padding: 16px;
+}
+
+.modal {
+    width: min(560px, 100%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.modal-head {
+    padding: 14px 14px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: start;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.modal-body {
+    padding: 12px 14px 14px;
+    color: var(--muted);
+}
+
+.modal-foot {
+    padding: 12px 14px 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+
+/* ---------- Tooltip (simple) ---------- */
+
+
+/* Usage:
+     <span class="tip" data-tip="Hello">?</span>
+  */
+
+.tip {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.tip:hover::after,
+.tip:focus-visible::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-soft);
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 12px;
+    white-space: nowrap;
+    z-index: 9999;
+}
+
+
+/* ---------- Animations (subtle) ---------- */
+
+@keyframes pop {
+    0% {
+        transform: scale(0.98);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.pop {
+    animation: pop 160ms ease;
+}
+
+
+/* Respect reduced motion (already enforced globally, but safe) */
+
+html[data-reduced-motion="true"] .pop {
+    animation: none !important;
+}
+
+
+/* ---------- Danger zone helper ---------- */
+
+.danger-zone {
+    border: 1px solid rgba(220, 38, 38, 0.35);
+    background: rgba(220, 38, 38, 0.08);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+}
+
+.danger-zone .muted {
+    color: var(--muted);
+}
+
+
+/* ---------- Small status text helpers ---------- */
+
+.success-text {
+    color: #16a34a;
+}
+
+.warning-text {
+    color: #d97706;
+}
+
+.error-text {
+    color: var(--danger);
+}
+
+
+/* ---------- Code-like block (for About page / debug) ---------- */
+
+.codeblock {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 0.95rem;
+    padding: 12px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    overflow: auto;
+}

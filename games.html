@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- =========================================================
+         Brain Challenge Arcade - games.html
+
+         Updated version:
+         ✅ Large banner-style game display like the screenshot
+         ✅ 2-column game grid on desktop
+         ✅ 1-column responsive layout on mobile
+         ✅ Search bar still works
+         ✅ Whole game card is clickable
+         ✅ Play button overlay
+         ✅ Dark/light theme support
+    ========================================================== -->
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Games • Brain Challenge Arcade</title>
+    <meta name="description" content="Browse and play games in Brain Challenge Arcade." />
+
+    <!-- This script loads the saved theme before the page appears -->
+    <script>
+        (function() {
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            function systemPrefersDark() {
+                return window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches;
+            }
+
+            var theme = getTheme();
+            var root = document.documentElement;
+
+            root.classList.remove("theme-dark", "theme-light");
+
+            if (theme === "dark") {
+                root.classList.add("theme-dark");
+            } else if (theme === "light") {
+                root.classList.add("theme-light");
+            } else {
+                root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+            }
+        })();
+    </script>
+
+    <!-- Main CSS files -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+
+    <style>
+        /* =========================================================
+           Theme variables
+        ========================================================== */
+        
+         :root {
+            --bg0: #070914;
+            --bg1: #0b1028;
+            --ink: #eaf0ff;
+            --muted: rgba(234, 240, 255, 0.75);
+            --muted2: rgba(234, 240, 255, 0.55);
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.12);
+            --blue: #4ea1ff;
+            --violet: #9b7bff;
+            --pink: #ff4fd8;
+            --cyan: #40f6ff;
+            --gold: #ffd86b;
+            --shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+            --shadow2: 0 14px 40px rgba(0, 0, 0, 0.45);
+            --r-xl: 24px;
+            --r-lg: 18px;
+            --r-md: 14px;
+        }
+        
+        .theme-light {
+            --bg0: #f4f6ff;
+            --bg1: #e9edff;
+            --ink: #111827;
+            --muted: rgba(17, 24, 39, 0.75);
+            --muted2: rgba(17, 24, 39, 0.55);
+            --card: #ffffff;
+            --border: rgba(0, 0, 0, 0.08);
+            --blue: #3b82f6;
+            --violet: #7c3aed;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            --shadow2: 0 10px 20px rgba(0, 0, 0, 0.06);
+        }
+        /* =========================================================
+           Page base
+        ========================================================== */
+        
+        body {
+            background: radial-gradient(900px 500px at 15% 20%, rgba(255, 79, 216, 0.18), transparent 55%), radial-gradient(900px 520px at 85% 25%, rgba(78, 161, 255, 0.18), transparent 55%), radial-gradient(900px 520px at 55% 95%, rgba(155, 123, 255, 0.16), transparent 55%), linear-gradient(180deg, var(--bg0), var(--bg1));
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+        
+        .page {
+            padding-top: 26px;
+            padding-bottom: 56px;
+        }
+        
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible {
+            outline: 3px solid rgba(64, 246, 255, 0.45);
+            outline-offset: 3px;
+            border-radius: 12px;
+        }
+        /* =========================================================
+           Navbar
+        ========================================================== */
+        
+        .navbar {
+            background: rgba(0, 0, 0, 0.35) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+        
+        .nav-link,
+        .brand-text {
+            color: rgba(234, 240, 255, 0.88) !important;
+        }
+        
+        .nav-link.nav-active {
+            color: rgba(234, 240, 255, 1) !important;
+        }
+        
+        .theme-light .navbar {
+            background: rgba(255, 255, 255, 0.82) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        
+        .theme-light .nav-link,
+        .theme-light .brand-text {
+            color: rgba(17, 24, 39, 0.86) !important;
+        }
+        
+        .theme-light .nav-link.nav-active {
+            color: rgba(17, 24, 39, 1) !important;
+        }
+        /* =========================================================
+           Footer
+        ========================================================== */
+        
+        .footer {
+            background: rgba(0, 0, 0, 0.35);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer .muted,
+        .footer a {
+            color: rgba(234, 240, 255, 0.72) !important;
+        }
+        
+        .theme-light .footer {
+            background: rgba(255, 255, 255, 0.75);
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        
+        .theme-light .footer .muted,
+        .theme-light .footer a {
+            color: rgba(17, 24, 39, 0.7) !important;
+        }
+        /* =========================================================
+           Hero section
+        ========================================================== */
+        
+        .arcade-hero {
+            border-radius: var(--r-xl);
+            background: radial-gradient(650px 300px at 15% 30%, rgba(255, 79, 216, 0.25), transparent 60%), radial-gradient(650px 300px at 85% 30%, rgba(78, 161, 255, 0.25), transparent 60%), var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .arcade-hero::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(90deg, rgba(64, 246, 255, 0.16), rgba(255, 79, 216, 0.14), rgba(155, 123, 255, 0.14));
+            filter: blur(22px);
+            opacity: 0.55;
+            z-index: 0;
+        }
+        
+        .theme-light .arcade-hero::after {
+            opacity: 0.28;
+            filter: blur(18px);
+        }
+        
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .hero-kicker {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(234, 240, 255, 0.9);
+            font-weight: 850;
+            letter-spacing: 0.3px;
+            font-size: 13px;
+        }
+        
+        .theme-light .hero-kicker {
+            background: rgba(17, 24, 39, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: rgba(17, 24, 39, 0.85);
+        }
+        
+        .hero-title {
+            margin: 12px 0 8px;
+            font-size: clamp(30px, 4vw, 50px);
+            line-height: 1.04;
+            letter-spacing: -0.6px;
+            font-weight: 950;
+        }
+        
+        .hero-title .grad {
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero-sub {
+            margin: 0;
+            max-width: 68ch;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.55;
+        }
+        
+        .hero-box {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: var(--r-lg);
+            padding: 14px;
+            box-shadow: var(--shadow2);
+        }
+        
+        .theme-light .hero-box {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        
+        .hero-box-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 900;
+        }
+        
+        .hero-box-text {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            font-weight: 650;
+        }
+        /* =========================================================
+           Section heading and search
+        ========================================================== */
+        
+        .section-head {
+            margin-top: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .section-head .title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .games-toolbar {
+            margin-top: 10px;
+            margin-bottom: 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .games-search {
+            width: min(460px, 100%);
+            position: relative;
+        }
+        
+        .games-search input {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--ink);
+            font-size: 15px;
+            box-shadow: var(--shadow2);
+            outline: none;
+            transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+        }
+        
+        .games-search input:focus {
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow: 0 14px 34px rgba(37, 99, 235, 0.12);
+            transform: translateY(-1px);
+        }
+        
+        .games-search::before {
+            content: "🔎";
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: .7;
+            pointer-events: none;
+        }
+        
+        .games-count {
+            color: var(--muted2);
+            font-size: 14px;
+            font-weight: 700;
+        }
+        /* =========================================================
+           Updated game banner card design
+        ========================================================== */
+        
+        .app-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 28px 30px;
+            margin-top: 18px;
+        }
+        
+        .app-item {
+            position: relative;
+            min-height: 215px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #ffffff;
+            border: 10px solid rgba(255, 255, 255, 0.95);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+        
+        .theme-dark .app-item {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+        }
+        
+        .app-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 26px 70px rgba(0, 0, 0, 0.32);
+            filter: brightness(1.04);
+        }
+        
+        .theme-dark .app-item:hover {
+            box-shadow: 0 26px 70px rgba(0, 0, 0, 0.55);
+        }
+        
+        .app-item.hidden-by-search {
+            display: none;
+        }
+        
+        .game-card-link {
+            position: relative;
+            display: block;
+            width: 100%;
+            height: 100%;
+            min-height: 195px;
+            color: inherit;
+            text-decoration: none;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .app-icon {
+            width: 100%;
+            height: 195px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.18);
+        }
+        
+        .app-icon img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        .app-meta {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 52px 18px 16px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.82), rgba(0, 0, 0, 0.45), transparent);
+            z-index: 2;
+        }
+        
+        .app-title {
+            margin: 0;
+            color: #ffffff;
+            font-size: 24px;
+            line-height: 1.1;
+            font-weight: 950;
+            letter-spacing: 0.2px;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .app-subtitle {
+            margin: 6px 0 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            line-height: 1.35;
+            max-width: 92%;
+            text-shadow: 0 3px 10px rgba(0, 0, 0, 0.65);
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            overflow: hidden;
+        }
+        
+        .app-right {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 4;
+            display: block;
+            min-width: 0;
+        }
+        
+        .play-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 9px 18px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            color: #111827;
+            font-size: 14px;
+            font-weight: 950;
+            letter-spacing: 0.3px;
+            text-decoration: none;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+            transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+        }
+        
+        .play-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.42);
+        }
+        
+        .play-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .app-note {
+            display: none;
+        }
+        
+        .empty-search {
+            display: none;
+            margin-top: 18px;
+            padding: 18px;
+            border-radius: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            color: var(--muted);
+            font-weight: 700;
+        }
+        
+        .empty-search.show {
+            display: block;
+        }
+        /* =========================================================
+           Back home button
+        ========================================================== */
+        
+        .back-home-wrap {
+            margin-top: 22px;
+        }
+        
+        .btn-arcade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 950;
+            letter-spacing: 0.2px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.25);
+            color: var(--ink);
+            box-shadow: var(--shadow2);
+            transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+            user-select: none;
+        }
+        
+        .theme-light .btn-arcade {
+            background: rgba(17, 24, 39, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: var(--ink);
+        }
+        
+        .btn-arcade:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+        
+        .btn-arcade:active {
+            transform: translateY(0) scale(0.99);
+        }
+        /* =========================================================
+           Responsive design
+        ========================================================== */
+        
+        @media (max-width: 980px) {
+            .hero-inner {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .app-list {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .app-item {
+                min-height: 210px;
+            }
+            .game-card-link {
+                min-height: 190px;
+            }
+            .app-icon {
+                height: 190px;
+            }
+        }
+        
+        @media (max-width: 520px) {
+            .games-toolbar {
+                align-items: stretch;
+            }
+            .games-search {
+                width: 100%;
+            }
+            .games-count {
+                font-size: 13px;
+            }
+            .app-list {
+                gap: 18px;
+            }
+            .app-item {
+                min-height: 165px;
+                border-width: 7px;
+                border-radius: 16px;
+            }
+            .game-card-link {
+                min-height: 151px;
+                border-radius: 10px;
+            }
+            .app-icon {
+                height: 151px;
+                border-radius: 10px;
+            }
+            .app-meta {
+                padding: 38px 14px 13px;
+            }
+            .app-title {
+                font-size: 20px;
+            }
+            .app-subtitle {
+                font-size: 13px;
+                max-width: 100%;
+            }
+            .app-right {
+                top: 10px;
+                right: 10px;
+            }
+            .play-btn {
+                padding: 7px 14px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Skip link for accessibility -->
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Top navigation bar -->
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <!-- Desktop menu -->
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link nav-active" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </nav>
+
+            <!-- Mobile menu button -->
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link nav-active" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main page content -->
+    <main id="main" class="container page">
+        <!-- Hero section -->
+        <section class="arcade-hero" aria-labelledby="gamesTitle">
+            <div class="hero-inner">
+                <div>
+                    <div class="hero-kicker">🎮 Game Library • ⚡ Quick Play</div>
+                    <h1 id="gamesTitle" class="hero-title">
+                        Browse <span class="grad">Brain Challenge Games</span>
+                    </h1>
+                    <p class="hero-sub">
+                        Choose your favorite mini-game, sharpen your brain, and enjoy the same arcade-style experience across every challenge.
+                    </p>
+                </div>
+
+                <aside class="hero-box" aria-label="Games quick info">
+                    <h2 class="hero-box-title">Quick access</h2>
+                    <p class="hero-box-text">
+                        Search games, jump straight into play, and keep your progress moving across story and arcade mode.
+                    </p>
+                </aside>
+            </div>
+        </section>
+
+        <!-- Games section -->
+        <section class="section">
+            <div class="section-head">
+                <h2 class="title">Pick a game</h2>
+            </div>
+
+            <!-- Search and game count -->
+            <div class="games-toolbar">
+                <div class="games-search">
+                    <input type="search" id="gameSearch" placeholder="Search games..." aria-label="Search games" />
+                </div>
+                <div class="games-count" id="gamesCount">5 games</div>
+            </div>
+
+            <!-- Updated banner-style game card list -->
+            <div class="app-list" id="appList">
+
+                <article class="app-item i1" data-search="image guess image clues single level">
+                    <a class="game-card-link" href="games/image-guess/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">
+                        <div class="app-icon">
+                            <img src="assets/images/logo/image-guess.png" alt="Image Guess banner" />
+                        </div>
+
+                        <div class="app-meta">
+                            <h2 class="app-title">Image Guess</h2>
+                            <p class="app-subtitle">Guess the correct image from clues. Fast and fun.</p>
+                        </div>
+
+                        <div class="app-right">
+                            <span class="play-btn">Play</span>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="app-item i2" data-search="memory test remember pattern best scores saved">
+                    <a class="game-card-link" href="games/memory-test/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">
+                        <div class="app-icon">
+                            <img src="assets/images/logo/memory-test.png" alt="Memory Test banner" />
+                        </div>
+
+                        <div class="app-meta">
+                            <h2 class="app-title">Memory Test</h2>
+                            <p class="app-subtitle">Remember the pattern and level up as it gets harder.</p>
+                        </div>
+
+                        <div class="app-right">
+                            <span class="play-btn">Play</span>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="app-item i3" data-search="card matching cards pairs timer challenge">
+                    <a class="game-card-link" href="games/card-matching/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">
+                        <div class="app-icon">
+                            <img src="assets/images/logo/card-matching.png" alt="Card Matching banner" />
+                        </div>
+
+                        <div class="app-meta">
+                            <h2 class="app-title">Card Matching</h2>
+                            <p class="app-subtitle">Flip cards, find pairs, and finish in the best time.</p>
+                        </div>
+
+                        <div class="app-right">
+                            <span class="play-btn">Play</span>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="app-item i4" data-search="color bubble challenge bubble shooter arcade match colors">
+                    <a class="game-card-link" href="games/color-bubble-challenge/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">
+                        <div class="app-icon">
+                            <img src="assets/images/logo/color-bubble-challenge.png" alt="Color Bubble Challenge banner" />
+                        </div>
+
+                        <div class="app-meta">
+                            <h2 class="app-title">Color Bubble Challenge</h2>
+                            <p class="app-subtitle">Aim, shoot, and match bubble colors to clear the board.</p>
+                        </div>
+
+                        <div class="app-right">
+                            <span class="play-btn">Play</span>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="app-item i5" data-search="story mode secret letter chapters cinematic adventure">
+                    <a class="game-card-link" href="story.html">
+                        <div class="app-icon">
+                            <img src="assets/images/logo/story-mode.png" alt="Story Mode banner" />
+                        </div>
+
+                        <div class="app-meta">
+                            <h2 class="app-title">Story Mode</h2>
+                            <p class="app-subtitle">Follow The Secret Letter and unlock chapters with brain tests.</p>
+                        </div>
+
+                        <div class="app-right">
+                            <span class="play-btn">Play</span>
+                        </div>
+                    </a>
+                </article>
+
+            </div>
+
+            <!-- Message when no game matches search -->
+            <div class="empty-search" id="emptySearch">
+                No games found. Try another search word.
+            </div>
+
+            <!-- Back home button -->
+            <div class="back-home-wrap">
+                <a class="btn-arcade" href="index.html">← Back to Home</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">
+                © <span id="year"></span> Brain Challenge Arcade
+            </div>
+            <div class="footer-links">
+                <a href="about.html">Credits</a>
+                <a href="settings.html">Settings</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Show current year in footer
+        var yearEl = document.getElementById("year");
+        if (yearEl) {
+            yearEl.textContent = String(new Date().getFullYear());
+        }
+
+        // Mobile menu open/close
+        (function() {
+            var btn = document.querySelector(".nav-toggle");
+            var menu = document.getElementById("mobileMenu");
+
+            if (!btn || !menu) return;
+
+            btn.addEventListener("click", function() {
+                var isOpen = btn.getAttribute("aria-expanded") === "true";
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+
+        // Search games feature
+        (function() {
+            var searchInput = document.getElementById("gameSearch");
+            var list = document.getElementById("appList");
+            var items = list ? Array.prototype.slice.call(list.querySelectorAll(".app-item")) : [];
+            var count = document.getElementById("gamesCount");
+            var empty = document.getElementById("emptySearch");
+
+            function updateSearch() {
+                var query = (searchInput.value || "").trim().toLowerCase();
+                var visible = 0;
+
+                items.forEach(function(item) {
+                    var text = (item.getAttribute("data-search") || "").toLowerCase();
+                    var titleEl = item.querySelector(".app-title");
+                    var subtitleEl = item.querySelector(".app-subtitle");
+
+                    var title = titleEl ? titleEl.textContent.toLowerCase() : "";
+                    var subtitle = subtitleEl ? subtitleEl.textContent.toLowerCase() : "";
+
+                    var matched = !query ||
+                        text.indexOf(query) !== -1 ||
+                        title.indexOf(query) !== -1 ||
+                        subtitle.indexOf(query) !== -1;
+
+                    item.classList.toggle("hidden-by-search", !matched);
+
+                    if (matched) {
+                        visible += 1;
+                    }
+                });
+
+                if (count) {
+                    count.textContent = visible + (visible === 1 ? " game" : " games");
+                }
+
+                if (empty) {
+                    empty.classList.toggle("show", visible === 0);
+                }
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener("input", updateSearch);
+            }
+
+            updateSearch();
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- =========================================================
+         Brain Challenge Arcade - image-guess/index.html
+
+         Full Screen Image Guess Game Show Version
+         ✅ No hero section
+         ✅ Full-screen game area
+         ✅ Big intro screen
+         ✅ Big START button
+         ✅ Slow image reveal
+         ✅ A / B / C answer cards
+         ✅ Settings popup
+         ✅ Story mode support
+    ========================================================== -->
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Image Guess • Brain Challenge Arcade</title>
+
+    <meta name="description" content="Play Image Guess in Brain Challenge Arcade. Watch the picture reveal slowly, guess fast, choose A, B, or C, and build your streak." />
+
+    <!-- Load saved theme before page appears -->
+    <script>
+        (function() {
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            function systemPrefersDark() {
+                return window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches;
+            }
+
+            var theme = getTheme();
+            var root = document.documentElement;
+
+            root.classList.remove("theme-light", "theme-dark");
+
+            if (theme === "dark") {
+                root.classList.add("theme-dark");
+            } else if (theme === "light") {
+                root.classList.add("theme-light");
+            } else {
+                root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+            }
+        })();
+    </script>
+
+    <!-- External CSS files -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/components.css" />
+    <link rel="stylesheet" href="../../css/games.css" />
+    <link rel="stylesheet" href="game.css" />
+
+    <style>
+        /* =========================================================
+           Settings Modal
+        ========================================================== */
+        
+        .settings-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 10, 24, 0.55);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+        }
+        
+        .settings-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1001;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+        }
+        
+        .settings-panel {
+            width: min(560px, 100%);
+            border-radius: 30px;
+            overflow: hidden;
+            background: var(--card3);
+            border: 2px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+        }
+        
+        .settings-panel__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px 24px;
+            background: linear-gradient(135deg, #1d2c66, #3a1c71, #ff4fd8);
+            color: #fff;
+        }
+        
+        .settings-panel__title {
+            margin: 0;
+            font-size: clamp(26px, 4vw, 38px);
+            font-weight: 980;
+            line-height: 1;
+            letter-spacing: -0.4px;
+        }
+        
+        .settings-close {
+            width: 56px;
+            height: 56px;
+            min-width: 56px;
+            border: none;
+            border-radius: 999px;
+            background: #fff;
+            color: #111827;
+            font-size: 28px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+        }
+        
+        .settings-close:hover {
+            transform: translateY(-2px);
+        }
+        
+        .settings-panel__body {
+            padding: 20px;
+            display: grid;
+            gap: 16px;
+            background: var(--card3);
+        }
+        
+        .settings-item {
+            width: 100%;
+            min-height: 84px;
+            padding: 18px 20px;
+            border-radius: 22px;
+            border: 1px solid var(--border2);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .02)), var(--card2);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            text-decoration: none;
+            color: var(--ink);
+            font-weight: 900;
+            font-size: 18px;
+        }
+        
+        .settings-item:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.03);
+        }
+        
+        .settings-item__icon {
+            width: 52px;
+            height: 52px;
+            min-width: 52px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            background: rgba(64, 246, 255, 0.10);
+            color: var(--blue);
+            font-size: 26px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        }
+        
+        .settings-item__label {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .settings-item--button {
+            cursor: pointer;
+        }
+        
+        @media (max-width: 640px) {
+            .settings-panel {
+                border-radius: 24px;
+            }
+            .settings-panel__header {
+                padding: 18px;
+            }
+            .settings-panel__body {
+                padding: 14px;
+            }
+            .settings-item {
+                min-height: 76px;
+                padding: 14px 16px;
+                font-size: 17px;
+            }
+            .settings-item__icon {
+                width: 46px;
+                height: 46px;
+                min-width: 46px;
+                font-size: 24px;
+            }
+            .settings-close {
+                width: 50px;
+                height: 50px;
+                min-width: 50px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Skip link for keyboard accessibility -->
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Message for users without JavaScript -->
+    <noscript>
+        <div class="container page">
+            <div class="feedback no-script-box" role="status">
+                This game needs JavaScript enabled to work properly.
+            </div>
+        </div>
+    </noscript>
+
+    <!-- =========================================================
+         Top Navigation
+         You can hide this in game.css if you want true fullscreen.
+    ========================================================== -->
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="../../index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <nav class="nav" aria-label="Primary" id="desktopNav">
+                <a class="nav-link" href="../../index.html">Home</a>
+                <a class="nav-link" href="../../story.html">Story Mode</a>
+                <a class="nav-link" href="../../leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="../../achievements.html">Achievements</a>
+                <a class="nav-link" href="../../profile.html">Profile</a>
+                <a class="nav-link" href="../../settings.html">Settings</a>
+                <a class="nav-link" href="../../about.html">About</a>
+            </nav>
+
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+                ☰
+            </button>
+        </div>
+
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner" id="mobileNav">
+                <a class="nav-link" href="../../index.html">Home</a>
+                <a class="nav-link" href="../../story.html">Story Mode</a>
+                <a class="nav-link" href="../../leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="../../achievements.html">Achievements</a>
+                <a class="nav-link" href="../../profile.html">Profile</a>
+                <a class="nav-link" href="../../settings.html">Settings</a>
+                <a class="nav-link" href="../../about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================
+         Main Game
+    ========================================================== -->
+    <main id="main" class="container page">
+
+        <!-- Story mode banner -->
+        <section class="section hidden" id="storyBanner" aria-label="Story mode banner">
+            <div class="card">
+                <div class="card-body">
+                    <div class="badge">
+                        <span aria-hidden="true">📖</span>
+                        <strong>Story Mode</strong>
+                        <span class="muted" id="storyBannerText">
+                            Complete this challenge to continue the story.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gameplay section -->
+        <section class="section game-fullscreen-section" aria-label="Image Guess gameplay area">
+            <div class="game-shell">
+
+                <!-- Floating settings button -->
+                <button class="btn-arcade primary settings-launcher game-settings-floating" id="btnOpenSettings" type="button" aria-haspopup="dialog" aria-controls="settingsModal" aria-expanded="false" aria-label="Open game settings">
+                    ⚙️
+                </button>
+
+                <div class="image-guess-wrap image-guess-show-mode">
+
+                    <!-- =================================================
+                         Full screen intro screen
+                    ================================================== -->
+                    <section class="guess-start-screen" id="guessStartScreen" aria-label="Image quiz start screen">
+                        <div class="guess-start-card">
+                            <div class="guess-small-title">Image quiz</div>
+
+                            <h2>Guess the picture.</h2>
+
+                            <button class="guess-play-button" id="btnRevealStart" type="button">
+                                <span class="guess-play-icon" aria-hidden="true">▶</span>
+                                <span>START</span>
+                            </button>
+
+                            <p>
+                                An image is revealed slowly. Buzz in when you can answer the question.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Compatibility image panel.
+                         It is hidden by game.css in the new design. -->
+                    <section class="left-panel" aria-label="Question image panel">
+                        <div class="image-stage" aria-label="Current question image">
+                            <img id="questionImg" alt="Question preview image" decoding="async" />
+                        </div>
+                    </section>
+
+                    <!-- Main answer panel -->
+                    <section class="middle-panel" aria-label="Answer panel">
+                        <div class="panel-head">
+                            <div class="panel-kicker">Choose your answer</div>
+
+                            <h2 class="panel-title">What is shown in the image?</h2>
+
+                            <p class="keyboard-help" id="igKeyboardHelp">
+                                Shortcuts: press 1–3 to answer, or H to use a hint.
+                            </p>
+                        </div>
+
+                        <!-- Progress bar, hidden by CSS in show mode -->
+                        <div class="progress-wrap" aria-hidden="true">
+                            <div class="progress-bar" id="progressBar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                        </div>
+
+                        <!-- Hint button, hidden by CSS in show mode -->
+                        <div class="tool-row" aria-label="Gameplay tools">
+                            <button class="btn-arcade" id="btnHint" type="button">
+                                💡 Use Hint (3)
+                            </button>
+                        </div>
+
+                        <!-- Slow reveal image area -->
+                        <div class="guess-reveal-stage" id="guessRevealStage" aria-label="Slowly revealed mystery image">
+                            <img id="guessRevealImg" alt="Slowly revealed mystery image" decoding="async" />
+                        </div>
+
+                        <!-- Answer choices generated by game.js -->
+                        <div class="answers-grid" id="answersGrid" aria-label="Answer choices" aria-describedby="igKeyboardHelp"></div>
+
+                        <!-- Feedback message -->
+                        <div class="feedback-row">
+                            <div class="feedback" id="feedbackText" role="status" aria-live="polite">
+                                Press START to begin the image quiz.
+                            </div>
+                        </div>
+
+                        <!-- End game buttons -->
+                        <div class="after-finish hidden" id="afterFinish" aria-label="Round summary and next actions"></div>
+                    </section>
+
+                    <!-- Compatibility reveal panel.
+                         It is hidden by game.css in the new design. -->
+                    <section class="pack-panel" aria-label="Reveal panel">
+                        <div class="pack-head">
+                            <div class="panel-kicker">Reveal area</div>
+                            <h2 class="panel-title">Mystery Reveal</h2>
+                        </div>
+
+                        <div class="reveal-box" id="revealImageBox" aria-label="Answer reveal area">
+                            <div class="reveal-placeholder">
+                                <div class="reveal-placeholder__icon" aria-hidden="true">🖼️</div>
+                                <div class="reveal-placeholder__title">Mystery Reveal</div>
+                                <div class="reveal-placeholder__text">
+                                    The full answer image will appear here after you make your choice.
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =========================================================
+         Settings Popup
+    ========================================================== -->
+
+    <div class="settings-overlay hidden" id="settingsOverlay"></div>
+
+    <div class="settings-modal hidden" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="settings-panel">
+            <div class="settings-panel__header">
+                <h2 class="settings-panel__title" id="settingsTitle">Game Settings</h2>
+
+                <button type="button" class="settings-close" id="btnCloseSettings" aria-label="Close settings">
+                    ×
+                </button>
+            </div>
+
+            <div class="settings-panel__body">
+                <a class="settings-item" href="../../index.html">
+                    <span class="settings-item__icon" aria-hidden="true">🏠</span>
+                    <span class="settings-item__label">Back Home</span>
+                </a>
+
+                <button type="button" class="settings-item settings-item--button" id="btnRestart">
+                    <span class="settings-item__icon" aria-hidden="true">↻</span>
+                    <span class="settings-item__label">Restart Challenge</span>
+                </button>
+
+                <button type="button" class="settings-item settings-item--button" id="igSoundToggle" aria-pressed="true">
+                    <span class="settings-item__icon" aria-hidden="true">🔊</span>
+                    <span class="settings-item__label">Sound ON</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer is kept for compatibility.
+         You can hide it in game.css for full-screen game mode. -->
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">© <span id="year"></span> Brain Challenge Arcade</div>
+
+            <div class="footer-links">
+                <a href="../../index.html">Home</a>
+                <a href="../../settings.html">Settings</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =========================================================
+         External JavaScript files
+    ========================================================== -->
+    <script src="../../js/storage.js"></script>
+    <script src="../../js/ui.js"></script>
+    <script src="../../js/app.js"></script>
+    <script src="../../js/gameData.js"></script>
+    <script src="game.js"></script>
+
+    <script>
+        /* =========================================================
+                           Footer year
+                        ========================================================== */
+        (function() {
+            var year = document.getElementById("year");
+            if (year) {
+                year.textContent = new Date().getFullYear();
+            }
+        })();
+
+        /* =========================================================
+           Mobile menu
+        ========================================================== */
+        (function() {
+            var btn = document.querySelector(".nav-toggle");
+            var menu = document.getElementById("mobileMenu");
+
+            if (!btn || !menu) return;
+
+            btn.addEventListener("click", function() {
+                var isOpen = btn.getAttribute("aria-expanded") === "true";
+
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+
+        /* =========================================================
+           Story mode banner only
+        ========================================================== */
+        (function() {
+            var qs;
+
+            try {
+                qs = new URLSearchParams(window.location.search);
+            } catch (e) {
+                return;
+            }
+
+            var isStory =
+                qs.get("story") === "1" ||
+                (qs.get("mode") || "").toLowerCase() === "story";
+
+            var storyBanner = document.getElementById("storyBanner");
+
+            if (isStory && storyBanner) {
+                storyBanner.classList.remove("hidden");
+            }
+        })();
+
+        /* =========================================================
+           Settings modal
+        ========================================================== */
+        (function() {
+            var openBtn = document.getElementById("btnOpenSettings");
+            var closeBtn = document.getElementById("btnCloseSettings");
+            var modal = document.getElementById("settingsModal");
+            var overlay = document.getElementById("settingsOverlay");
+
+            if (!openBtn || !closeBtn || !modal || !overlay) return;
+
+            function openSettings() {
+                modal.classList.remove("hidden");
+                overlay.classList.remove("hidden");
+
+                openBtn.setAttribute("aria-expanded", "true");
+
+                closeBtn.focus();
+                document.body.style.overflow = "hidden";
+            }
+
+            function closeSettings() {
+                modal.classList.add("hidden");
+                overlay.classList.add("hidden");
+
+                openBtn.setAttribute("aria-expanded", "false");
+
+                document.body.style.overflow = "";
+                openBtn.focus();
+            }
+
+            openBtn.addEventListener("click", openSettings);
+            closeBtn.addEventListener("click", closeSettings);
+            overlay.addEventListener("click", closeSettings);
+
+            document.addEventListener("keydown", function(e) {
+                if (e.key === "Escape" && !modal.classList.contains("hidden")) {
+                    closeSettings();
+                }
+            });
+
+            var restartBtn = document.getElementById("btnRestart");
+            var soundBtn = document.getElementById("igSoundToggle");
+
+            if (restartBtn) {
+                restartBtn.addEventListener("click", function() {
+                    closeSettings();
+                });
+            }
+
+            if (soundBtn) {
+                soundBtn.addEventListener("click", function() {
+                    setTimeout(function() {
+                        closeSettings();
+                    }, 60);
+                });
+            }
+        })();
+    </script>
+</body>
+
+</html>

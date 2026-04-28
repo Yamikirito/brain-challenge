@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- =========================================================
+     Brain Challenge Arcade - image-guess.html (Arcade Tiles Home)
+
+     ✅ Keeps:
+     - Smart Story auto-start (first visit only)
+     - No redirect when user came from a game / games intent
+     - Stats from localStorage
+     - Mobile nav toggle
+
+     ✅ Adds:
+     - Global Light/Dark/System theme support (bca_theme)
+     - Better Light theme (not faded)
+
+     ✅ NEW:
+     - Adds Color Bubble Challenge tile (same style as others)
+     - Makes tiles grid flexible for 5+ games (auto-fit)
+========================================================= -->
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brain Challenge Arcade</title>
+    <meta name="description" content="Play Image Guess, Memory Test, Card Matching, Color Bubble Challenge, and Story Mode. Track scores, unlock achievements, and have fun!" />
+
+    <!-- ✅ THEME LOADER (runs early, before paint) -->
+    <script>
+        (function() {
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            function systemPrefersDark() {
+                return (
+                    window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches
+                );
+            }
+
+            var theme = getTheme();
+            var root = document.documentElement;
+
+            root.classList.remove("theme-dark", "theme-light");
+
+            if (theme === "dark") {
+                root.classList.add("theme-dark");
+            } else if (theme === "light") {
+                root.classList.add("theme-light");
+            } else {
+                root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+            }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+
+    <!-- ✅ SMART STORY AUTO-START -->
+    <script>
+        (function() {
+            function getQueryParam(name) {
+                try {
+                    var s = window.location.search || "";
+                    if (s.indexOf("?") === 0) s = s.substring(1);
+                    if (!s) return null;
+                    var pairs = s.split("&");
+                    for (var i = 0; i < pairs.length; i++) {
+                        var kv = pairs[i].split("=");
+                        var k = decodeURIComponent(kv[0] || "");
+                        var v = decodeURIComponent(kv[1] || "");
+                        if (k === name) return v;
+                    }
+                } catch (e) {}
+                return null;
+            }
+
+            function safeGet(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function safeSet(key, val) {
+                try {
+                    localStorage.setItem(key, val);
+                } catch (e) {}
+            }
+
+            function safeRemove(key) {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {}
+            }
+
+            try {
+                var mode = getQueryParam("mode");
+                var hash = window.location.hash || "";
+                var fromGame = safeGet("bca_from_game");
+                var started = safeGet("bca_story_started");
+
+                var isGamesIntent = mode === "games" || hash === "#games";
+
+                if (!started && !isGamesIntent && !fromGame) {
+                    safeSet("bca_story_started", "1");
+                    safeSet("bca_story_intro", "1");
+                    window.location.href = "story.html";
+                    return;
+                }
+
+                if (fromGame) safeRemove("bca_from_game");
+            } catch (e2) {}
+        })();
+    </script>
+
+    <style>
+        /* =========================================================
+           ARCADE HOME THEME (Variable-based)
+           ========================================================= */
+        
+         :root {
+            --bg0: #070914;
+            --bg1: #0b1028;
+            --ink: #eaf0ff;
+            --muted: rgba(234, 240, 255, 0.75);
+            --muted2: rgba(234, 240, 255, 0.55);
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.12);
+            --blue: #4ea1ff;
+            --violet: #9b7bff;
+            --pink: #ff4fd8;
+            --cyan: #40f6ff;
+            --shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+            --shadow2: 0 14px 40px rgba(0, 0, 0, 0.45);
+            --r-xl: 24px;
+            --r-lg: 18px;
+            --r-md: 14px;
+        }
+        /* ✅ Improved Light Theme (not faded) */
+        
+        .theme-light {
+            --bg0: #f4f6ff;
+            --bg1: #e9edff;
+            --ink: #111827;
+            --muted: rgba(17, 24, 39, 0.75);
+            --muted2: rgba(17, 24, 39, 0.55);
+            --card: #ffffff;
+            --border: rgba(0, 0, 0, 0.08);
+            --blue: #3b82f6;
+            --violet: #7c3aed;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+            --shadow2: 0 10px 20px rgba(0, 0, 0, 0.06);
+        }
+        
+        body {
+            background: radial-gradient(900px 500px at 15% 20%, rgba(255, 79, 216, 0.18), transparent 55%), radial-gradient(900px 520px at 85% 25%, rgba(78, 161, 255, 0.18), transparent 55%), radial-gradient(900px 520px at 55% 95%, rgba(155, 123, 255, 0.16), transparent 55%), linear-gradient(180deg, var(--bg0), var(--bg1));
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+        
+        .page {
+            padding-top: 26px;
+            padding-bottom: 56px;
+        }
+        
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible {
+            outline: 3px solid rgba(64, 246, 255, 0.45);
+            outline-offset: 3px;
+            border-radius: 12px;
+        }
+        /* Hero banner */
+        
+        .arcade-hero {
+            border-radius: var(--r-xl);
+            background: radial-gradient(650px 300px at 15% 30%, rgba(255, 79, 216, 0.25), transparent 60%), radial-gradient(650px 300px at 85% 30%, rgba(78, 161, 255, 0.25), transparent 60%), var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .arcade-hero::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(90deg, rgba(64, 246, 255, 0.16), rgba(255, 79, 216, 0.14), rgba(155, 123, 255, 0.14));
+            filter: blur(22px);
+            opacity: 0.55;
+            z-index: 0;
+        }
+        
+        .theme-light .arcade-hero::after {
+            opacity: 0.28;
+            filter: blur(18px);
+        }
+        
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .hero-kicker {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(234, 240, 255, 0.9);
+            font-weight: 850;
+            letter-spacing: 0.3px;
+            font-size: 13px;
+        }
+        
+        .theme-light .hero-kicker {
+            background: rgba(17, 24, 39, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: rgba(17, 24, 39, 0.85);
+        }
+        
+        .hero-title {
+            margin: 12px 0 8px;
+            font-size: clamp(30px, 4vw, 52px);
+            line-height: 1.04;
+            letter-spacing: -0.6px;
+            font-weight: 950;
+        }
+        
+        .hero-title .grad {
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero-sub {
+            margin: 0;
+            max-width: 68ch;
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.55;
+        }
+        
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .btn-arcade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 950;
+            letter-spacing: 0.2px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.25);
+            color: var(--ink);
+            box-shadow: var(--shadow2);
+            transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
+            user-select: none;
+        }
+        
+        .theme-light .btn-arcade {
+            background: rgba(17, 24, 39, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: var(--ink);
+        }
+        
+        .btn-arcade.primary {
+            border: 1px solid rgba(64, 246, 255, 0.25);
+            background: linear-gradient(135deg, rgba(78, 161, 255, 0.25), rgba(255, 79, 216, 0.2));
+        }
+        
+        .theme-light .btn-arcade.primary {
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(236, 72, 153, 0.14));
+        }
+        
+        .btn-arcade:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+        
+        .btn-arcade:active {
+            transform: translateY(0) scale(0.99);
+        }
+        
+        .hero-box {
+            background: rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: var(--r-lg);
+            padding: 14px;
+            box-shadow: var(--shadow2);
+        }
+        
+        .theme-light .hero-box {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .stat {
+            border-radius: 14px;
+            padding: 10px 10px;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        
+        .stat .label {
+            font-size: 12px;
+            letter-spacing: 0.25px;
+            font-weight: 900;
+            color: rgba(234, 240, 255, 0.65);
+            text-transform: uppercase;
+        }
+        
+        .theme-light .stat .label {
+            color: rgba(17, 24, 39, 0.55);
+        }
+        
+        .stat .value {
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: 950;
+            color: rgba(234, 240, 255, 0.95);
+        }
+        
+        .theme-light .stat .value {
+            color: rgba(17, 24, 39, 0.92);
+        }
+        
+        .resume {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .resume .small {
+            color: rgba(234, 240, 255, 0.65);
+            font-weight: 700;
+            font-size: 13.5px;
+            line-height: 1.35;
+        }
+        
+        .theme-light .resume .small {
+            color: rgba(17, 24, 39, 0.65);
+        }
+        
+        .section-head {
+            margin-top: 18px;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .section-head h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .section-head p {
+            margin: 0;
+            color: var(--muted2);
+            font-weight: 650;
+        }
+        /* ✅ Game tiles (UPDATED: flexible grid for 5+ tiles) */
+        
+        .tiles {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 14px;
+        }
+        
+        .tile {
+            position: relative;
+            border-radius: var(--r-xl);
+            padding: 14px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            overflow: hidden;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+            min-height: 190px;
+            display: grid;
+            align-content: start;
+            gap: 10px;
+        }
+        
+        .tile:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.2);
+            filter: brightness(1.02);
+        }
+        
+        .theme-dark .tile:hover {
+            box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+            filter: brightness(1.03);
+        }
+        
+        .tile::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            opacity: 0.22;
+            filter: blur(18px);
+            z-index: 0;
+        }
+        
+        .tile.t1::before {
+            background: radial-gradient(circle at 30% 20%, rgba(64, 246, 255, 0.9), transparent 55%);
+        }
+        
+        .tile.t2::before {
+            background: radial-gradient(circle at 30% 20%, rgba(255, 79, 216, 0.9), transparent 55%);
+        }
+        
+        .tile.t3::before {
+            background: radial-gradient(circle at 30% 20%, rgba(155, 123, 255, 0.9), transparent 55%);
+        }
+        
+        .tile.t4::before {
+            background: radial-gradient(circle at 30% 20%, rgba(78, 161, 255, 0.9), transparent 55%);
+        }
+        /* ✅ New bubble tile glow */
+        
+        .tile.t5::before {
+            background: radial-gradient(circle at 30% 20%, rgba(255, 216, 107, 0.95), transparent 55%);
+        }
+        
+        .theme-light .tile::before {
+            opacity: 0.16;
+            filter: blur(16px);
+        }
+        
+        .tile>* {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tile-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .tile-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(0, 0, 0, 0.25);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+            flex: 0 0 auto;
+        }
+        
+        .theme-light .tile-icon {
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(17, 24, 39, 0.06);
+            box-shadow: 0 12px 22px rgba(0, 0, 0, 0.08);
+        }
+        
+        .tile-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .tag {
+            font-size: 12px;
+            font-weight: 900;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.24);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(234, 240, 255, 0.92);
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        
+        .theme-light .tag {
+            background: rgba(17, 24, 39, 0.06);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            color: rgba(17, 24, 39, 0.8);
+        }
+        
+        .tile h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .tile p {
+            margin: 0;
+            color: rgba(234, 240, 255, 0.72);
+            line-height: 1.35;
+            font-weight: 650;
+            font-size: 13.5px;
+            min-height: 38px;
+        }
+        
+        .theme-light .tile p {
+            color: rgba(17, 24, 39, 0.68);
+        }
+        
+        .tile-actions {
+            margin-top: 4px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .tile-actions a {
+            flex: 1;
+            text-align: center;
+            text-decoration: none;
+            padding: 10px 12px;
+            border-radius: 14px;
+            font-weight: 950;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.22);
+            color: rgba(234, 240, 255, 0.92);
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+        
+        .theme-light .tile-actions a {
+            background: rgba(17, 24, 39, 0.06);
+            color: rgba(17, 24, 39, 0.9);
+        }
+        
+        .tile-actions a.play {
+            border: 1px solid rgba(64, 246, 255, 0.24);
+            background: rgba(64, 246, 255, 0.1);
+            color: rgba(234, 240, 255, 0.98);
+        }
+        
+        .theme-light .tile-actions a.play {
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(59, 130, 246, 0.12);
+            color: rgba(17, 24, 39, 0.92);
+        }
+        
+        .tile-actions a:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.03);
+        }
+        
+        .tile-actions a:active {
+            transform: translateY(0) scale(0.99);
+        }
+        /* Responsive */
+        
+        @media (max-width: 980px) {
+            .hero-inner {
+                grid-template-columns: 1fr;
+            }
+            .stats {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        
+        @media (max-width: 520px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Navbar */
+        
+        .navbar {
+            background: rgba(0, 0, 0, 0.35) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+        
+        .nav-link,
+        .brand-text {
+            color: rgba(234, 240, 255, 0.88) !important;
+        }
+        
+        .nav-link.nav-active {
+            color: rgba(234, 240, 255, 1) !important;
+        }
+        
+        .theme-light .navbar {
+            background: rgba(255, 255, 255, 0.82) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        
+        .theme-light .nav-link,
+        .theme-light .brand-text {
+            color: rgba(17, 24, 39, 0.86) !important;
+        }
+        
+        .theme-light .nav-link.nav-active {
+            color: rgba(17, 24, 39, 1) !important;
+        }
+        /* Footer */
+        
+        .footer {
+            background: rgba(0, 0, 0, 0.35);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .footer .muted,
+        .footer a {
+            color: rgba(234, 240, 255, 0.72) !important;
+        }
+        
+        .theme-light .footer {
+            background: rgba(255, 255, 255, 0.75);
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+        }
+        
+        .theme-light .footer .muted,
+        .theme-light .footer a {
+            color: rgba(17, 24, 39, 0.7) !important;
+        }
+    </style>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Header / Nav -->
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link nav-active" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </nav>
+
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+        </div>
+
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner">
+                <a class="nav-link nav-active" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="container page">
+        <!-- HERO BANNER -->
+        <section class="arcade-hero" aria-labelledby="heroTitle">
+            <div class="hero-inner">
+                <div>
+                    <div class="hero-kicker">🎮 Arcade Mode • 🧠 Train your brain</div>
+                    <h1 id="heroTitle" class="hero-title">
+                        Welcome to <span class="grad">Brain Challenge Arcade</span>
+                    </h1>
+                    <p class="hero-sub">
+                        Play quick brain games, beat your best scores, and continue the story called
+                        <strong>The Secret Letter</strong>. Want adventure? Start Story Mode. Want quick fun? Pick a game below.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a class="btn-arcade primary" href="story.html">✨ Start Story Mode</a>
+                        <a class="btn-arcade" href="games.html">🎯 Browse Games</a>
+                        <a class="btn-arcade primary" href="profile.html">👤 Set Username</a>
+                    </div>
+                </div>
+
+                <aside class="hero-box" aria-label="Progress and quick resume">
+                    <div class="resume">
+                        <div class="small">Continue your progress and improve your high scores.</div>
+                    </div>
+
+                    <div class="stats" aria-label="Quick stats">
+                        <div class="stat">
+                            <div class="label">Player</div>
+                            <div class="value" id="statUsername">Guest</div>
+                        </div>
+                        <div class="stat">
+                            <div class="label">Plays</div>
+                            <div class="value" id="statPlays">0</div>
+                        </div>
+                        <div class="stat">
+                            <div class="label">Story</div>
+                            <div class="value" id="statStory">0%</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <!-- GAME TILES -->
+        <section class="section" aria-labelledby="pickTitle">
+            <div class="section-head">
+                <h2 id="pickTitle">Pick a game</h2>
+            </div>
+
+            <div class="tiles" role="list">
+                <!-- Image Guess -->
+                <article class="tile t1" role="listitem">
+                    <div class="tile-top">
+                        <div class="tile-icon">
+                            <img src="assets/images/logo/image-guess.png" alt="Image Guess logo" />
+                        </div>
+                        <span class="tag">Image</span>
+                    </div>
+                    <h3>Image Guess</h3>
+                    <p>Guess the correct image from clues.</p>
+                    <div class="tile-actions">
+                        <a class="play" href="games/image-guess/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">Play</a>
+                        <a href="leaderboard.html#image-guess">Scores</a>
+                    </div>
+                </article>
+
+                <!-- Memory Test -->
+                <article class="tile t2" role="listitem">
+                    <div class="tile-top">
+                        <div class="tile-icon">
+                            <img src="assets/images/logo/memory-test.png" alt="Memory Test logo" />
+                        </div>
+                        <span class="tag">Memory</span>
+                    </div>
+                    <h3>Memory Test</h3>
+                    <p>Remember the pattern and level up.</p>
+                    <div class="tile-actions">
+                        <a class="play" href="games/memory-test/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">Play</a>
+                        <a href="leaderboard.html#memory-test">Scores</a>
+                    </div>
+                </article>
+
+
+                <!-- Card Matching -->
+                <article class="tile t3" role="listitem">
+                    <div class="tile-top">
+                        <div class="tile-icon">
+                            <img src="assets/images/logo/card-matching.png" alt="Card Matching logo" />
+                        </div>
+                        <span class="tag">Matching</span>
+                    </div>
+                    <h3>Card Matching</h3>
+                    <p>Find pairs fast and beat the timer.</p>
+                    <div class="tile-actions">
+                        <a class="play" href="games/card-matching/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">Play</a>
+                        <a href="leaderboard.html#card-matching">Scores</a>
+                    </div>
+                </article>
+
+                <!-- ✅ Color Bubble Challenge (NEW) -->
+                <article class="tile t5" role="listitem">
+                    <div class="tile-top">
+                        <div class="tile-icon">
+                            <img src="assets/images/logo/color-bubble-challenge.png" alt="Color Bubble Challenge logo" />
+                        </div>
+                        <span class="tag">Arcade</span>
+                    </div>
+                    <h3>Color Bubble Challenge</h3>
+                    <p>Aim, shoot, and match 3+ bubbles to pop them.</p>
+                    <div class="tile-actions">
+                        <a class="play" href="games/color-bubble-challenge/index.html" onclick="try{localStorage.setItem('bca_from_game','1');}catch(e){}">Play</a>
+                        <a href="leaderboard.html#color-bubble-challenge">Scores</a>
+                    </div>
+                </article>
+
+                <!-- Story Mode -->
+                <article class="tile t4" role="listitem">
+                    <div class="tile-top">
+                        <div class="tile-icon">
+                            <img src="assets/images/logo/story-mode.png" alt="Story Mode logo" />
+                        </div>
+                        <span class="tag">Story</span>
+                    </div>
+                    <h3>Story Mode</h3>
+                    <p>Continue <strong>The Secret Letter</strong> adventure.</p>
+                    <div class="tile-actions">
+                        <a class="play" href="story.html">Play</a>
+                        <a href="achievements.html">Badges</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">
+                © <span id="year"></span> Brain Challenge Arcade
+            </div>
+            <div class="footer-links">
+                <a href="about.html">Credits</a>
+                <a href="settings.html">Settings</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Footer year
+        var yearEl = document.getElementById("year");
+        if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+
+        // Mobile nav toggle
+        (function() {
+            var btn = document.querySelector(".nav-toggle");
+            var menu = document.getElementById("mobileMenu");
+            if (!btn || !menu) return;
+
+            btn.addEventListener("click", function() {
+                var isOpen = btn.getAttribute("aria-expanded") === "true";
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+
+        // Quick stats
+        (function() {
+            function safeGet(key, fallback) {
+                try {
+                    var raw = localStorage.getItem(key);
+                    return raw === null ? fallback : raw;
+                } catch (e) {
+                    return fallback;
+                }
+            }
+
+            var username = safeGet("bca_username", "Guest");
+            var plays = Number(safeGet("bca_totalPlays", "0")) || 0;
+
+            var cp = Number(safeGet("bca_story_checkpoint", "0")) || 0;
+            var percent = Math.min(100, Math.max(0, Math.round((cp / 4) * 100)));
+
+            var statUsername = document.getElementById("statUsername");
+            var statPlays = document.getElementById("statPlays");
+            var statStory = document.getElementById("statStory");
+
+            if (statUsername) statUsername.textContent = username;
+            if (statPlays) statPlays.textContent = String(plays);
+            if (statStory) statStory.textContent = String(percent) + "%";
+        })();
+    </script>
+</body>
+
+</html>

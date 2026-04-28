@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- =========================================================
+     Brain Challenge Arcade - settings.html
+
+     ✅ Arcade-style polished settings page
+     ✅ Theme flash prevention
+     ✅ Sound default = On
+     ✅ Reduced motion support
+     ✅ Live settings status panel
+     ✅ Reset settings uses custom arcade modal
+     ✅ Quick launch section to encourage gameplay
+========================================================= -->
+
+<script>
+    (function() {
+        function getTheme() {
+            try {
+                return localStorage.getItem("bca_theme") || "system";
+            } catch (e) {
+                return "system";
+            }
+        }
+
+        function systemPrefersDark() {
+            return window.matchMedia &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+
+        var theme = getTheme();
+        var root = document.documentElement;
+
+        root.classList.remove("theme-light", "theme-dark");
+
+        if (theme === "dark") root.classList.add("theme-dark");
+        else if (theme === "light") root.classList.add("theme-light");
+        else root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+    })();
+</script>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Settings • Brain Challenge Arcade</title>
+    <meta name="description" content="Customize theme, sound, motion, and player comfort settings for Brain Challenge Arcade." />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+
+    <style>
+         :root {
+            --r-xl: 24px;
+            --r-lg: 18px;
+            --r-md: 14px;
+            --shadow: 0 22px 70px rgba(0, 0, 0, .12);
+            --shadow2: 0 14px 40px rgba(0, 0, 0, .10);
+            --focus: rgba(64, 246, 255, .55);
+            --blue: #4ea1ff;
+            --violet: #9b7bff;
+            --pink: #ff4fd8;
+            --cyan: #40f6ff;
+            --green: #35d39a;
+            --amber: #f5c15d;
+            --danger: #ff6464;
+        }
+        
+        html.theme-light {
+            --bg0: #f7f8fc;
+            --bg1: #f2f4fb;
+            --ink: #0b1220;
+            --muted: rgba(11, 18, 32, .72);
+            --muted2: rgba(11, 18, 32, .55);
+            --card: rgba(255, 255, 255, .82);
+            --card2: rgba(255, 255, 255, .66);
+            --border: rgba(15, 23, 42, .10);
+            --border2: rgba(15, 23, 42, .12);
+            --navbg: rgba(255, 255, 255, .72);
+            --navtext: rgba(11, 18, 32, .78);
+            --navtextActive: rgba(11, 18, 32, 1);
+        }
+        
+        html.theme-dark {
+            --bg0: #070914;
+            --bg1: #0b1028;
+            --ink: #eaf0ff;
+            --muted: rgba(234, 240, 255, .75);
+            --muted2: rgba(234, 240, 255, .55);
+            --card: rgba(255, 255, 255, .06);
+            --card2: rgba(0, 0, 0, .22);
+            --border: rgba(255, 255, 255, .12);
+            --border2: rgba(255, 255, 255, .14);
+            --navbg: rgba(0, 0, 0, .35);
+            --navtext: rgba(234, 240, 255, .88);
+            --navtextActive: rgba(234, 240, 255, 1);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            color: var(--ink);
+            overflow-x: hidden;
+            background: radial-gradient(900px 520px at 15% 15%, rgba(255, 79, 216, .14), transparent 55%), radial-gradient(900px 520px at 85% 18%, rgba(78, 161, 255, .14), transparent 55%), radial-gradient(900px 520px at 55% 92%, rgba(155, 123, 255, .12), transparent 55%), linear-gradient(180deg, var(--bg0), var(--bg1));
+        }
+        
+        .page {
+            padding-top: 26px;
+            padding-bottom: 56px;
+        }
+        
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 3px;
+            border-radius: 12px;
+        }
+        
+        .navbar {
+            background: var(--navbg) !important;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+        
+        .nav-link,
+        .brand-text {
+            color: var(--navtext) !important;
+        }
+        
+        .nav-link.nav-active {
+            color: var(--navtextActive) !important;
+        }
+        
+        .arcade-hero {
+            border-radius: var(--r-xl);
+            background: radial-gradient(650px 300px at 15% 30%, rgba(255, 79, 216, .18), transparent 60%), radial-gradient(650px 300px at 85% 30%, rgba(78, 161, 255, .18), transparent 60%), var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .arcade-hero::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(90deg, rgba(64, 246, 255, .14), rgba(255, 79, 216, .12), rgba(155, 123, 255, .12));
+            filter: blur(22px);
+            opacity: .55;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.1fr .9fr;
+            gap: 16px;
+            align-items: center;
+        }
+        
+        .hero-kicker {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            color: var(--navtextActive);
+            font-weight: 850;
+            letter-spacing: .3px;
+            font-size: 13px;
+        }
+        
+        .hero-title {
+            margin: 12px 0 8px;
+            font-size: clamp(28px, 3.5vw, 44px);
+            line-height: 1.06;
+            letter-spacing: -0.6px;
+            font-weight: 950;
+        }
+        
+        .hero-title .grad {
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero-sub {
+            margin: 0;
+            max-width: 70ch;
+            color: var(--muted);
+            font-size: 15.5px;
+            line-height: 1.55;
+        }
+        
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .btn-arcade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 950;
+            letter-spacing: .2px;
+            border: 1px solid var(--border2);
+            background: var(--card2);
+            color: var(--ink);
+            box-shadow: var(--shadow2);
+            transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+            user-select: none;
+            cursor: pointer;
+        }
+        
+        .btn-arcade.primary {
+            border: 1px solid rgba(78, 161, 255, .28);
+            background: linear-gradient(135deg, rgba(78, 161, 255, .20), rgba(255, 79, 216, .16));
+        }
+        
+        .btn-arcade.gold {
+            border: 1px solid rgba(245, 193, 93, .28);
+            background: linear-gradient(135deg, rgba(245, 193, 93, .16), rgba(255, 79, 216, .12));
+        }
+        
+        .btn-arcade.danger {
+            border: 1px solid rgba(255, 100, 100, .32);
+            background: rgba(255, 100, 100, .12);
+        }
+        
+        .btn-arcade:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.03);
+        }
+        
+        .btn-arcade:active {
+            transform: translateY(0) scale(.99);
+        }
+        
+        .hero-box {
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            border-radius: var(--r-lg);
+            padding: 14px;
+            box-shadow: var(--shadow2);
+        }
+        
+        .hero-box .small {
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 13.5px;
+            line-height: 1.35;
+        }
+        
+        .hero-status-grid {
+            margin-top: 12px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        
+        .hero-stat {
+            border-radius: 16px;
+            padding: 12px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+        }
+        
+        .hero-stat-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .25px;
+            color: var(--muted2);
+        }
+        
+        .hero-stat-value {
+            display: block;
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: 950;
+            color: var(--ink);
+        }
+        
+        .section-head {
+            margin-top: 18px;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .section-head h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .section-head p {
+            margin: 0;
+            color: var(--muted2);
+            font-weight: 650;
+        }
+        
+        .settings-grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: start;
+        }
+        
+        .tile-card {
+            border-radius: var(--r-xl);
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .tile-card::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            opacity: .22;
+            filter: blur(18px);
+            z-index: 0;
+            pointer-events: none;
+            background: radial-gradient(circle at 30% 20%, rgba(155, 123, 255, .65), transparent 55%);
+        }
+        
+        .tile-card>* {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tile-title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .tile-desc {
+            margin: 0 0 12px;
+            color: var(--muted);
+            font-weight: 650;
+            line-height: 1.45;
+            font-size: 13.5px;
+        }
+        
+        .input {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .55);
+            color: var(--ink);
+            padding: 12px 12px;
+            outline: none;
+            font-weight: 800;
+        }
+        
+        html.theme-dark .input {
+            background: rgba(0, 0, 0, .22);
+            border: 1px solid var(--border2);
+        }
+        
+        .input-label {
+            display: block;
+            font-weight: 850;
+            letter-spacing: .2px;
+            margin-bottom: 8px;
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .toggle-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+        }
+        
+        .choice-grid {
+            display: grid;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .quick-choice {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+        }
+        
+        .quick-choice strong {
+            font-size: 14px;
+            font-weight: 900;
+        }
+        
+        .quick-choice span {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        
+        .preview-grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 14px;
+        }
+        
+        .mini-card {
+            border-radius: var(--r-xl);
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            padding: 16px;
+        }
+        
+        .hud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            color: var(--muted);
+            font-weight: 850;
+            font-size: 12px;
+        }
+        
+        .setting-summary {
+            display: grid;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .setting-line {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--border);
+        }
+        
+        .setting-line-name {
+            color: var(--muted);
+            font-weight: 800;
+        }
+        
+        .setting-line-value {
+            font-weight: 950;
+            color: var(--ink);
+        }
+        
+        .launch-grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+        
+        .launch-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--r-xl);
+            padding: 16px;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .03));
+            box-shadow: var(--shadow2);
+        }
+        
+        .launch-card::before {
+            content: "";
+            position: absolute;
+            inset: -40% auto auto -10%;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            filter: blur(10px);
+            opacity: .26;
+        }
+        
+        .launch-card.l1::before {
+            background: rgba(64, 246, 255, .65);
+        }
+        
+        .launch-card.l2::before {
+            background: rgba(255, 79, 216, .65);
+        }
+        
+        .launch-card.l3::before {
+            background: rgba(245, 193, 93, .65);
+        }
+        
+        .launch-card>* {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .launch-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .launch-card h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 950;
+        }
+        
+        .launch-card p {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 650;
+            line-height: 1.5;
+            min-height: 64px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .footer {
+            background: var(--navbg);
+            border-top: 1px solid var(--border);
+        }
+        
+        .footer .muted,
+        .footer a {
+            color: var(--navtext) !important;
+        }
+        
+        .reset-state-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 220px;
+            padding: 14px 22px;
+            border-radius: 18px;
+            border: 1px solid rgba(126, 103, 255, 0.26);
+            background: linear-gradient(135deg, rgba(78, 161, 255, 0.16), rgba(255, 79, 216, 0.14)), rgba(0, 0, 0, 0.18);
+            color: var(--ink);
+            box-shadow: 0 14px 30px rgba(107, 86, 255, 0.14), 0 10px 18px rgba(0, 0, 0, 0.18);
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, border-color .18s ease, opacity .18s ease;
+        }
+        
+        .reset-state-btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.04);
+            border-color: rgba(126, 103, 255, 0.38);
+        }
+        
+        .reset-state-btn:active {
+            transform: translateY(0) scale(.985);
+        }
+        
+        .reset-state-btn.is-checking {
+            border-color: rgba(245, 193, 93, 0.38);
+            background: linear-gradient(135deg, rgba(245, 193, 93, 0.18), rgba(255, 79, 216, 0.10)), rgba(0, 0, 0, 0.20);
+            box-shadow: 0 14px 30px rgba(245, 193, 93, 0.16), 0 10px 18px rgba(0, 0, 0, 0.18);
+        }
+        
+        .reset-state-btn.is-done {
+            border-color: rgba(53, 211, 154, 0.34);
+            background: linear-gradient(135deg, rgba(53, 211, 154, 0.20), rgba(78, 161, 255, 0.12)), rgba(0, 0, 0, 0.20);
+            box-shadow: 0 14px 30px rgba(53, 211, 154, 0.16), 0 10px 18px rgba(0, 0, 0, 0.18);
+        }
+        
+        .reset-state-btn[disabled] {
+            cursor: default;
+        }
+        
+        .reset-state-icon,
+        .reset-state-label {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .reset-state-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+        
+        .reset-state-label {
+            font-weight: 950;
+            letter-spacing: -0.2px;
+            font-size: 16px;
+        }
+        
+        html.theme-light .reset-state-btn {
+            background: linear-gradient(135deg, rgba(78, 161, 255, 0.12), rgba(236, 72, 153, 0.10)), rgba(255, 255, 255, 0.88);
+            border-color: rgba(124, 58, 237, 0.16);
+            box-shadow: 0 14px 26px rgba(124, 58, 237, 0.08), 0 10px 16px rgba(15, 23, 42, 0.08);
+        }
+        
+        html.theme-light .reset-state-btn.is-checking {
+            border-color: rgba(245, 158, 11, 0.24);
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(236, 72, 153, 0.08)), rgba(255, 255, 255, 0.92);
+        }
+        
+        html.theme-light .reset-state-btn.is-done {
+            border-color: rgba(16, 185, 129, 0.24);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(59, 130, 246, 0.08)), rgba(255, 255, 255, 0.92);
+        }
+        
+        .arcade-modal.hidden {
+            display: none;
+        }
+        
+        .arcade-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+        }
+        
+        .arcade-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(4, 8, 20, .62);
+            backdrop-filter: blur(8px);
+        }
+        
+        .arcade-modal-card {
+            position: relative;
+            width: min(92vw, 560px);
+            margin: 8vh auto 0;
+            padding: 24px;
+            border-radius: 24px;
+            background: radial-gradient(500px 220px at 18% 18%, rgba(255, 79, 216, .18), transparent 60%), radial-gradient(500px 220px at 82% 20%, rgba(78, 161, 255, .18), transparent 60%), linear-gradient(180deg, rgba(12, 18, 40, .96), rgba(7, 11, 28, .98));
+            border: 1px solid rgba(255, 255, 255, .14);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, .48);
+            color: var(--ink);
+            overflow: hidden;
+        }
+        
+        html.theme-light .arcade-modal-card {
+            background: radial-gradient(500px 220px at 18% 18%, rgba(236, 72, 153, .12), transparent 60%), radial-gradient(500px 220px at 82% 20%, rgba(59, 130, 246, .12), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(245, 247, 255, .98));
+            border: 1px solid rgba(0, 0, 0, .08);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .14);
+        }
+        
+        .arcade-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .06);
+            color: var(--ink);
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform .16s ease, filter .16s ease;
+        }
+        
+        html.theme-light .arcade-modal-close {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .arcade-modal-close:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+        
+        .arcade-modal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: .3px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        
+        .arcade-modal-title {
+            margin: 14px 0 8px;
+            font-size: clamp(26px, 3vw, 34px);
+            line-height: 1.05;
+            font-weight: 950;
+            letter-spacing: -.5px;
+        }
+        
+        .arcade-modal-desc {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 15px;
+            max-width: 48ch;
+        }
+        
+        .reset-benefits {
+            margin-top: 16px;
+            display: grid;
+            gap: 10px;
+        }
+        
+        .reset-benefit {
+            padding: 11px 13px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            color: var(--muted);
+            font-weight: 800;
+            line-height: 1.4;
+        }
+        
+        html.theme-light .reset-benefit {
+            background: rgba(17, 24, 39, .03);
+            border: 1px solid rgba(0, 0, 0, .06);
+        }
+        
+        .arcade-modal-actions {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .arcade-modal-actions .btn-arcade {
+            width: 100%;
+            min-height: 50px;
+        }
+        
+        @media (max-width: 980px) {
+            .hero-inner,
+            .settings-grid,
+            .preview-grid,
+            .launch-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 720px) {
+            .arcade-modal-card {
+                width: min(94vw, 560px);
+                margin-top: 5vh;
+                padding: 20px;
+            }
+            .arcade-modal-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .reset-state-btn,
+            .btn-arcade {
+                width: 100%;
+                min-width: 0;
+            }
+            .hero-actions {
+                flex-direction: column;
+            }
+            .hero-status-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link nav-active" href="achievements.html" aria-current="page">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </nav>
+
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+        </div>
+
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link nav-active" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="container page">
+        <section class="arcade-hero" aria-labelledby="heroTitle">
+            <div class="hero-inner">
+                <div>
+                    <div class="hero-kicker">⚙️ Settings • 🎨 Make it yours</div>
+                    <h1 id="heroTitle" class="hero-title">
+                        Customize <span class="grad">Your Experience</span>
+                    </h1>
+                    <p class="hero-sub">
+                        Choose a theme, control sound effects, and reduce motion for comfort. Everything is saved locally on this device.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a class="btn-arcade" href="index.html">← Back to Home</a>
+                        <button class="btn-arcade primary" id="btnApply" type="button">✅ Apply Now</button>
+                        <a class="btn-arcade gold" href="index.html#games">▶ Jump Into A Game</a>
+                    </div>
+                </div>
+
+                <aside class="hero-box" aria-label="Quick info">
+                    <div class="small">
+                        Your choices update the arcade atmosphere. Set your ideal style, then head back into the challenge.
+                    </div>
+
+                    <div class="hero-status-grid" aria-label="Settings status">
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Theme</span>
+                            <span class="hero-stat-value" id="heroThemeValue">System</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Sound</span>
+                            <span class="hero-stat-value" id="heroSoundValue">On</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Motion</span>
+                            <span class="hero-stat-value" id="heroMotionValue">Off</span>
+                        </div>
+                        <div class="hero-stat">
+                            <span class="hero-stat-label">Mode</span>
+                            <span class="hero-stat-value" id="heroModeValue">Arcade</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+
+        <section class="section" aria-label="Site settings">
+            <div class="section-head">
+                <h2>Preferences</h2>
+            </div>
+
+            <div class="settings-grid">
+                <article class="tile-card" aria-label="Appearance">
+                    <h3 class="tile-title">Appearance</h3>
+                    <p class="tile-desc">Switch between System, Light, and Dark theme.</p>
+
+                    <label class="input-label" for="themeSelect">Theme</label>
+                    <select class="input" id="themeSelect" aria-label="Theme selection">
+                        <option value="system">System (default)</option>
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+
+                    <div class="choice-grid" aria-label="Appearance ideas">
+                        <div class="quick-choice">
+                            <div>
+                                <strong>Light mode</strong>
+                                <span>Clean and bright</span>
+                            </div>
+                            <span class="badge">Day</span>
+                        </div>
+
+                        <div class="quick-choice">
+                            <div>
+                                <strong>Dark mode</strong>
+                                <span>Stronger arcade mood</span>
+                            </div>
+                            <span class="badge">Night</span>
+                        </div>
+
+                        <div class="quick-choice">
+                            <div>
+                                <strong>System mode</strong>
+                                <span>Matches your device</span>
+                            </div>
+                            <span class="badge">Auto</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="tile-card" aria-label="Comfort">
+                    <h3 class="tile-title">Comfort</h3>
+                    <p class="tile-desc">Tune sound effects and reduce motion for accessibility.</p>
+
+                    <div class="setting-item">
+                        <label class="input-label" for="soundToggle">Sound effects</label>
+                        <div class="toggle-row">
+                            <input id="soundToggle" type="checkbox" />
+                            <span class="badge" id="soundLabel">On</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-item" style="margin-top: 14px;">
+                        <label class="input-label" for="motionToggle">Reduced motion</label>
+                        <div class="toggle-row">
+                            <input id="motionToggle" type="checkbox" />
+                            <span class="badge" id="motionLabel">Off</span>
+                        </div>
+                    </div>
+
+                    <div class="setting-summary" aria-label="Comfort summary">
+                        <div class="setting-line">
+                            <span class="setting-line-name">Arcade sound profile</span>
+                            <span class="setting-line-value" id="comfortSoundValue">Enabled</span>
+                        </div>
+                        <div class="setting-line">
+                            <span class="setting-line-name">Animation comfort</span>
+                            <span class="setting-line-value" id="comfortMotionValue">Standard</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="section" aria-label="Preview">
+            <div class="section-head">
+                <h2>Live Preview</h2>
+            </div>
+
+            <div class="preview-grid">
+                <div class="mini-card">
+                    <h3 class="tile-title" style="margin-bottom:6px;">Arcade status</h3>
+                    <p class="tile-desc">This preview updates to reflect your current settings.</p>
+
+                    <div class="hud" aria-label="Status badges">
+                        <span class="badge" id="previewThemeBadge">Theme: System</span>
+                        <span class="badge" id="previewSoundBadge">Sound: On</span>
+                        <span class="badge" id="previewMotionBadge">Motion: Off</span>
+                    </div>
+
+                    <div class="hero-actions" style="margin-top: 14px;">
+                        <button class="reset-state-btn" id="btnResetSettings" type="button" aria-label="Reset settings to default">
+                            <span class="reset-state-icon" id="resetBtnIcon" aria-hidden="true">🔄</span>
+                            <span class="reset-state-label" id="resetBtnLabel">Re-check Progress</span>
+                        </button>
+
+                        <a class="btn-arcade" href="about.html">ℹ️ About</a>
+                    </div>
+                </div>
+
+                <div class="mini-card">
+                    <h3 class="tile-title" style="margin-bottom:6px;">Current setup</h3>
+                    <p class="tile-desc">A quick summary of what the player will feel when entering the arcade.</p>
+
+                    <div class="setting-summary" aria-label="Current setup summary">
+                        <div class="setting-line">
+                            <span class="setting-line-name">Visual style</span>
+                            <span class="setting-line-value" id="summaryThemeText">System</span>
+                        </div>
+                        <div class="setting-line">
+                            <span class="setting-line-name">Audio state</span>
+                            <span class="setting-line-value" id="summarySoundText">On</span>
+                        </div>
+                        <div class="setting-line">
+                            <span class="setting-line-name">Motion state</span>
+                            <span class="setting-line-value" id="summaryMotionText">Off</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="tile-desc hidden" id="msg" style="margin-top: 12px;"></p>
+        </section>
+
+        <section class="section" aria-label="Quick launch">
+            <div class="section-head">
+                <h2>Jump Back In</h2>
+            </div>
+
+            <div class="launch-grid">
+                <article class="launch-card l1">
+                    <div class="launch-icon" aria-hidden="true">🖼️</div>
+                    <h3>Image Guess</h3>
+                    <p>Fast, simple, and perfect for a quick score boost after adjusting your setup.</p>
+                    <div class="hero-actions" style="margin-top:14px;">
+                        <a class="btn-arcade primary" href="games/image-guess/index.html">Play Now</a>
+                    </div>
+                </article>
+
+                <article class="launch-card l2">
+                    <div class="launch-icon" aria-hidden="true">🧠</div>
+                    <h3>Memory Test</h3>
+                    <p>Try your current sound and motion settings in a focused challenge.</p>
+                    <div class="hero-actions" style="margin-top:14px;">
+                        <a class="btn-arcade primary" href="games/memory-test/index.html">Start Challenge</a>
+                    </div>
+                </article>
+
+                <article class="launch-card l3">
+                    <div class="launch-icon" aria-hidden="true">📖</div>
+                    <h3>Story Mode</h3>
+                    <p>Continue the fantasy adventure with your new arcade environment ready to go.</p>
+                    <div class="hero-actions" style="margin-top:14px;">
+                        <a class="btn-arcade gold" href="story.html">Continue Story</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+
+    <div class="arcade-modal hidden" id="resetSettingsModal" aria-hidden="true">
+        <div class="arcade-modal-backdrop" data-close-settings-modal></div>
+
+        <div class="arcade-modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsResetTitle" aria-describedby="settingsResetDesc">
+            <button class="arcade-modal-close" id="btnCloseSettingsModal" type="button" aria-label="Close reset settings dialog">✕</button>
+
+            <div class="arcade-modal-badge">Settings Action</div>
+
+            <h3 id="settingsResetTitle" class="arcade-modal-title">Reset settings?</h3>
+            <p id="settingsResetDesc" class="arcade-modal-desc">
+                This will restore your arcade settings to the default setup: <strong>System theme</strong>, <strong>Sound On</strong>, and <strong>Reduced Motion Off</strong>.
+            </p>
+
+            <div class="reset-benefits">
+                <div class="reset-benefit">✅ Theme returns to System</div>
+                <div class="reset-benefit">✅ Sound returns to On</div>
+                <div class="reset-benefit">✅ Motion returns to Off</div>
+            </div>
+
+            <div class="arcade-modal-actions">
+                <button class="btn-arcade" id="btnCancelResetSettings" type="button">Keep My Setup</button>
+                <button class="btn-arcade danger" id="btnConfirmResetSettings" type="button">Reset Settings</button>
+                <a class="btn-arcade primary" id="btnResetSettingsAndPlay" href="index.html#games">Reset &amp; Play</a>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">© <span id="year"></span> Brain Challenge Arcade</div>
+            <div class="footer-links">
+                <a href="profile.html">Profile</a>
+                <a href="about.html">Credits</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        (function() {
+            const btn = document.querySelector(".nav-toggle");
+            const menu = document.getElementById("mobileMenu");
+            if (!btn || !menu) return;
+
+            btn.addEventListener("click", function() {
+                const isOpen = btn.getAttribute("aria-expanded") === "true";
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+
+        const $ = (id) => document.getElementById(id);
+
+        function safeGet(key, fallback) {
+            try {
+                const value = localStorage.getItem(key);
+                return value === null ? fallback : value;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function safeSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {}
+        }
+
+        function safeRemove(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {}
+        }
+
+        function showMsg(text) {
+            const el = $("msg");
+            if (!el) return;
+            el.textContent = text;
+            el.classList.remove("hidden");
+        }
+
+        function hideMsg() {
+            const el = $("msg");
+            if (!el) return;
+            el.classList.add("hidden");
+        }
+
+        const KEYS = {
+            theme: "bca_theme",
+            sound: "bca_sound",
+            reducedMotion: "bca_motion"
+        };
+
+        function systemPrefersDark() {
+            return window.matchMedia &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            root.classList.remove("theme-light", "theme-dark");
+
+            if (theme === "dark") {
+                root.classList.add("theme-dark");
+            } else if (theme === "light") {
+                root.classList.add("theme-light");
+            } else {
+                root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+            }
+        }
+
+        function applyMotion(reduced) {
+            document.documentElement.setAttribute("data-reduced-motion", reduced ? "true" : "false");
+        }
+
+        function applySound(enabled) {
+            document.documentElement.setAttribute("data-sound", enabled ? "on" : "off");
+        }
+
+        function updateToggleLabels() {
+            $("soundLabel").textContent = $("soundToggle").checked ? "On" : "Off";
+            $("motionLabel").textContent = $("motionToggle").checked ? "On" : "Off";
+        }
+
+        function updateStatusUI() {
+            const theme = $("themeSelect").value;
+            const soundOn = $("soundToggle").checked;
+            const motionOn = $("motionToggle").checked;
+
+            const themeLabel = theme === "system" ? "System" : theme === "light" ? "Light" : "Dark";
+            const soundLabel = soundOn ? "On" : "Off";
+            const motionLabel = motionOn ? "On" : "Off";
+
+            $("heroThemeValue").textContent = themeLabel;
+            $("heroSoundValue").textContent = soundLabel;
+            $("heroMotionValue").textContent = motionLabel;
+            $("heroModeValue").textContent = soundOn ? "Arcade" : "Silent";
+
+            $("previewThemeBadge").textContent = "Theme: " + themeLabel;
+            $("previewSoundBadge").textContent = "Sound: " + soundLabel;
+            $("previewMotionBadge").textContent = "Motion: " + motionLabel;
+
+            $("summaryThemeText").textContent = themeLabel;
+            $("summarySoundText").textContent = soundLabel;
+            $("summaryMotionText").textContent = motionLabel;
+
+            $("comfortSoundValue").textContent = soundOn ? "Enabled" : "Muted";
+            $("comfortMotionValue").textContent = motionOn ? "Reduced" : "Standard";
+        }
+
+        function ensureDefaultSettings() {
+            if (safeGet(KEYS.theme, null) === null) {
+                safeSet(KEYS.theme, "system");
+            }
+            if (safeGet(KEYS.sound, null) === null) {
+                safeSet(KEYS.sound, "on");
+            }
+            if (safeGet(KEYS.reducedMotion, null) === null) {
+                safeSet(KEYS.reducedMotion, "off");
+            }
+        }
+
+        function loadSettings() {
+            ensureDefaultSettings();
+
+            const theme = safeGet(KEYS.theme, "system");
+            const sound = safeGet(KEYS.sound, "on");
+            const motion = safeGet(KEYS.reducedMotion, "off");
+
+            $("themeSelect").value =
+                (theme === "system" || theme === "light" || theme === "dark") ?
+                theme :
+                "system";
+
+            $("soundToggle").checked = (sound === "on");
+            $("motionToggle").checked = (motion === "on");
+
+            updateToggleLabels();
+
+            applyTheme($("themeSelect").value);
+            applySound($("soundToggle").checked);
+            applyMotion($("motionToggle").checked);
+            updateStatusUI();
+        }
+
+        function saveSettings() {
+            const theme = $("themeSelect").value;
+            const sound = $("soundToggle").checked ? "on" : "off";
+            const motion = $("motionToggle").checked ? "on" : "off";
+
+            safeSet(KEYS.theme, theme);
+            safeSet(KEYS.sound, sound);
+            safeSet(KEYS.reducedMotion, motion);
+
+            applyTheme(theme);
+            applySound(sound === "on");
+            applyMotion(motion === "on");
+            updateToggleLabels();
+            updateStatusUI();
+
+            showMsg("Settings saved and applied.");
+            setTimeout(hideMsg, 1500);
+        }
+
+        function setResetButtonState(state) {
+            const btn = $("btnResetSettings");
+            const icon = $("resetBtnIcon");
+            const label = $("resetBtnLabel");
+
+            btn.classList.remove("is-checking", "is-done");
+
+            if (state === "idle") {
+                btn.disabled = false;
+                icon.textContent = "🔄";
+                label.textContent = "Re-check Progress";
+                return;
+            }
+
+            if (state === "checking") {
+                btn.disabled = true;
+                btn.classList.add("is-checking");
+                icon.textContent = "⏳";
+                label.textContent = "Checking...";
+                return;
+            }
+
+            if (state === "done") {
+                btn.disabled = false;
+                btn.classList.add("is-done");
+                icon.textContent = "✅";
+                label.textContent = "Updated";
+            }
+        }
+
+        function openResetSettingsModal() {
+            const modal = $("resetSettingsModal");
+            modal.classList.remove("hidden");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeResetSettingsModal() {
+            const modal = $("resetSettingsModal");
+            modal.classList.add("hidden");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        function resetSettings(goPlay = false) {
+            closeResetSettingsModal();
+            setResetButtonState("checking");
+
+            setTimeout(function() {
+                safeRemove(KEYS.theme);
+                safeRemove(KEYS.sound);
+                safeRemove(KEYS.reducedMotion);
+
+                loadSettings();
+                showMsg("Settings reset.");
+                setTimeout(hideMsg, 1500);
+
+                setResetButtonState("done");
+
+                setTimeout(function() {
+                    setResetButtonState("idle");
+                    if (goPlay) {
+                        window.location.href = "index.html#games";
+                    }
+                }, 1200);
+            }, 900);
+        }
+
+        $("btnApply").addEventListener("click", saveSettings);
+        $("btnResetSettings").addEventListener("click", openResetSettingsModal);
+
+        $("btnCancelResetSettings").addEventListener("click", closeResetSettingsModal);
+        $("btnCloseSettingsModal").addEventListener("click", closeResetSettingsModal);
+        $("btnConfirmResetSettings").addEventListener("click", function() {
+            resetSettings(false);
+        });
+        $("btnResetSettingsAndPlay").addEventListener("click", function(e) {
+            e.preventDefault();
+            resetSettings(true);
+        });
+
+        document.querySelectorAll("[data-close-settings-modal]").forEach(function(el) {
+            el.addEventListener("click", closeResetSettingsModal);
+        });
+
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") closeResetSettingsModal();
+        });
+
+        $("soundToggle").addEventListener("change", function() {
+            const enabled = $("soundToggle").checked;
+            safeSet(KEYS.sound, enabled ? "on" : "off");
+            applySound(enabled);
+            updateToggleLabels();
+            updateStatusUI();
+        });
+
+        $("motionToggle").addEventListener("change", function() {
+            const reduced = $("motionToggle").checked;
+            safeSet(KEYS.reducedMotion, reduced ? "on" : "off");
+            applyMotion(reduced);
+            updateToggleLabels();
+            updateStatusUI();
+        });
+
+        $("themeSelect").addEventListener("change", function() {
+            const theme = $("themeSelect").value;
+            safeSet(KEYS.theme, theme);
+            applyTheme(theme);
+            updateStatusUI();
+        });
+
+        loadSettings();
+        setResetButtonState("idle");
+
+        if (window.matchMedia) {
+            const mq = window.matchMedia("(prefers-color-scheme: dark)");
+
+            const handler = function() {
+                const theme = safeGet(KEYS.theme, "system");
+                if (theme === "system") {
+                    applyTheme("system");
+                    updateStatusUI();
+                }
+            };
+
+            if (mq.addEventListener) {
+                mq.addEventListener("change", handler);
+            } else if (mq.addListener) {
+                mq.addListener(handler);
+            }
+        }
+    </script>
+</body>
+
+</html>

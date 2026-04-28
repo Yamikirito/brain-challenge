@@ -1,0 +1,1245 @@
+/* =========================================================
+   Memory Test Game CSS
+   Full updated version
+   Designed to match the reference screenshots
+   Includes:
+   - Landing screen
+   - Start memory test button
+   - Back Home button
+   - Full-screen game screen
+   - 5 lives layout
+   - Green correct-level effect
+   - Responsive design
+========================================================= */
+
+
+/* ---------------------------
+   1. Root Variables
+---------------------------- */
+
+:root {
+    --sm-bg: #11101d;
+    --sm-bg-deep: #0d0c18;
+    --sm-white: #f8fafc;
+    --sm-muted: rgba(248, 250, 252, 0.68);
+    --sm-muted-soft: rgba(248, 250, 252, 0.48);
+    --sm-purple: #8b5cf6;
+    --sm-purple-light: #b993ff;
+    --sm-purple-bright: #c084fc;
+    --sm-green: #48e0b2;
+    --sm-green-strong: #54e8bb;
+    --sm-green-glow: rgba(72, 224, 178, 0.65);
+    --sm-red: #df4f5b;
+    --sm-red-strong: #e5505c;
+    --sm-cyan: #18e7f2;
+    --sm-blue: #42d8ff;
+    --sm-tile: #201b3d;
+    --sm-tile-dark: #17152c;
+    --sm-card: rgba(35, 29, 68, 0.82);
+    --sm-card-dark: rgba(22, 18, 45, 0.92);
+    --sm-border: rgba(167, 139, 250, 0.32);
+    --sm-border-soft: rgba(255, 255, 255, 0.12);
+    --sm-shadow: 0 28px 90px rgba(0, 0, 0, 0.45);
+    --sm-shadow-soft: 0 18px 44px rgba(0, 0, 0, 0.32);
+    --sm-radius-xl: 48px;
+    --sm-radius-lg: 28px;
+    --sm-radius-md: 18px;
+    --sm-radius-sm: 12px;
+}
+
+
+/* ---------------------------
+   2. Global Reset
+---------------------------- */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    min-height: 100%;
+    margin: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--sm-bg);
+    color: var(--sm-white);
+    overflow-x: hidden;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+
+/* Hide normal website navbar/footer for screenshot-style full-screen game */
+
+.navbar,
+.footer {
+    display: none !important;
+}
+
+.hidden {
+    display: none !important;
+}
+
+button,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button {
+    font-family: inherit;
+}
+
+button:focus-visible,
+a:focus-visible {
+    outline: 3px solid rgba(72, 224, 178, 0.75);
+    outline-offset: 4px;
+}
+
+.skip-link {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    z-index: 9999;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: white;
+    color: #111827;
+    font-weight: 900;
+    transform: translateY(-140%);
+    transition: transform 0.2s ease;
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+}
+
+
+/* ---------------------------
+   3. Main Page
+---------------------------- */
+
+.sm-page {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--sm-bg);
+}
+
+
+/* =========================================================
+   4. Landing Screen
+========================================================= */
+
+.sm-landing {
+    position: relative;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(36px, 6vw, 90px);
+    padding: clamp(32px, 7vw, 120px);
+    overflow: hidden;
+    background: radial-gradient(circle at 90% 66%, rgba(24, 231, 242, 0.18), transparent 28%), radial-gradient(circle at 75% 35%, rgba(139, 92, 246, 0.18), transparent 30%), radial-gradient(circle at 20% 15%, rgba(192, 132, 252, 0.08), transparent 28%), linear-gradient(180deg, #151322 0%, #10101c 100%);
+}
+
+.sm-landing::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent 35%, rgba(255, 255, 255, 0.015)), radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.16) 100%);
+    pointer-events: none;
+}
+
+.sm-landing-content {
+    position: relative;
+    z-index: 4;
+    max-width: 660px;
+}
+
+.sm-logo-title {
+    margin: 0;
+    font-size: clamp(2.6rem, 5.4vw, 5.2rem);
+    line-height: 0.98;
+    letter-spacing: -0.065em;
+    font-weight: 950;
+    color: var(--sm-white);
+    text-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+}
+
+.sm-logo-title span {
+    color: var(--sm-purple-bright);
+    text-shadow: 0 0 32px rgba(192, 132, 252, 0.28);
+}
+
+.sm-landing-text {
+    margin: 34px 0 34px;
+    max-width: 560px;
+    color: var(--sm-muted);
+    font-weight: 750;
+    font-size: clamp(1rem, 1.45vw, 1.35rem);
+    line-height: 1.6;
+}
+
+
+/* Landing action buttons */
+
+.sm-landing-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.sm-primary-btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 18px 34px;
+    min-width: 164px;
+    color: white;
+    background: linear-gradient(135deg, #5b4df7 0%, #7748f3 100%);
+    font-weight: 900;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 18px 42px rgba(91, 77, 247, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sm-primary-btn:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.08);
+    box-shadow: 0 24px 54px rgba(91, 77, 247, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.sm-primary-btn:active {
+    transform: translateY(-1px) scale(0.99);
+}
+
+
+/* Back Home button */
+
+.sm-secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 164px;
+    padding: 18px 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition: transform 0.18s ease, filter 0.18s ease, border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+    backdrop-filter: blur(8px);
+}
+
+.sm-secondary-btn:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.08);
+    border-color: rgba(185, 147, 255, 0.45);
+    background: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 24px 54px rgba(0, 0, 0, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.sm-secondary-btn:active {
+    transform: translateY(-1px) scale(0.99);
+}
+
+
+/* ---------------------------
+   5. Landing Hero Art
+---------------------------- */
+
+.sm-hero-art {
+    position: relative;
+    z-index: 3;
+    min-height: 520px;
+    display: grid;
+    place-items: center;
+}
+
+.sm-preview-grid {
+    position: relative;
+    z-index: 3;
+    width: min(420px, 80vw);
+    aspect-ratio: 1 / 1;
+    padding: 14px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    border-radius: 24px;
+    background: rgba(29, 25, 56, 0.82);
+    border: 1px solid rgba(167, 139, 250, 0.26);
+    box-shadow: inset 0 0 36px rgba(167, 139, 250, 0.14), 0 32px 80px rgba(0, 0, 0, 0.42), 0 0 48px rgba(139, 92, 246, 0.12);
+    animation: smHeroFloat 5s ease-in-out infinite;
+}
+
+@keyframes smHeroFloat {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(0.5deg);
+    }
+}
+
+.sm-preview-tile {
+    border-radius: 14px;
+    background: linear-gradient(160deg, #2a244f, #17152c);
+    border: 1px solid rgba(255, 255, 255, 0.055);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -16px 28px rgba(0, 0, 0, 0.16), 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.sm-preview-tile.active-green {
+    background: linear-gradient(135deg, #48e0b2, #45caa9);
+    box-shadow: 0 0 34px rgba(72, 224, 178, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.sm-preview-tile.active-red {
+    background: linear-gradient(135deg, #e5505c, #d84753);
+    box-shadow: 0 0 34px rgba(223, 79, 91, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.sm-floating-card {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 18px;
+    background: linear-gradient(145deg, #2b2453, #1c1836);
+    box-shadow: var(--sm-shadow);
+    opacity: 0.95;
+}
+
+.sm-float-one {
+    top: 58px;
+    left: 17%;
+    transform: rotate(-28deg);
+    animation: smFloatOne 6s ease-in-out infinite;
+}
+
+.sm-float-two {
+    top: 90px;
+    right: 12%;
+    width: 58px;
+    height: 58px;
+    background: linear-gradient(135deg, #ff626d, #e24d59);
+    transform: rotate(-12deg);
+    animation: smFloatTwo 5.5s ease-in-out infinite;
+}
+
+.sm-float-three {
+    bottom: 82px;
+    right: 24%;
+    width: 66px;
+    height: 66px;
+    background: linear-gradient(135deg, #4ee3b7, #3ecaa5);
+    transform: rotate(12deg);
+    animation: smFloatThree 6.2s ease-in-out infinite;
+}
+
+@keyframes smFloatOne {
+    0%,
+    100% {
+        transform: translateY(0) rotate(-28deg);
+    }
+    50% {
+        transform: translateY(-16px) rotate(-22deg);
+    }
+}
+
+@keyframes smFloatTwo {
+    0%,
+    100% {
+        transform: translateY(0) rotate(-12deg);
+    }
+    50% {
+        transform: translateY(12px) rotate(-18deg);
+    }
+}
+
+@keyframes smFloatThree {
+    0%,
+    100% {
+        transform: translateY(0) rotate(12deg);
+    }
+    50% {
+        transform: translateY(-12px) rotate(18deg);
+    }
+}
+
+
+/* =========================================================
+   6. Game Screen
+========================================================= */
+
+.sm-game {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    padding: clamp(26px, 4vw, 60px) clamp(28px, 8vw, 130px);
+    background: radial-gradient(circle at 72% 45%, rgba(139, 92, 246, 0.18), transparent 34%), radial-gradient(circle at 55% 90%, rgba(24, 231, 242, 0.08), transparent 28%), linear-gradient(180deg, #11101d, #11101d);
+}
+
+.sm-bg-building {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(rgba(17, 16, 29, 0.42), rgba(17, 16, 29, 0.78)), radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.055), transparent 10%), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 100%), linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 100%);
+    background-size: auto, auto, 160px 160px, 160px 160px;
+    opacity: 0.46;
+    pointer-events: none;
+}
+
+
+/* Decorative building-like shapes */
+
+.sm-bg-building::before {
+    content: "";
+    position: absolute;
+    left: -7%;
+    bottom: -12%;
+    width: 58%;
+    height: 78%;
+    background: radial-gradient(ellipse at 18% 92%, transparent 0 9%, rgba(255, 255, 255, 0.08) 9.3% 18%, transparent 18.3%), radial-gradient(ellipse at 46% 92%, transparent 0 9%, rgba(255, 255, 255, 0.08) 9.3% 18%, transparent 18.3%), radial-gradient(ellipse at 74% 92%, transparent 0 9%, rgba(255, 255, 255, 0.08) 9.3% 18%, transparent 18.3%), linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.035));
+    clip-path: polygon(0 18%, 38% 18%, 38% 0, 88% 0, 88% 22%, 100% 22%, 100% 100%, 0 100%);
+    filter: blur(0.2px);
+    opacity: 0.72;
+}
+
+.sm-bg-building::after {
+    content: "";
+    position: absolute;
+    right: -8%;
+    bottom: -8%;
+    width: 58%;
+    height: 52%;
+    background: radial-gradient(ellipse at 20% 84%, transparent 0 9%, rgba(255, 255, 255, 0.08) 9.3% 18%, transparent 18.3%), radial-gradient(ellipse at 48% 84%, transparent 0 9%, rgba(255, 255, 255, 0.08) 9.3% 18%, transparent 18.3%), radial-gradient(ellipse at 76% 84%, transparent 0 9%, rgba(255, 255, 255, 0.08) 9.3% 18%, transparent 18.3%), linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+    border-radius: 80px 80px 0 0;
+    opacity: 0.55;
+}
+
+
+/* ---------------------------
+   7. Game Top HUD
+---------------------------- */
+
+.sm-game-top {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: clamp(24px, 3.5vw, 38px);
+}
+
+.sm-level {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3.9rem);
+    line-height: 1;
+    font-weight: 950;
+    letter-spacing: -0.055em;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 18px 42px rgba(0, 0, 0, 0.38);
+}
+
+.sm-lives-area {
+    min-width: 160px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.sm-lives-label {
+    display: inline-block;
+    margin-right: 8px;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.75rem;
+    font-weight: 850;
+}
+
+.sm-lives-number {
+    display: inline-block;
+    font-size: clamp(2.6rem, 5vw, 5.1rem);
+    line-height: 0.8;
+    color: var(--sm-purple-light);
+    font-weight: 950;
+    letter-spacing: -0.06em;
+    text-shadow: 0 0 28px rgba(185, 147, 255, 0.24);
+}
+
+
+/* ---------------------------
+   8. Game Layout
+---------------------------- */
+
+.sm-game-layout {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(320px, 508px) 104px;
+    gap: clamp(26px, 4vw, 72px);
+    align-items: center;
+    justify-content: center;
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+.sm-board-panel {
+    display: grid;
+    gap: 14px;
+}
+
+.sm-status {
+    min-height: 26px;
+    margin: 0;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.72);
+    font-weight: 850;
+    letter-spacing: 0.01em;
+    text-shadow: 0 8px 26px rgba(0, 0, 0, 0.38);
+}
+
+.sm-status-pop {
+    animation: smStatusPop 0.28s ease;
+}
+
+@keyframes smStatusPop {
+    0% {
+        transform: translateY(6px);
+        opacity: 0.4;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+
+/* ---------------------------
+   9. Board
+---------------------------- */
+
+.sm-board-wrap {
+    position: relative;
+    width: min(508px, 66vw);
+    aspect-ratio: 1 / 1;
+    border-radius: var(--sm-radius-xl);
+    background: rgba(14, 12, 28, 0.72);
+    border: 1px solid rgba(167, 139, 250, 0.45);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 0 70px rgba(139, 92, 246, 0.22), 0 26px 90px rgba(0, 0, 0, 0.52);
+    display: grid;
+    place-items: center;
+    padding: 38px;
+    overflow: hidden;
+}
+
+.sm-board-wrap::before {
+    content: "";
+    position: absolute;
+    inset: -85px;
+    background: radial-gradient(circle at 50% 50%, rgba(72, 224, 178, 0.32), transparent 55%), radial-gradient(circle at 30% 20%, rgba(24, 231, 242, 0.16), transparent 48%);
+    opacity: 0;
+    filter: blur(2px);
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sm-board-wrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    transform: translateX(-120%) rotate(8deg);
+    animation: smBoardShine 6.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.sm-board-wrap.is-showing::before {
+    opacity: 1;
+}
+
+@keyframes smBoardShine {
+    0% {
+        transform: translateX(-120%) rotate(8deg);
+    }
+    50% {
+        transform: translateX(120%) rotate(8deg);
+    }
+    100% {
+        transform: translateX(-120%) rotate(8deg);
+    }
+}
+
+.sm-grid {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+
+/* ---------------------------
+   10. Start Button
+---------------------------- */
+
+.sm-start-center {
+    position: absolute;
+    z-index: 5;
+    border: 0;
+    border-radius: 10px;
+    padding: 18px 58px;
+    color: white;
+    background: linear-gradient(135deg, #5b4df7, #7748f3);
+    font-weight: 900;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 18px 42px rgba(91, 77, 247, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    transition: transform 0.18s ease, opacity 0.18s ease, visibility 0.18s ease, filter 0.18s ease;
+}
+
+.sm-start-center:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+.sm-start-center:active {
+    transform: translateY(0) scale(0.99);
+}
+
+.sm-start-center.hidden-start {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+
+/* ---------------------------
+   11. Tiles
+---------------------------- */
+
+.mt-tile {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 0;
+    border-radius: 16px;
+    cursor: pointer;
+    background: linear-gradient(145deg, var(--sm-tile), var(--sm-tile-dark));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -12px 28px rgba(0, 0, 0, 0.16), 0 14px 30px rgba(0, 0, 0, 0.25);
+    transition: transform 0.14s ease, background 0.16s ease, box-shadow 0.16s ease, filter 0.16s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.mt-tile::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.12), transparent 42%), linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent);
+    opacity: 0.9;
+    pointer-events: none;
+}
+
+.mt-tile::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: radial-gradient(circle, rgba(72, 224, 178, 0.22), transparent 64%);
+    opacity: 0;
+    transition: opacity 0.16s ease;
+    pointer-events: none;
+}
+
+.mt-tile:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.08);
+}
+
+.mt-tile:hover::after {
+    opacity: 0.45;
+}
+
+.mt-tile:active {
+    transform: translateY(-1px) scale(0.985);
+}
+
+.mt-tile.flash {
+    background: linear-gradient(135deg, #54e8bb, #45d9ad);
+    box-shadow: 0 0 0 7px rgba(72, 224, 178, 0.18), 0 0 58px rgba(72, 224, 178, 0.55), 0 22px 44px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    animation: smFlashTile 0.22s ease;
+}
+
+.mt-tile.flash::after {
+    opacity: 1;
+}
+
+.mt-tile.hit {
+    background: linear-gradient(135deg, #54e8bb, #45d9ad);
+    box-shadow: 0 0 0 7px rgba(72, 224, 178, 0.16), 0 0 42px rgba(72, 224, 178, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+    animation: smHitTile 0.2s ease;
+}
+
+.mt-tile.hit::after {
+    opacity: 0.95;
+}
+
+
+/* Correct whole-level green effect */
+
+.mt-tile.level-correct {
+    background: linear-gradient(135deg, #54e8bb, #45d9ad);
+    box-shadow: 0 0 0 8px rgba(72, 224, 178, 0.18), 0 0 68px rgba(72, 224, 178, 0.62), 0 24px 48px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    animation: smCorrectLevelPulse 0.45s ease;
+}
+
+.mt-tile.level-correct::after {
+    opacity: 1;
+}
+
+.mt-tile.wrong {
+    background: linear-gradient(135deg, #e5505c, #c93d49);
+    box-shadow: 0 0 0 7px rgba(229, 80, 92, 0.16), 0 0 44px rgba(229, 80, 92, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    animation: smWrongTile 0.22s ease;
+}
+
+@keyframes smFlashTile {
+    0% {
+        transform: scale(0.96);
+        filter: brightness(1);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1.12);
+    }
+}
+
+@keyframes smHitTile {
+    0% {
+        transform: scale(0.94);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes smCorrectLevelPulse {
+    0% {
+        transform: scale(0.94);
+        filter: brightness(1);
+    }
+    55% {
+        transform: scale(1.04);
+        filter: brightness(1.18);
+    }
+    100% {
+        transform: scale(1);
+        filter: brightness(1.08);
+    }
+}
+
+@keyframes smWrongTile {
+    0% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-4px);
+    }
+    50% {
+        transform: translateX(4px);
+    }
+    75% {
+        transform: translateX(-3px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+.sm-grid.disabled .mt-tile,
+.mt-grid.disabled .mt-tile {
+    pointer-events: none;
+}
+
+.sm-grid.disabled .mt-tile {
+    opacity: 0.96;
+}
+
+
+/* ---------------------------
+   12. Life Cards - 5 Lives
+---------------------------- */
+
+.sm-life-cards {
+    display: grid;
+    gap: 10px;
+    align-content: center;
+}
+
+.sm-life-card {
+    width: 96px;
+    height: 96px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 2.35rem;
+    background: linear-gradient(145deg, rgba(48, 40, 92, 0.92), rgba(30, 25, 58, 0.94));
+    border: 1px solid rgba(167, 139, 250, 0.32);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 18px 44px rgba(0, 0, 0, 0.32);
+    transition: opacity 0.18s ease, filter 0.18s ease, transform 0.18s ease;
+}
+
+.sm-life-card:hover {
+    transform: translateY(-2px);
+}
+
+.sm-life-card.lost {
+    opacity: 0.22;
+    filter: grayscale(1);
+    transform: scale(0.96);
+}
+
+
+/* ---------------------------
+   13. Bottom Actions
+---------------------------- */
+
+.sm-bottom-actions {
+    position: relative;
+    z-index: 2;
+    margin: 34px auto 0;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.sm-small-btn,
+.sm-link-btn {
+    border: 1px solid rgba(167, 139, 250, 0.28);
+    border-radius: 999px;
+    padding: 10px 16px;
+    background: rgba(31, 27, 57, 0.76);
+    color: white;
+    font-weight: 850;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    transition: transform 0.16s ease, filter 0.16s ease, border-color 0.16s ease;
+}
+
+.sm-small-btn:hover,
+.sm-link-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+    border-color: rgba(72, 224, 178, 0.45);
+}
+
+
+/* =========================================================
+   14. Settings Modal
+========================================================= */
+
+.mt-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(10, 14, 26, 0.58);
+    backdrop-filter: blur(10px);
+}
+
+.mt-modal {
+    width: min(700px, 100%);
+    border-radius: 34px;
+    overflow: hidden;
+    background: #f4f4f5;
+    color: #111827;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    animation: smModalPop 0.22s ease;
+}
+
+@keyframes smModalPop {
+    0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.97);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.mt-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 28px 30px;
+    background: linear-gradient(90deg, #24337d, #7a2f96, #e04bbb);
+    color: white;
+}
+
+.mt-modal-title {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 3.4rem);
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+}
+
+.mt-modal-close {
+    width: 70px;
+    height: 70px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.96);
+    color: #111827;
+    font-size: 2.5rem;
+    line-height: 1;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+    flex-shrink: 0;
+}
+
+.mt-modal-close:hover {
+    transform: scale(1.04);
+    filter: brightness(0.98);
+}
+
+.mt-modal-body {
+    padding: 26px;
+    display: grid;
+    gap: 22px;
+    background: #f3f4f6;
+}
+
+.mt-setting-card {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    padding: 22px 24px;
+    border-radius: 28px;
+    border: 1px solid rgba(17, 24, 39, 0.12);
+    background: rgba(255, 255, 255, 0.78);
+    color: #111827;
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 900;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.mt-setting-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(0, 0, 0, 0.1);
+    filter: brightness(1.01);
+}
+
+.mt-setting-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    display: grid;
+    place-items: center;
+    background: #dff1f2;
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.mt-setting-text {
+    font-size: clamp(1.2rem, 2vw, 1.9rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    text-align: left;
+}
+
+
+/* =========================================================
+   15. Story Mode Compatibility
+========================================================= */
+
+#storyBanner {
+    position: relative;
+    z-index: 5;
+}
+
+#storyReturnWrap {
+    justify-content: center;
+}
+
+#btnReturnStory {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(72, 224, 178, 0.42) !important;
+    background: rgba(31, 27, 57, 0.86) !important;
+    color: white !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
+}
+
+
+/* =========================================================
+   16. Responsive Design
+========================================================= */
+
+@media (max-width: 1100px) {
+    .sm-game-layout {
+        grid-template-columns: minmax(320px, 508px) 92px;
+        gap: 32px;
+    }
+    .sm-board-wrap {
+        width: min(508px, 64vw);
+    }
+    .sm-life-card {
+        width: 84px;
+        height: 84px;
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 900px) {
+    .sm-landing {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        text-align: center;
+    }
+    .sm-landing-content {
+        margin-inline: auto;
+    }
+    .sm-landing-text {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .sm-landing-actions {
+        justify-content: center;
+    }
+    .sm-hero-art {
+        min-height: 420px;
+    }
+    .sm-game-layout {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        max-width: 640px;
+    }
+    .sm-board-wrap {
+        width: min(508px, 90vw);
+    }
+    .sm-life-cards {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 10px;
+    }
+    .sm-life-card {
+        width: 68px;
+        height: 68px;
+        font-size: 1.65rem;
+    }
+}
+
+@media (max-width: 700px) {
+    .sm-game {
+        padding: 24px 20px;
+    }
+    .sm-game-top {
+        align-items: center;
+        margin-bottom: 28px;
+    }
+    .sm-lives-area {
+        min-width: auto;
+    }
+    .sm-lives-label {
+        display: block;
+        margin-right: 0;
+        margin-bottom: 4px;
+        text-align: right;
+    }
+    .sm-lives-number {
+        font-size: clamp(2.4rem, 11vw, 4rem);
+    }
+    .sm-board-wrap {
+        padding: 28px;
+        border-radius: 38px;
+    }
+    .sm-grid {
+        gap: 12px;
+    }
+    .mt-tile {
+        border-radius: 14px;
+    }
+    .sm-life-card {
+        width: 62px;
+        height: 62px;
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 540px) {
+    .sm-landing {
+        padding: 28px 20px;
+    }
+    .sm-logo-title {
+        font-size: clamp(2.5rem, 14vw, 4rem);
+    }
+    .sm-landing-text {
+        margin-top: 24px;
+        margin-bottom: 26px;
+        font-size: 0.98rem;
+    }
+    .sm-landing-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .sm-primary-btn,
+    .sm-secondary-btn {
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+        margin-inline: auto;
+    }
+    .sm-hero-art {
+        min-height: 330px;
+    }
+    .sm-preview-grid {
+        width: min(320px, 86vw);
+        gap: 9px;
+        padding: 11px;
+        border-radius: 20px;
+    }
+    .sm-preview-tile {
+        border-radius: 12px;
+    }
+    .sm-floating-card {
+        width: 62px;
+        height: 62px;
+        border-radius: 14px;
+    }
+    .sm-float-two {
+        width: 46px;
+        height: 46px;
+    }
+    .sm-float-three {
+        width: 52px;
+        height: 52px;
+    }
+    .sm-game {
+        padding: 22px 16px;
+    }
+    .sm-level {
+        font-size: clamp(1.8rem, 10vw, 2.6rem);
+    }
+    .sm-board-wrap {
+        padding: 22px;
+        border-radius: 34px;
+    }
+    .sm-grid {
+        gap: 10px;
+    }
+    .mt-tile {
+        border-radius: 12px;
+    }
+    .sm-start-center {
+        padding: 14px 42px;
+    }
+    .sm-life-cards {
+        gap: 7px;
+    }
+    .sm-life-card {
+        width: 52px;
+        height: 52px;
+        font-size: 1.25rem;
+        border-radius: 12px;
+    }
+    .sm-bottom-actions {
+        margin-top: 24px;
+    }
+    .sm-small-btn,
+    .sm-link-btn {
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+    .mt-modal {
+        border-radius: 24px;
+    }
+    .mt-modal-head {
+        padding: 20px;
+    }
+    .mt-modal-close {
+        width: 56px;
+        height: 56px;
+        font-size: 2rem;
+    }
+    .mt-modal-body {
+        padding: 18px;
+        gap: 16px;
+    }
+    .mt-setting-card {
+        padding: 18px;
+        border-radius: 22px;
+        gap: 16px;
+    }
+    .mt-setting-icon {
+        width: 54px;
+        height: 54px;
+        font-size: 1.6rem;
+    }
+    .mt-setting-text {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .sm-game-top {
+        gap: 12px;
+    }
+    .sm-board-wrap {
+        padding: 18px;
+    }
+    .sm-grid {
+        gap: 8px;
+    }
+    .sm-life-card {
+        width: 46px;
+        height: 46px;
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .sm-life-card {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
+
+
+/* =========================================================
+   17. Reduced Motion
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+    }
+}

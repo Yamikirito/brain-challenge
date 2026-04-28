@@ -1,0 +1,1109 @@
+/* =========================================================
+   Image Guess - Full Screen Game Show Version
+   Brain Challenge Arcade
+
+   Features:
+   - true full-screen game layout
+   - no hero section needed
+   - no footer/navbar visible
+   - big intro screen
+   - slow image reveal
+   - A / B / C answer cards
+   - large green check mark
+   - responsive mobile support
+========================================================= */
+
+
+/* ---------------------------
+   1) THEME TOKENS
+---------------------------- */
+
+:root {
+    --r-2xl: 30px;
+    --r-xl: 24px;
+    --r-lg: 20px;
+    --r-md: 16px;
+    --r-sm: 12px;
+    --shadow-xl: 0 30px 80px rgba(0, 0, 0, .34);
+    --shadow-lg: 0 20px 50px rgba(0, 0, 0, .28);
+    --shadow-md: 0 14px 30px rgba(0, 0, 0, .22);
+    --shadow-sm: 0 8px 20px rgba(0, 0, 0, .16);
+    --focus: rgba(64, 246, 255, .58);
+    --blue: #4ea1ff;
+    --violet: #9b7bff;
+    --pink: #ff4fd8;
+    --cyan: #40f6ff;
+    --green: #00c932;
+    --red: #d93025;
+    --amber: #ffb020;
+    --gold: #ffd86b;
+    --yellow: #fff200;
+    --transition-fast: 140ms ease;
+    --transition-med: 220ms ease;
+    --transition-slow: 320ms ease;
+}
+
+
+/* ---------------------------
+   2) LIGHT THEME
+---------------------------- */
+
+html.theme-light {
+    --bg0: #edf3ff;
+    --bg1: #dfe9ff;
+    --ink: #08111f;
+    --muted: rgba(8, 17, 31, .74);
+    --muted2: rgba(8, 17, 31, .56);
+    --card: rgba(255, 255, 255, .78);
+    --card2: rgba(255, 255, 255, .68);
+    --card3: rgba(255, 255, 255, .92);
+    --border: rgba(11, 18, 32, .12);
+    --border2: rgba(11, 18, 32, .16);
+    --border3: rgba(11, 18, 32, .24);
+    --navbg: rgba(255, 255, 255, .72);
+    --navtext: rgba(8, 17, 31, .80);
+    --navtextActive: rgba(8, 17, 31, 1);
+    --success-bg: rgba(46, 160, 67, .12);
+    --success-ring: rgba(46, 160, 67, .22);
+    --danger-bg: rgba(217, 48, 37, .10);
+    --danger-ring: rgba(217, 48, 37, .20);
+    --warning-bg: rgba(255, 176, 32, .14);
+    --warning-ring: rgba(255, 176, 32, .24);
+}
+
+
+/* ---------------------------
+   3) DARK THEME
+---------------------------- */
+
+html.theme-dark {
+    --bg0: #060814;
+    --bg1: #0b1025;
+    --ink: #eaf0ff;
+    --muted: rgba(234, 240, 255, .76);
+    --muted2: rgba(234, 240, 255, .56);
+    --card: rgba(255, 255, 255, .08);
+    --card2: rgba(255, 255, 255, .05);
+    --card3: rgba(10, 14, 31, .88);
+    --border: rgba(255, 255, 255, .12);
+    --border2: rgba(255, 255, 255, .15);
+    --border3: rgba(255, 255, 255, .24);
+    --navbg: rgba(0, 0, 0, .34);
+    --navtext: rgba(234, 240, 255, .88);
+    --navtextActive: rgba(255, 255, 255, 1);
+    --success-bg: rgba(46, 160, 67, .16);
+    --success-ring: rgba(46, 160, 67, .25);
+    --danger-bg: rgba(217, 48, 37, .14);
+    --danger-ring: rgba(217, 48, 37, .22);
+    --warning-bg: rgba(255, 176, 32, .16);
+    --warning-ring: rgba(255, 176, 32, .26);
+}
+
+
+/* ---------------------------
+   4) PAGE RESET / FULLSCREEN
+---------------------------- */
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+}
+
+body {
+    color: var(--ink);
+    overflow-x: hidden;
+    background: #001020;
+}
+
+body::before {
+    display: none;
+}
+
+img {
+    max-width: 100%;
+}
+
+a,
+button,
+input,
+select {
+    transition: transform var(--transition-fast), filter var(--transition-fast), background-color var(--transition-med), border-color var(--transition-med), box-shadow var(--transition-med), color var(--transition-med), opacity var(--transition-med);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 12px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.muted {
+    color: var(--muted) !important;
+}
+
+
+/* Hide site chrome for true fullscreen game */
+
+.navbar,
+.footer {
+    display: none !important;
+}
+
+.skip-link {
+    position: absolute;
+    left: -999px;
+}
+
+main,
+header,
+footer {
+    position: relative;
+    z-index: 1;
+}
+
+main.container.page,
+.container.page,
+.page {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 100vh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.section,
+.game-fullscreen-section {
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+
+/* ---------------------------
+   5) STORY BANNER
+---------------------------- */
+
+#storyBanner {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    right: 90px;
+    z-index: 90;
+    margin: 0;
+    pointer-events: none;
+}
+
+#storyBanner .card {
+    width: fit-content;
+    max-width: 100%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04)), rgba(0, 10, 28, .82);
+    border: 1px solid rgba(255, 255, 255, .16);
+    box-shadow: var(--shadow-md);
+    border-radius: 20px;
+    overflow: hidden;
+    pointer-events: auto;
+}
+
+#storyBanner .card-body {
+    padding: 12px 14px;
+}
+
+#storyBanner .badge {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px !important;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(78, 161, 255, .16), rgba(255, 79, 216, .12)) !important;
+    border: 1px solid rgba(255, 255, 255, .16) !important;
+    box-shadow: var(--shadow-sm);
+    color: #fff;
+}
+
+
+/* ---------------------------
+   6) BUTTONS
+---------------------------- */
+
+.btn-arcade {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 50px;
+    padding: 13px 20px;
+    border-radius: 18px;
+    text-decoration: none;
+    font-weight: 950;
+    letter-spacing: .3px;
+    border: 1px solid rgba(255, 255, 255, .14);
+    background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .03)), rgba(15, 22, 45, .92);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .20), inset 0 1px 0 rgba(255, 255, 255, .10);
+    user-select: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-arcade::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, 0) 44%);
+    pointer-events: none;
+}
+
+.btn-arcade.primary {
+    border-color: rgba(64, 246, 255, .32);
+    background: linear-gradient(135deg, rgba(64, 246, 255, .24), rgba(255, 79, 216, .22)), linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .05)), rgba(24, 30, 62, .95);
+    color: #fff;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, .24), 0 0 24px rgba(64, 246, 255, .14), inset 0 1px 0 rgba(255, 255, 255, .12);
+}
+
+.btn-arcade:hover {
+    transform: translateY(-3px) scale(1.01);
+    filter: brightness(1.06);
+    box-shadow: 0 18px 38px rgba(0, 0, 0, .24), 0 0 24px rgba(155, 123, 255, .14);
+}
+
+.btn-arcade:active {
+    transform: translateY(0) scale(.985);
+}
+
+.btn-arcade:disabled {
+    cursor: not-allowed;
+    opacity: .6;
+    filter: saturate(.8);
+    transform: none;
+    box-shadow: var(--shadow-sm);
+}
+
+
+/* ---------------------------
+   7) FLOATING SETTINGS BUTTON
+---------------------------- */
+
+.settings-launcher,
+.game-settings-floating {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+    padding: 0;
+    border-radius: 18px;
+    display: inline-grid;
+    place-items: center;
+    border: 1px solid rgba(255, 214, 107, .34);
+    background: linear-gradient(135deg, rgba(255, 176, 32, .34), rgba(255, 79, 216, .22)), rgba(24, 30, 62, .95);
+    color: #fff;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, .22), 0 0 20px rgba(255, 176, 32, .18);
+}
+
+.game-settings-floating {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 100;
+}
+
+.settings-launcher:hover,
+.game-settings-floating:hover {
+    transform: translateY(-3px) rotate(4deg);
+    filter: brightness(1.05);
+}
+
+.settings-launcher:active,
+.game-settings-floating:active {
+    transform: translateY(0) scale(.97);
+}
+
+
+/* ---------------------------
+   8) GAME SHELL FULLSCREEN
+---------------------------- */
+
+.game-shell {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    overflow: hidden;
+    background: radial-gradient(circle at center, rgba(0, 95, 175, 0.22), transparent 48%), linear-gradient(180deg, #001b36 0%, #001020 100%);
+}
+
+.game-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 48%, rgba(0, 175, 255, .18), transparent 42%), linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(255, 255, 255, 0));
+    z-index: 0;
+}
+
+
+/* ---------------------------
+   9) GAME BACKGROUND
+---------------------------- */
+
+.image-guess-wrap,
+.image-guess-show-mode {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    overflow: hidden;
+    padding: clamp(18px, 4vw, 48px);
+    display: grid;
+    grid-template-columns: 1fr;
+    place-items: center;
+    background: radial-gradient(circle at center, rgba(0, 150, 255, 0.24), transparent 40%), repeating-conic-gradient( from 0deg at 50% 50%, rgba(0, 210, 255, 0.20) 0deg, rgba(0, 100, 220, 0.07) 10deg, rgba(0, 40, 120, 0.08) 20deg), linear-gradient(180deg, #001b36 0%, #001020 100%);
+}
+
+
+/* ---------------------------
+   10) START SCREEN
+---------------------------- */
+
+.guess-start-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 70;
+    width: 100%;
+    min-height: 100%;
+    display: grid;
+    place-items: center;
+    padding: clamp(16px, 4vw, 48px);
+    background: radial-gradient(circle at center, rgba(0, 95, 175, 0.22), transparent 48%), rgba(0, 13, 30, 0.88);
+    backdrop-filter: blur(4px);
+}
+
+.guess-start-screen.hidden {
+    display: none !important;
+}
+
+.guess-start-card {
+    width: min(1120px, 88vw);
+    min-height: min(760px, 78vh);
+    padding: clamp(24px, 4vw, 58px);
+    border-radius: 10px;
+    background: rgba(0, 8, 22, 0.58);
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    gap: clamp(24px, 4vw, 44px);
+    text-align: center;
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.guess-small-title {
+    color: #ffffff;
+    font-size: clamp(26px, 2.5vw, 42px);
+    font-weight: 1000;
+    line-height: 1;
+}
+
+.guess-start-card h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(54px, 6.8vw, 96px);
+    line-height: 1;
+    font-weight: 500;
+    letter-spacing: -1px;
+}
+
+.guess-play-button {
+    width: clamp(190px, 18vw, 280px);
+    height: clamp(190px, 18vw, 280px);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 10px;
+    background: #39b5f4;
+    color: #ffffff;
+    font-size: clamp(32px, 3vw, 48px);
+    font-weight: 900;
+    box-shadow: 0 22px 52px rgba(0, 0, 0, 0.38);
+}
+
+.guess-play-button:hover {
+    transform: translateY(-4px) scale(1.03);
+    filter: brightness(1.08);
+}
+
+.guess-play-button:active {
+    transform: translateY(0) scale(.97);
+}
+
+.guess-play-icon {
+    font-size: clamp(82px, 8vw, 132px);
+    line-height: 0.8;
+}
+
+.guess-start-card p {
+    max-width: 920px;
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(20px, 2vw, 34px);
+    line-height: 1.45;
+    font-weight: 900;
+    text-align: center;
+}
+
+
+/* ---------------------------
+   11) HIDE COMPATIBILITY PANELS
+---------------------------- */
+
+.left-panel,
+.pack-panel,
+.image-stage,
+.reveal-box,
+.reveal-img,
+.reveal-placeholder,
+.reveal-placeholder__icon,
+.reveal-placeholder__title,
+.reveal-placeholder__text {
+    display: none !important;
+}
+
+
+/* ---------------------------
+   12) MAIN GAME PANEL
+---------------------------- */
+
+.middle-panel {
+    width: min(1280px, 96vw);
+    min-height: auto;
+    padding: 0;
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: clamp(18px, 3vw, 34px);
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.middle-panel::before,
+.middle-panel::after {
+    display: none;
+}
+
+.middle-panel>* {
+    position: relative;
+    z-index: 1;
+}
+
+.panel-head {
+    text-align: center;
+    margin: 0;
+}
+
+.panel-kicker,
+.keyboard-help,
+.tool-row,
+.progress-wrap,
+.feedback-row {
+    display: none !important;
+}
+
+.panel-title {
+    margin: 0 0 clamp(18px, 3vw, 38px);
+    color: #ffffff;
+    font-size: clamp(40px, 5vw, 78px);
+    font-weight: 900;
+    line-height: 1.1;
+    text-align: center;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+
+/* ---------------------------
+   13) SLOW REVEAL IMAGE
+---------------------------- */
+
+.guess-reveal-stage {
+    width: min(920px, 88vw);
+    height: clamp(260px, 42vh, 520px);
+    margin: 0 auto clamp(28px, 4vw, 52px);
+    border-radius: 18px;
+    overflow: hidden;
+    border: 8px solid rgba(255, 255, 255, 0.9);
+    background: rgba(0, 10, 40, 0.6);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    display: grid;
+    place-items: center;
+}
+
+.guess-reveal-stage img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(28px);
+    transform: scale(1.2);
+    opacity: 0.14;
+    transition: filter 5s linear, transform 5s linear, opacity 5s linear;
+}
+
+.guess-reveal-stage.is-revealing img {
+    filter: blur(0);
+    transform: scale(1);
+    opacity: 1;
+}
+
+
+/* ---------------------------
+   14) ANSWERS GRID
+---------------------------- */
+
+.answers-grid {
+    width: min(1180px, 92vw);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(18px, 3vw, 42px);
+}
+
+.answers-grid button,
+.answers-grid .answer-tile,
+.answers-grid .answer-btn {
+    width: 100%;
+    min-height: clamp(170px, 22vh, 260px) !important;
+    padding: 18px 16px !important;
+    border-radius: 0 !important;
+    border: 8px solid var(--yellow) !important;
+    background: rgba(0, 30, 70, 0.76) !important;
+    color: var(--yellow) !important;
+    font-size: clamp(36px, 4vw, 72px) !important;
+    font-weight: 1000 !important;
+    line-height: 1.1;
+    text-align: center;
+    text-transform: lowercase;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.25) !important;
+    cursor: pointer;
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: visible;
+    isolation: isolate;
+}
+
+.answers-grid button::before,
+.answers-grid .answer-tile::before,
+.answers-grid .answer-btn::before {
+    display: none;
+}
+
+.answers-grid button::after,
+.answers-grid .answer-tile::after,
+.answers-grid .answer-btn::after {
+    content: attr(data-letter);
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 242, 0, 0.58);
+    font-size: clamp(30px, 3vw, 48px);
+    font-weight: 1000;
+    line-height: 1;
+}
+
+.answers-grid button span:last-child,
+.answers-grid .answer-tile span:last-child,
+.answers-grid .answer-btn span:last-child {
+    width: 100%;
+    margin-top: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.answers-grid button:hover,
+.answers-grid .answer-tile:hover,
+.answers-grid .answer-btn:hover {
+    transform: translateY(-6px) scale(1.02);
+    filter: brightness(1.12);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.34) !important;
+}
+
+.answers-grid button:active,
+.answers-grid .answer-tile:active,
+.answers-grid .answer-btn:active {
+    transform: translateY(0) scale(.985);
+}
+
+.answers-grid button[disabled],
+.answer-tile[disabled] {
+    cursor: default;
+}
+
+
+/* ---------------------------
+   15) ANSWER STATES
+---------------------------- */
+
+.answer-tile.is-dimmed,
+.answers-grid button.is-dimmed {
+    opacity: 0.32 !important;
+    filter: grayscale(0.4);
+    border-color: rgba(255, 242, 0, 0.35) !important;
+}
+
+.answers-grid .correct {
+    opacity: 1 !important;
+    border-color: #bdf4ff !important;
+    background: rgba(0, 30, 70, 0.82) !important;
+    box-shadow: 0 0 0 4px rgba(189, 244, 255, 0.35), 0 20px 50px rgba(0, 0, 0, 0.38) !important;
+}
+
+.answers-grid .wrong {
+    border-color: rgba(217, 48, 37, .78) !important;
+    background: rgba(0, 30, 70, 0.82) !important;
+    box-shadow: 0 0 0 4px rgba(217, 48, 37, .24), 0 20px 50px rgba(0, 0, 0, 0.38) !important;
+}
+
+
+/* ---------------------------
+   16) BIG CHECK / WRONG X
+---------------------------- */
+
+.icon-bubble {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.correct .icon-bubble {
+    inset: 0;
+    margin: auto;
+    width: 190px;
+    height: 190px;
+    background: transparent;
+    color: var(--green);
+    opacity: 1;
+    font-size: 180px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    transform: rotate(-8deg);
+    text-shadow: -8px -8px 0 #000, 8px -8px 0 #000, -8px 8px 0 #000, 8px 8px 0 #000, 0 16px 20px rgba(0, 0, 0, 0.35);
+    box-shadow: none;
+    z-index: 5;
+}
+
+.wrong .icon-bubble {
+    inset: 0;
+    margin: auto;
+    width: 150px;
+    height: 150px;
+    background: transparent;
+    color: #ff2a2a;
+    opacity: 1;
+    font-size: 140px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    text-shadow: -6px -6px 0 #000, 6px -6px 0 #000, -6px 6px 0 #000, 6px 6px 0 #000;
+    box-shadow: none;
+    z-index: 5;
+}
+
+
+/* ---------------------------
+   17) FEEDBACK / END BUTTONS
+---------------------------- */
+
+.feedback {
+    width: 100%;
+    min-height: 66px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03)), rgba(14, 19, 40, .96);
+    border: 1px solid rgba(255, 255, 255, .12);
+    padding: 16px;
+    color: #fff;
+    font-weight: 900;
+    text-align: center;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 10px 22px rgba(0, 0, 0, .20), inset 0 1px 0 rgba(255, 255, 255, .06);
+    letter-spacing: .1px;
+    line-height: 1.5;
+}
+
+.after-finish {
+    width: min(720px, 100%);
+    margin: 20px auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .06)), rgba(0, 18, 55, .82);
+    border: 1px solid rgba(255, 255, 255, .16);
+    box-shadow: var(--shadow-sm);
+    padding: 14px;
+    animation: igCardLiftIn 240ms ease-out;
+}
+
+@keyframes igCardLiftIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.after-finish .btn,
+.after-finish a.btn,
+.after-finish .btn-primary,
+.after-finish .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 12px 18px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 900;
+    border: 1px solid rgba(255, 255, 255, .14);
+    box-shadow: var(--shadow-sm);
+}
+
+.after-finish .btn-primary {
+    color: #ffffff;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border: 1px solid rgba(255, 255, 255, .20);
+    box-shadow: 0 12px 26px rgba(0, 0, 0, .24), 0 0 20px rgba(59, 130, 246, .22);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, .30);
+}
+
+.after-finish .btn-secondary {
+    background: rgba(255, 255, 255, .12);
+    color: #ffffff;
+}
+
+.after-finish .btn-primary:hover,
+.after-finish .btn-secondary:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+
+/* ---------------------------
+   18) HUD BADGES
+---------------------------- */
+
+.hud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.hud .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04)), rgba(11, 16, 34, .88);
+    border: 1px solid rgba(255, 255, 255, .12);
+    color: #fff;
+    font-weight: 900;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+
+.hud .badge strong {
+    color: var(--gold);
+    font-weight: 1000;
+}
+
+#timerBadge.ig-timer-danger,
+.ig-timer-danger {
+    border-color: rgba(217, 48, 37, .42) !important;
+    box-shadow: 0 0 0 4px var(--danger-ring), 0 8px 18px rgba(0, 0, 0, .16) !important;
+}
+
+
+/* ---------------------------
+   19) HINT REMOVED STATE
+---------------------------- */
+
+.is-removed-by-hint {
+    opacity: .42 !important;
+    filter: grayscale(.25) saturate(.8) !important;
+    transform: none !important;
+}
+
+
+/* ---------------------------
+   20) TOAST
+---------------------------- */
+
+.ig-toast {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 9999;
+    max-width: 320px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(78, 161, 255, .22), rgba(255, 79, 216, .18)), rgba(12, 18, 36, .96);
+    border: 1px solid rgba(255, 255, 255, .14);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, .22);
+    font-weight: 900;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.ig-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ig-toast__sub {
+    display: block;
+    margin-top: 4px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, .74);
+}
+
+
+/* ---------------------------
+   21) SETTINGS MODAL SUPPORT
+---------------------------- */
+
+.settings-overlay {
+    z-index: 1000;
+}
+
+.settings-modal {
+    z-index: 1001;
+}
+
+
+/* ---------------------------
+   22) TABLET RESPONSIVE
+---------------------------- */
+
+@media (max-width: 920px) {
+    .image-guess-wrap,
+    .image-guess-show-mode {
+        padding: 24px;
+    }
+    .middle-panel {
+        width: min(1000px, 96vw);
+    }
+    .panel-title {
+        font-size: clamp(36px, 7vw, 64px);
+    }
+    .guess-reveal-stage {
+        width: min(760px, 90vw);
+        height: clamp(250px, 38vh, 430px);
+        margin-bottom: 28px;
+    }
+    .answers-grid {
+        width: min(900px, 92vw);
+        gap: 20px;
+    }
+    .answers-grid button,
+    .answers-grid .answer-tile,
+    .answers-grid .answer-btn {
+        min-height: clamp(150px, 20vh, 220px) !important;
+        font-size: clamp(32px, 5vw, 56px) !important;
+    }
+    .guess-start-card {
+        width: 90vw;
+        min-height: 76vh;
+    }
+    .guess-start-card h2 {
+        font-size: clamp(48px, 9vw, 82px);
+    }
+}
+
+
+/* ---------------------------
+   23) MOBILE RESPONSIVE
+---------------------------- */
+
+@media (max-width: 700px) {
+    .game-settings-floating {
+        top: 16px;
+        right: 16px;
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        border-radius: 16px;
+    }
+    #storyBanner {
+        top: 14px;
+        left: 14px;
+        right: 78px;
+    }
+    #storyBanner .badge {
+        font-size: 12px;
+    }
+    .image-guess-wrap,
+    .image-guess-show-mode {
+        padding: 14px;
+        align-items: center;
+    }
+    .middle-panel {
+        width: 96vw;
+        gap: 18px;
+    }
+    .panel-title {
+        font-size: clamp(30px, 9vw, 48px);
+        margin-bottom: 12px;
+    }
+    .guess-reveal-stage {
+        width: 94vw;
+        height: 250px;
+        border-width: 5px;
+        border-radius: 16px;
+        margin-bottom: 18px;
+    }
+    .answers-grid {
+        grid-template-columns: 1fr;
+        width: 94vw;
+        gap: 18px;
+    }
+    .answers-grid button,
+    .answers-grid .answer-tile,
+    .answers-grid .answer-btn {
+        min-height: 115px !important;
+        font-size: 34px !important;
+        border-width: 6px !important;
+    }
+    .answers-grid button::after,
+    .answers-grid .answer-tile::after,
+    .answers-grid .answer-btn::after {
+        top: 8px;
+        font-size: 30px;
+    }
+    .answers-grid button span:last-child,
+    .answers-grid .answer-tile span:last-child,
+    .answers-grid .answer-btn span:last-child {
+        margin-top: 20px;
+    }
+    .correct .icon-bubble {
+        width: 120px;
+        height: 120px;
+        font-size: 112px;
+        text-shadow: -5px -5px 0 #000, 5px -5px 0 #000, -5px 5px 0 #000, 5px 5px 0 #000, 0 10px 14px rgba(0, 0, 0, .35);
+    }
+    .wrong .icon-bubble {
+        width: 105px;
+        height: 105px;
+        font-size: 96px;
+    }
+    .guess-start-screen {
+        padding: 16px;
+    }
+    .guess-start-card {
+        width: 92vw;
+        min-height: 78vh;
+        gap: 24px;
+        padding: 22px;
+    }
+    .guess-small-title {
+        font-size: 24px;
+    }
+    .guess-start-card h2 {
+        font-size: clamp(42px, 11vw, 64px);
+    }
+    .guess-play-button {
+        width: 170px;
+        height: 170px;
+        font-size: 28px;
+    }
+    .guess-play-icon {
+        font-size: 76px;
+    }
+    .guess-start-card p {
+        font-size: clamp(18px, 5vw, 24px);
+        line-height: 1.45;
+    }
+    .after-finish {
+        width: 94vw;
+        gap: 10px;
+    }
+}
+
+
+/* ---------------------------
+   24) SMALL MOBILE
+---------------------------- */
+
+@media (max-width: 420px) {
+    .image-guess-wrap,
+    .image-guess-show-mode {
+        padding: 10px;
+    }
+    .guess-reveal-stage {
+        height: 200px;
+    }
+    .answers-grid button,
+    .answers-grid .answer-tile,
+    .answers-grid .answer-btn {
+        min-height: 112px !important;
+        font-size: 32px !important;
+    }
+    .guess-play-button {
+        width: 150px;
+        height: 150px;
+    }
+    .guess-play-icon {
+        font-size: 66px;
+    }
+    .guess-start-card {
+        min-height: 80vh;
+    }
+}
+
+
+/* ---------------------------
+   25) REDUCED MOTION
+---------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+    .guess-reveal-stage img {
+        filter: blur(0) !important;
+        transform: scale(1) !important;
+        opacity: 1 !important;
+    }
+}

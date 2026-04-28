@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<!-- This script loads the saved theme before the page shows -->
+<script>
+    (function() {
+        // Get theme from localStorage
+        function getTheme() {
+            try {
+                return localStorage.getItem("bca_theme") || "system";
+            } catch (e) {
+                return "system";
+            }
+        }
+
+        // Check if system prefers dark mode
+        function systemPrefersDark() {
+            return window.matchMedia &&
+                window.matchMedia("(prefers-color-scheme: dark)").matches;
+        }
+
+        // Apply theme class to html
+        var theme = getTheme();
+        var root = document.documentElement;
+
+        root.classList.remove("theme-light", "theme-dark");
+
+        if (theme === "dark") root.classList.add("theme-dark");
+        else if (theme === "light") root.classList.add("theme-light");
+        else root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+    })();
+</script>
+
+<head>
+    <!-- =========================================================
+         Brain Challenge Arcade - about.html
+
+         Improved version:
+         ✅ Theme loader to stop flash issue
+         ✅ Modern about page design
+         ✅ Project overview section
+         ✅ Game modes section
+         ✅ Technical summary section
+         ✅ Credits and quick navigation
+         ✅ Responsive layout for mobile and desktop
+    ========================================================== -->
+
+    <!-- Basic page setup -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>About • Brain Challenge Arcade</title>
+    <meta name="description" content="Learn about Brain Challenge Arcade, its games, features, and how it works." />
+
+    <!-- External CSS files -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+
+    <style>
+        /* Main shared variables */
+        
+         :root {
+            --r-xl: 24px;
+            --r-lg: 18px;
+            --r-md: 14px;
+            --shadow: 0 22px 70px rgba(0, 0, 0, .12);
+            --shadow2: 0 14px 40px rgba(0, 0, 0, .10);
+            --focus: rgba(64, 246, 255, .55);
+            --blue: #4ea1ff;
+            --violet: #9b7bff;
+            --pink: #ff4fd8;
+            --cyan: #40f6ff;
+            --max-page: 1280px;
+        }
+        /* Light theme colors */
+        
+        html.theme-light {
+            --bg0: #f7f8fc;
+            --bg1: #f2f4fb;
+            --ink: #0b1220;
+            --muted: rgba(11, 18, 32, .72);
+            --muted2: rgba(11, 18, 32, .55);
+            --card: rgba(255, 255, 255, .82);
+            --card2: rgba(255, 255, 255, .66);
+            --border: rgba(15, 23, 42, .10);
+            --border2: rgba(15, 23, 42, .12);
+            --navbg: rgba(255, 255, 255, .72);
+            --navtext: rgba(11, 18, 32, .78);
+            --navtextActive: rgba(11, 18, 32, 1);
+        }
+        /* Dark theme colors */
+        
+        html.theme-dark {
+            --bg0: #070914;
+            --bg1: #0b1028;
+            --ink: #eaf0ff;
+            --muted: rgba(234, 240, 255, .75);
+            --muted2: rgba(234, 240, 255, .55);
+            --card: rgba(255, 255, 255, .06);
+            --card2: rgba(0, 0, 0, .22);
+            --border: rgba(255, 255, 255, .12);
+            --border2: rgba(255, 255, 255, .14);
+            --navbg: rgba(0, 0, 0, .35);
+            --navtext: rgba(234, 240, 255, .88);
+            --navtextActive: rgba(234, 240, 255, 1);
+        }
+        /* Easier box sizing */
+        
+        * {
+            box-sizing: border-box;
+        }
+        /* Remove default page spacing */
+        
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        /* Main page background */
+        
+        body {
+            color: var(--ink);
+            overflow-x: hidden;
+            background: radial-gradient(900px 520px at 15% 15%, rgba(255, 79, 216, .14), transparent 55%), radial-gradient(900px 520px at 85% 18%, rgba(78, 161, 255, .14), transparent 55%), radial-gradient(900px 520px at 55% 92%, rgba(155, 123, 255, .12), transparent 55%), linear-gradient(180deg, var(--bg0), var(--bg1));
+        }
+        /* Main container */
+        
+        .container {
+            width: min(100% - 28px, var(--max-page));
+            margin-inline: auto;
+        }
+        /* Main page spacing */
+        
+        .page {
+            padding-top: 26px;
+            padding-bottom: 56px;
+        }
+        /* Space between sections */
+        
+        .section {
+            margin-top: 18px;
+        }
+        /* Focus outline for accessibility */
+        
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid var(--focus);
+            outline-offset: 3px;
+            border-radius: 12px;
+        }
+        /* Navbar style */
+        
+        .navbar {
+            background: var(--navbg) !important;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+        }
+        
+        .nav-link,
+        .brand-text {
+            color: var(--navtext) !important;
+        }
+        
+        .nav-link.nav-active {
+            color: var(--navtextActive) !important;
+        }
+        /* Hero section */
+        
+        .arcade-hero {
+            border-radius: var(--r-xl);
+            background: radial-gradient(650px 300px at 15% 30%, rgba(255, 79, 216, .18), transparent 60%), radial-gradient(650px 300px at 85% 30%, rgba(78, 161, 255, .18), transparent 60%), var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+        /* Soft glow effect behind hero */
+        
+        .arcade-hero::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(90deg, rgba(64, 246, 255, .14), rgba(255, 79, 216, .12), rgba(155, 123, 255, .12));
+            filter: blur(22px);
+            opacity: .55;
+            z-index: 0;
+            pointer-events: none;
+        }
+        /* Hero layout */
+        
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 16px;
+            align-items: center;
+        }
+        /* Small top hero label */
+        
+        .hero-kicker {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            color: var(--navtextActive);
+            font-weight: 850;
+            letter-spacing: .3px;
+            font-size: 13px;
+        }
+        /* Hero title */
+        
+        .hero-title {
+            margin: 12px 0 8px;
+            font-size: clamp(28px, 3.5vw, 44px);
+            line-height: 1.06;
+            letter-spacing: -0.6px;
+            font-weight: 950;
+        }
+        /* Gradient text in title */
+        
+        .hero-title .grad {
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        /* Hero paragraph */
+        
+        .hero-sub {
+            margin: 0;
+            max-width: 72ch;
+            color: var(--muted);
+            font-size: 15.5px;
+            line-height: 1.55;
+        }
+        /* Hero buttons */
+        
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        /* Shared arcade button */
+        
+        .btn-arcade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 46px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 950;
+            letter-spacing: .2px;
+            border: 1px solid var(--border2);
+            background: var(--card2);
+            color: var(--ink);
+            box-shadow: var(--shadow2);
+            transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+            user-select: none;
+            cursor: pointer;
+            text-align: center;
+        }
+        
+        .btn-arcade.primary {
+            border: 1px solid rgba(78, 161, 255, .28);
+            background: linear-gradient(135deg, rgba(78, 161, 255, .20), rgba(255, 79, 216, .16));
+        }
+        
+        .btn-arcade:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.03);
+        }
+        
+        .btn-arcade:active {
+            transform: translateY(0) scale(.99);
+        }
+        /* Right hero info box */
+        
+        .hero-box {
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            border-radius: var(--r-lg);
+            padding: 14px;
+            box-shadow: var(--shadow2);
+        }
+        
+        .hero-box h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 950;
+        }
+        
+        .hero-box p {
+            margin: 0;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        /* Section heading */
+        
+        .section-head {
+            margin-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+            text-align: right;
+            padding-right: 6px;
+        }
+        
+        .section-head h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .section-head p {
+            display: none;
+        }
+        /* Two-column tiles */
+        
+        .tiles {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            align-items: start;
+        }
+        /* Four-column game cards */
+        
+        .tiles3 {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            align-items: stretch;
+            width: 100%;
+        }
+        /* Shared tile card */
+        
+        .tile {
+            position: relative;
+            border-radius: var(--r-xl);
+            padding: 16px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            overflow: hidden;
+            min-width: 0;
+        }
+        /* Glow effect on tiles */
+        
+        .tile::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            opacity: .22;
+            filter: blur(18px);
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .tile.t1::before {
+            background: radial-gradient(circle at 30% 20%, rgba(64, 246, 255, .65), transparent 55%);
+        }
+        
+        .tile.t2::before {
+            background: radial-gradient(circle at 30% 20%, rgba(255, 79, 216, .60), transparent 55%);
+        }
+        
+        .tile.t3::before {
+            background: radial-gradient(circle at 30% 20%, rgba(155, 123, 255, .60), transparent 55%);
+        }
+        
+        .tile.t4::before {
+            background: radial-gradient(circle at 30% 20%, rgba(78, 161, 255, .60), transparent 55%);
+        }
+        
+        .tile>* {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .tile h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .tile p,
+        .tile li {
+            color: var(--muted);
+            font-weight: 650;
+            line-height: 1.55;
+            font-size: 13.8px;
+        }
+        
+        .tile ul {
+            margin: 8px 0 0 18px;
+        }
+        /* Single game card */
+        
+        .game-card {
+            position: relative;
+            border-radius: var(--r-xl);
+            padding: 16px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .02));
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            overflow: hidden;
+            height: 240px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 100%;
+            min-width: 0;
+        }
+        /* Glow circle in game cards */
+        
+        .game-card::before {
+            content: "";
+            position: absolute;
+            inset: auto auto -30px -20px;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            opacity: .18;
+            filter: blur(8px);
+        }
+        
+        .game-card.g1::before {
+            background: rgba(64, 246, 255, .9);
+        }
+        
+        .game-card.g2::before {
+            background: rgba(255, 79, 216, .9);
+        }
+        
+        .game-card.g3::before {
+            background: rgba(155, 123, 255, .9);
+        }
+        
+        .game-card.g4::before {
+            background: rgba(78, 161, 255, .9);
+        }
+        
+        .game-card>* {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .game-icon {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .game-card h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 950;
+        }
+        
+        .game-card p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 650;
+        }
+        /* Button group inside cards */
+        
+        .tile-actions {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        /* Final call-to-action banner */
+        
+        .cta-banner {
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--r-xl);
+            padding: 22px;
+            background: radial-gradient(500px 220px at 20% 20%, rgba(255, 79, 216, .18), transparent 60%), radial-gradient(520px 240px at 85% 20%, rgba(64, 246, 255, .18), transparent 60%), var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        
+        .cta-banner h2 {
+            margin: 0 0 8px;
+            font-size: clamp(24px, 3vw, 36px);
+            font-weight: 950;
+        }
+        
+        .cta-banner p {
+            margin: 0;
+            color: var(--muted);
+            max-width: 70ch;
+            line-height: 1.6;
+            font-weight: 650;
+        }
+        /* Footer */
+        
+        .footer {
+            background: var(--navbg);
+            border-top: 1px solid var(--border);
+        }
+        
+        .footer .muted,
+        .footer a {
+            color: var(--navtext) !important;
+        }
+        /* Large tablet layout */
+        
+        @media (max-width: 1200px) {
+            .tiles3 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        /* Tablet layout */
+        
+        @media (max-width: 980px) {
+            .hero-inner,
+            .tiles,
+            .tiles3 {
+                grid-template-columns: 1fr;
+            }
+            .tiles3 {
+                gap: 16px;
+            }
+            .game-card {
+                width: 100%;
+                max-width: none;
+                margin: 0;
+            }
+            .section-head {
+                justify-content: center;
+                text-align: center;
+                padding-right: 0;
+            }
+        }
+        /* Mobile layout */
+        
+        @media (max-width: 640px) {
+            .container {
+                width: min(100% - 20px, var(--max-page));
+            }
+            .arcade-hero,
+            .tile,
+            .game-card,
+            .cta-banner {
+                border-radius: 22px;
+            }
+            .game-card {
+                height: auto;
+                min-height: 220px;
+            }
+            .hero-actions,
+            .tile-actions {
+                flex-direction: column;
+            }
+            .hero-actions .btn-arcade,
+            .tile-actions .btn-arcade,
+            .tile-actions a.btn-arcade {
+                width: 100%;
+            }
+            .section {
+                padding-left: 4px;
+                padding-right: 4px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Skip link for accessibility -->
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Navigation bar -->
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <!-- Desktop navigation links -->
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link nav-active" href="about.html">About</a>
+            </nav>
+
+            <!-- Mobile menu button -->
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+        </div>
+
+        <!-- Mobile navigation menu -->
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link nav-active" href="about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main page content -->
+    <main id="main" class="container page">
+
+        <!-- Hero section -->
+        <section class="arcade-hero" aria-labelledby="heroTitle">
+            <div class="hero-inner">
+                <div>
+                    <div class="hero-kicker">ℹ️ About • 🎮 Mini-game platform</div>
+                    <h1 id="heroTitle" class="hero-title">
+                        About <span class="grad">Brain Challenge Arcade</span>
+                    </h1>
+                    <p class="hero-sub">
+                        Brain Challenge Arcade is an interactive mini-game website built with HTML, CSS, and JavaScript. It includes Image Guess, Memory Test, Card Matching, Color Bubble Challenge, and Story Mode to create a fun and replayable experience.
+                    </p>
+
+                    <!-- Hero buttons -->
+                    <div class="hero-actions">
+                        <a class="btn-arcade primary" href="index.html#games">🎯 Play Games</a>
+                        <a class="btn-arcade" href="story.html">📖 Story Mode</a>
+                    </div>
+                </div>
+
+                <!-- Hero side info box -->
+                <aside class="hero-box" aria-label="Quick summary">
+                    <h3>Why this site is engaging</h3>
+                    <p>
+                        The site is designed to be easy to enter, fun to replay, and rewarding through saved scores, achievements, and progress tracking.
+                    </p>
+                </aside>
+            </div>
+        </section>
+
+        <!-- Project overview section -->
+        <section class="section" aria-label="Project overview">
+            <div class="section-head">
+                <h2>Project Overview</h2>
+                <p>Purpose • Audience</p>
+            </div>
+
+            <div class="tiles">
+                <article class="tile t1">
+                    <h3>Purpose</h3>
+                    <p>
+                        The purpose of this website is to provide an entertaining interactive experience that challenges the user’s observation, memory, and pattern-matching skills. It also demonstrates responsive design, DOM interaction, state management, and browser storage.
+                    </p>
+                </article>
+
+                <article class="tile t2">
+                    <h3>Target Audience</h3>
+                    <ul>
+                        <li>Students and casual players who enjoy quick brain games</li>
+                        <li>Users who like progress tracking and replayable challenges</li>
+                        <li>Players who enjoy both arcade gameplay and light story content</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <!-- Game modes section -->
+        <section class="section" aria-label="Game modes">
+            <div class="section-head">
+                <h2>Game Modes</h2>
+                <p>Games • Replay value</p>
+            </div>
+
+            <div class="tiles3">
+                <article class="game-card g1">
+                    <div class="game-icon" aria-hidden="true">🖼️</div>
+                    <h3>Image Guess</h3>
+                    <p>Guess the correct image from clues.</p>
+                    <div class="tile-actions">
+                        <a class="btn-arcade primary" href="games/image-guess/index.html">Play</a>
+                    </div>
+                </article>
+
+                <article class="game-card g2">
+                    <div class="game-icon" aria-hidden="true">🧠</div>
+                    <h3>Memory Test</h3>
+                    <p>Remember the pattern and level up.</p>
+                    <div class="tile-actions">
+                        <a class="btn-arcade primary" href="games/memory-test/index.html">Play</a>
+                    </div>
+                </article>
+
+                <article class="game-card g3">
+                    <div class="game-icon" aria-hidden="true">🃏</div>
+                    <h3>Card Matching</h3>
+                    <p>Find pairs fast and beat the timer.</p>
+                    <div class="tile-actions">
+                        <a class="btn-arcade primary" href="games/card-matching/index.html">Play</a>
+                    </div>
+                </article>
+
+                <article class="game-card g4">
+                    <div class="game-icon" aria-hidden="true">🫧</div>
+                    <h3>Color Bubble Challenge</h3>
+                    <p>Pop matching bubbles and score higher.</p>
+                    <div class="tile-actions">
+                        <a class="btn-arcade primary" href="games/color-bubble-challenge/index.html">Play</a>
+                    </div>
+                </article>
+            </div>
+
+            <div class="tiles" style="margin-top:14px;">
+                <article class="tile t3">
+                    <h3>Story Mode</h3>
+                    <p>
+                        Story Mode adds a fantasy adventure layer to the arcade experience and gives players another reason to keep progressing.
+                    </p>
+                    <div class="tile-actions">
+                        <a class="btn-arcade" href="story.html">Enter Story Mode</a>
+                    </div>
+                </article>
+
+                <article class="tile t4">
+                    <h3>Main Platform Features</h3>
+                    <ul>
+                        <li>Saved scores using <strong>localStorage</strong></li>
+                        <li>Leaderboard and recent runs</li>
+                        <li>Achievements and profile tracking</li>
+                        <li>Theme, sound, and motion settings</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <!-- How it works section -->
+        <section class="section" aria-label="Technical summary">
+            <div class="section-head">
+                <h2>How It Works</h2>
+                <p>Technical summary</p>
+            </div>
+
+            <div class="tiles">
+                <article class="tile t1">
+                    <h3>Technical Summary</h3>
+                    <ul>
+                        <li><strong>HTML</strong> provides the structure and semantic layout</li>
+                        <li><strong>CSS</strong> provides responsive design, styling, and theming</li>
+                        <li><strong>JavaScript</strong> handles game logic, UI updates, and stored progress</li>
+                        <li><strong>localStorage</strong> saves data locally on the user’s device</li>
+                    </ul>
+                </article>
+
+                <article class="tile t2">
+                    <h3>Accessibility &amp; Usability</h3>
+                    <ul>
+                        <li>Keyboard-friendly navigation and controls</li>
+                        <li>Responsive design for mobile and desktop</li>
+                        <li>Reduced-motion and theme options in Settings</li>
+                        <li>Clear feedback and readable layout</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
+        <!-- Credits section -->
+        <section class="section" aria-label="Credits">
+            <div class="section-head">
+                <h2>Credits</h2>
+                <p>Resources • Attribution</p>
+            </div>
+
+            <div class="tiles">
+                <article class="tile t3">
+                    <h3>Credits</h3>
+                    <p>
+                        This project is built for a Web Technologies coursework assignment. Any images, icons, sounds, or external resources used in the final version should be credited here.
+                    </p>
+                    <ul>
+                        <li>Icons: emoji icons used in the interface</li>
+                        <li>Images: self-made or free-to-use assets</li>
+                        <li>Sounds: self-made or credited free sound resources</li>
+                    </ul>
+                </article>
+
+                <article class="tile t4">
+                    <h3>Quick Navigation</h3>
+                    <div class="tile-actions">
+                        <a class="btn-arcade" href="index.html#games">🎮 Play Games</a>
+                        <a class="btn-arcade" href="leaderboard.html">🏆 Leaderboard</a>
+                        <a class="btn-arcade" href="profile.html">👤 Profile</a>
+                        <a class="btn-arcade" href="settings.html">⚙️ Settings</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- Final call to action -->
+        <section class="cta-banner" aria-label="Final call to action">
+            <h2>Ready to play?</h2>
+            <p>
+                Enter the arcade, try a challenge, and build your best score.
+            </p>
+
+            <div class="hero-actions">
+                <a class="btn-arcade primary" href="index.html#games">🚀 Start Playing</a>
+                <a class="btn-arcade" href="story.html">✨ Begin Story Mode</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">© <span id="year"></span> Brain Challenge Arcade</div>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="settings.html">Settings</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- External scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Show current year in footer
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        // Mobile menu toggle
+        (function() {
+            const btn = document.querySelector(".nav-toggle");
+            const menu = document.getElementById("mobileMenu");
+            if (!btn || !menu) return;
+
+            btn.addEventListener("click", () => {
+                const isOpen = btn.getAttribute("aria-expanded") === "true";
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+    </script>
+</body>
+
+</html>

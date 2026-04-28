@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Levels Map</title>
+    <link rel="stylesheet" href="levels.css" />
+</head>
+
+<body>
+    <main class="level-map-page">
+        <div class="map-bg"></div>
+        <div class="map-overlay"></div>
+
+        <!-- Top bar -->
+        <header class="top-bar">
+            <div class="top-left">
+                <button class="top-btn home-btn" id="btnHome" aria-label="Go home">⌂</button>
+
+                <div class="star-counter" aria-label="Total stars">
+                    <span class="star-icon">★</span>
+                    <span id="totalStars">0</span>
+                </div>
+            </div>
+
+            <h1 class="map-title">Levels</h1>
+
+            <div class="top-right"></div>
+        </header>
+
+        <!-- Level grid -->
+        <section class="levels-wrap">
+            <div class="levels-grid" id="levelsGrid">
+                <!-- JS injects levels -->
+            </div>
+
+            <button class="next-page-btn" id="btnNextPage" aria-label="Next page">▶</button>
+        </section>
+    </main>
+
+    <script src="levels.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- =========================================================
+     Brain Challenge Arcade - story.html
+     The Prince and the Witch's Shadow
+     FINAL PROFESSIONAL STORY VERSION WITH RESPONSIVE UI
+     + REAL BACKGROUND MUSIC SUPPORT
+========================================================= -->
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Play The Prince and the Witch's Shadow in Brain Challenge Arcade. Guide Prince Adrian through 23 chapters, solve trials, and rescue Princess Elira." />
+    <title>The Prince and the Witch's Shadow • Story Mode</title>
+
+    <script>
+        (function() {
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            function systemPrefersDark() {
+                return !!(
+                    window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches
+                );
+            }
+
+            var theme = getTheme();
+            var root = document.documentElement;
+            root.classList.remove("theme-light", "theme-dark");
+
+            if (theme === "dark") root.classList.add("theme-dark");
+            else if (theme === "light") root.classList.add("theme-light");
+            else root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+        })();
+    </script>
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+    <link rel="stylesheet" href="css/story.css" />
+
+</head>
+
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <div id="storyIntroModal" class="story-intro-modal" aria-hidden="false">
+        <div class="story-intro-backdrop"></div>
+
+        <div class="story-intro-card" role="dialog" aria-modal="true" aria-labelledby="storyIntroTitle">
+            <button id="storyIntroClose" class="story-intro-close" type="button" aria-label="Close intro">✕</button>
+
+            <div class="story-intro-media">
+                <img id="storyIntroImage" src="assets/images/story/title.png" alt="The Prince and the Witch's Shadow title image" draggable="false" />
+            </div>
+
+            <div class="story-intro-content">
+                <h1 id="storyIntroTitle" class="story-intro-title" data-i18n="intro.title">The Prince and the Witch's Shadow</h1>
+
+                <div class="story-intro-meta">
+                    <div id="introChapterMeta" data-i18n="intro.chapterMeta">Chapter 1 of 23</div>
+                    <div id="introDifficultyMeta" data-i18n="intro.difficultyMeta">Difficulty: Story Adventure</div>
+                </div>
+
+                <div class="story-intro-divider"></div>
+
+                <p id="introDesc" class="story-intro-desc" data-i18n="intro.desc">
+                    A dark witch steals Princess Elira into a cursed land. Prince Adrian must begin a dangerous journey, solve ancient trials, and bring light back to the world.
+                </p>
+
+                <p id="introNote" class="story-intro-note" data-i18n="intro.note">
+                    A very clean design often looks more professional than a very complex one.
+                </p>
+
+                <div class="story-intro-actions">
+                    <button id="storyIntroPlay" class="story-intro-play is-loading" type="button" disabled aria-disabled="true">
+                        <span id="storyIntroPlayIcon" class="story-intro-play-icon story-intro-spinner"></span>
+                        <span id="storyIntroPlayText">Preparing story...</span>
+                    </button>
+
+                    <div class="story-intro-progress-wrap" aria-hidden="true">
+                        <div class="story-intro-progress-track">
+                            <div id="storyIntroProgressFill" class="story-intro-progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-wrap">
+        <header class="navbar" role="banner">
+            <div class="container navbar-inner">
+                <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                    <span class="brand-mark" aria-hidden="true">🧠</span>
+                    <span class="brand-text" data-i18n="nav.brand">Brain Challenge Arcade</span>
+                </a>
+
+                <nav class="nav" aria-label="Primary navigation" id="desktopNav">
+                    <a class="nav-link" href="index.html" data-i18n="nav.home">Home</a>
+                    <a class="nav-link nav-active" href="story.html" aria-current="page" data-i18n="nav.story">Story Mode</a>
+                    <a class="nav-link" href="games.html" data-i18n="nav.games">Games</a>
+                    <a class="nav-link" href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
+                    <a class="nav-link" href="achievements.html" data-i18n="nav.achievements">Achievements</a>
+                    <a class="nav-link" href="profile.html" data-i18n="nav.profile">Profile</a>
+                    <a class="nav-link" href="settings.html" data-i18n="nav.settings">Settings</a>
+                    <a class="nav-link" href="about.html" data-i18n="nav.about">About</a>
+                </nav>
+
+                <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+            </div>
+
+            <div class="mobile-menu hidden" id="mobileMenu">
+                <div class="container mobile-menu-inner" id="mobileNav">
+                    <a class="nav-link" href="index.html" data-i18n="nav.home">Home</a>
+                    <a class="nav-link nav-active" href="story.html" aria-current="page" data-i18n="nav.story">Story Mode</a>
+                    <a class="nav-link" href="games.html" data-i18n="nav.games">Games</a>
+                    <a class="nav-link" href="leaderboard.html" data-i18n="nav.leaderboard">Leaderboard</a>
+                    <a class="nav-link" href="achievements.html" data-i18n="nav.achievements">Achievements</a>
+                    <a class="nav-link" href="profile.html" data-i18n="nav.profile">Profile</a>
+                    <a class="nav-link" href="settings.html" data-i18n="nav.settings">Settings</a>
+                    <a class="nav-link" href="about.html" data-i18n="nav.about">About</a>
+                </div>
+            </div>
+        </header>
+
+        <main id="main" aria-label="Story Mode">
+            <div class="story-page">
+                <div class="story-shell">
+                    <div class="story-card">
+
+                        <section class="story-status-bar" aria-label="Current story progress and status">
+                            <div class="story-status-item">
+                                <span class="story-status-label" data-i18n="status.chapterLabel">Chapter</span>
+                                <span id="statusChapter" class="story-status-value">Chapter 1</span>
+                                <span class="story-status-sub" data-i18n="status.chapterSub">Current chapter being played.</span>
+                            </div>
+
+                            <div class="story-status-item">
+                                <span class="story-status-label" data-i18n="status.progressLabel">Progress</span>
+                                <span id="statusProgress" class="story-status-value">0%</span>
+                                <span class="story-status-sub" data-i18n="status.progressSub">Story progress updates automatically.</span>
+                            </div>
+
+                            <div class="story-status-item">
+                                <span class="story-status-label" data-i18n="status.routeLabel">Route</span>
+                                <span id="statusRoute" class="story-status-value">Not Chosen</span>
+                                <span class="story-status-sub" data-i18n="status.routeSub">Main path selected by player choice.</span>
+                            </div>
+
+                            <div class="story-status-item">
+                                <span class="story-status-label" data-i18n="status.inventoryLabel">Inventory</span>
+                                <span id="statusInventory" class="story-status-value">0 / 3</span>
+                                <span class="story-status-sub" data-i18n="status.inventorySub">Key story items collected so far.</span>
+                            </div>
+                        </section>
+
+                        <section class="stage-panel" aria-label="Story chapter image stage">
+                            <button id="storySettingsOpen" class="story-settings-trigger" type="button" aria-label="Open game settings" title="Game Settings">⚙</button>
+
+                            <figure class="story-stage-figure">
+                                <div class="media-wrap">
+                                    <div class="image-fallback" aria-hidden="true"></div>
+                                    <img id="chapterImage" src="assets/images/ch-1.1.png" alt="Chapter 1 artwork showing the spring festival setting" draggable="false" />
+                                    <div class="stage-overlay" aria-hidden="true"></div>
+                                </div>
+
+                                <button id="storySkipBtn" class="chapter-banner" type="button" aria-label="Skip to next story step">
+                                    CHAPTER 1 — THE SPRING FESTIVAL
+                                </button>
+
+                                <div class="vn-character-layer" aria-hidden="true">
+                                    <img id="characterSprite" class="vn-character" src="" alt="Current speaking character" draggable="false" />
+                                </div>
+
+                                <div class="stage-story-overlay">
+                                    <div id="storyNextArea" class="stage-story-copy" role="button" tabindex="0" aria-label="Continue story">
+                                        <div id="storyText" class="stage-story-text" aria-live="polite">
+                                            Loading story...
+                                        </div>
+
+                                        <div class="story-dialogue-icons" aria-label="Story navigation">
+                                            <button id="storyMiniBackBtn" class="story-mini-back" type="button" aria-label="Go backward">‹</button>
+                                            <button id="storyMiniNextBtn" class="story-mini-next" type="button" aria-label="Go forward">›</button>
+                                        </div>
+                                    </div>
+
+                                    <div id="storyDialogueWrap" class="stage-dialogue-box">
+                                        <div id="storyDialogue" class="stage-dialogue-text" aria-live="polite"></div>
+                                    </div>
+
+                                    <div class="stage-nav-buttons" aria-label="Story navigation buttons">
+                                        <button id="storyBackBtn" class="stage-nav-btn" type="button" aria-label="Go backward">
+                                            <span class="nav-arrow" aria-hidden="true">←</span>
+                                            <span class="nav-label" data-i18n="buttons.backward">Backward</span>
+                                        </button>
+
+                                        <button id="storyForwardBtn" class="stage-nav-btn" type="button" aria-label="Go forward">
+                                            <span class="nav-label" data-i18n="buttons.forward">Forward</span>
+                                            <span class="nav-arrow" aria-hidden="true">→</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <figcaption id="storyFigureCaption" class="visually-hidden">
+                                    Story artwork for the current chapter.
+                                </figcaption>
+                            </figure>
+
+                            <div id="storyGuideBubble" class="story-guide-bubble hidden" aria-live="polite">
+                                <div class="story-guide-avatar">
+                                    <img id="storyGuideAvatarImg" src="assets/images/story/characters/Traveler.png" alt="Story guide">
+                                </div>
+
+                                <div class="story-guide-message">
+                                    <button id="storyGuideClose" class="story-guide-close" type="button" aria-label="Close guide">×</button>
+                                    <p id="storyGuideText">
+                                        Well done! You passed the traveler's test. The next chapter is now open.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="hidden-story-data" aria-hidden="true">
+                                <div id="speakerName">Narrator</div>
+                                <h2 id="storyTitle">Loading…</h2>
+                                <button id="nextDialogueBtn" type="button">Next</button>
+                            </div>
+                        </section>
+
+                        <section class="choices-panel" aria-label="Story controls and choices">
+                            <div class="choices-inner">
+                                <div class="story-controls-title" data-i18n="choices.title">Choices and Progress</div>
+
+                                <div id="storyLockedBox" class="story-locked-box hidden" aria-live="polite">
+                                    <strong id="storyLockedTitle" data-i18n="lock.title">Story Challenge Locked</strong>
+                                    <div id="storyLockedMsg">Complete the required challenge first.</div>
+                                </div>
+
+                                <div id="choices" aria-label="Available story choices"></div>
+
+                                <div class="control-bar-bottom" aria-label="Story progress controls">
+                                    <span class="hint" id="storyHintText">Space / Enter / → / ←</span>
+                                    <div class="progressbar" aria-hidden="true">
+                                        <div id="storyProgressFill" class="progressbar-fill"></div>
+                                    </div>
+                                    <span id="storyProgressText" aria-live="polite">0%</span>
+                                </div>
+                            </div>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <div id="storySettingsModal" class="story-settings-modal hidden" aria-hidden="true">
+            <div class="story-settings-backdrop"></div>
+
+            <div class="story-settings-card" role="dialog" aria-modal="true" aria-labelledby="storySettingsTitle">
+                <div class="story-settings-head">
+                    <h2 id="storySettingsTitle" class="story-settings-title" data-i18n="settings.title">Settings</h2>
+                    <button id="storySettingsClose" class="story-settings-close" type="button" aria-label="Close settings">✕</button>
+                </div>
+
+                <div class="story-settings-body">
+                    <div class="story-setting-row">
+                        <div class="story-setting-icon" aria-hidden="true">🌐</div>
+                        <div class="story-setting-content">
+                            <label class="story-setting-label" for="storyLanguageSelect" data-i18n="settings.languageLabel">Language</label>
+                            <span class="story-setting-sub" data-i18n="settings.languageSub">Choose your story language</span>
+                        </div>
+
+                        <div class="story-language-wrap">
+                            <select id="storyLanguageSelect" class="story-language-select" aria-label="Choose story language">
+                                <option value="en">English</option>
+                                <option value="ja">Japanese</option>
+                                <option value="ko">Korean</option>
+                                <option value="zh">Chinese</option>
+                            </select>
+                            <span id="storyLanguageBadge" class="story-language-badge">English Selected</span>
+                        </div>
+                    </div>
+
+                    <div class="story-setting-row">
+                        <div class="story-setting-icon" aria-hidden="true">🎵</div>
+                        <div class="story-setting-content">
+                            <label class="story-setting-label" for="storyMusicSlider" data-i18n="settings.musicLabel">Music</label>
+                            <span class="story-setting-sub" data-i18n="settings.musicSub">Background music volume</span>
+                        </div>
+                        <div class="story-slider-wrap">
+                            <input id="storyMusicSlider" class="story-slider" type="range" min="0" max="100" step="1" value="80" />
+                            <span id="storyMusicValue" class="story-slider-value">80%</span>
+                        </div>
+                    </div>
+
+                    <div class="story-setting-row">
+                        <div class="story-setting-icon" aria-hidden="true">🔊</div>
+                        <div class="story-setting-content">
+                            <label class="story-setting-label" for="storySfxSlider" data-i18n="settings.soundsLabel">Sounds</label>
+                            <span class="story-setting-sub" data-i18n="settings.soundsSub">Button clicks and game effects</span>
+                        </div>
+                        <div class="story-slider-wrap">
+                            <input id="storySfxSlider" class="story-slider" type="range" min="0" max="100" step="1" value="80" />
+                            <span id="storySfxValue" class="story-slider-value">80%</span>
+                        </div>
+                    </div>
+
+                    <div class="story-setting-row">
+                        <div class="story-setting-icon" aria-hidden="true">🔄</div>
+                        <div class="story-setting-content">
+                            <span class="story-setting-label" data-i18n="settings.restartLabel">Restart Story</span>
+                            <span class="story-setting-sub" data-i18n="settings.restartSub">Start again from Chapter 1</span>
+                        </div>
+                        <button id="storyRestartBtn" class="story-settings-action is-danger" type="button" data-i18n="buttons.restartStory">Restart Story</button>
+                    </div>
+
+                    <div class="story-setting-row">
+                        <div class="story-setting-icon" aria-hidden="true">🚪</div>
+                        <div class="story-setting-content">
+                            <span class="story-setting-label" data-i18n="settings.exitLabel">Exit Game</span>
+                            <span class="story-setting-sub" data-i18n="settings.exitSub">Return to the home page</span>
+                        </div>
+                        <button id="storyExitBtn" class="story-settings-action is-exit" type="button" data-i18n="buttons.exitGame">Exit Game</button>
+                    </div>
+
+                    <div class="story-settings-note" data-i18n="settings.note">
+                        Your language, music, and sound settings are saved automatically for this browser.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="storyRestartModal" class="story-restart-modal hidden" aria-hidden="true">
+            <div class="story-restart-backdrop"></div>
+
+            <div class="story-restart-card" role="dialog" aria-modal="true" aria-labelledby="storyRestartTitle">
+                <div class="story-restart-icon" aria-hidden="true">↻</div>
+
+                <h3 id="storyRestartTitle" class="story-restart-title" data-i18n="restart.title">Restart Story?</h3>
+
+                <p class="story-restart-text" id="storyRestartText" data-i18n="restart.text">
+                    You will start again from Chapter 1. Your current story progress will be reset.
+                </p>
+
+                <div class="story-restart-actions">
+                    <button id="storyRestartCancel" class="story-restart-btn is-cancel" type="button" data-i18n="buttons.cancel">
+                        Cancel
+                    </button>
+
+                    <button id="storyRestartConfirm" class="story-restart-btn is-confirm" type="button">
+                        <span id="storyRestartConfirmIcon">↻</span>
+                        <span id="storyRestartConfirmText">Restart Story</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <audio id="storyBgMusic" loop preload="auto">
+        <source src="assets/sounds/story_background_music.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+    </audio>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/storyEngine.js"></script>
+
+    <script>
+        (function() {
+            var navBtn = document.querySelector(".nav-toggle");
+            var mobileMenu = document.getElementById("mobileMenu");
+
+            var introModal = document.getElementById("storyIntroModal");
+            var introPlay = document.getElementById("storyIntroPlay");
+            var introClose = document.getElementById("storyIntroClose");
+            var introImage = document.getElementById("storyIntroImage");
+            var introPlayText = document.getElementById("storyIntroPlayText");
+            var introProgressFill = document.getElementById("storyIntroProgressFill");
+
+            var speakerName = document.getElementById("speakerName");
+            var characterSprite = document.getElementById("characterSprite");
+            var storyTextEl = document.getElementById("storyText");
+            var storyDialogueEl = document.getElementById("storyDialogue");
+            var storyDialogueWrap = document.getElementById("storyDialogueWrap");
+            var statusChapter = document.getElementById("statusChapter");
+            var statusProgress = document.getElementById("statusProgress");
+            var statusRoute = document.getElementById("statusRoute");
+            var statusInventory = document.getElementById("statusInventory");
+            var figureCaption = document.getElementById("storyFigureCaption");
+
+            var settingsModal = document.getElementById("storySettingsModal");
+            var settingsOpenBtn = document.getElementById("storySettingsOpen");
+            var settingsCloseBtn = document.getElementById("storySettingsClose");
+            var musicSlider = document.getElementById("storyMusicSlider");
+            var sfxSlider = document.getElementById("storySfxSlider");
+            var musicValue = document.getElementById("storyMusicValue");
+            var sfxValue = document.getElementById("storySfxValue");
+            var restartBtn = document.getElementById("storyRestartBtn");
+            var exitBtn = document.getElementById("storyExitBtn");
+
+            var languageSelect = document.getElementById("storyLanguageSelect");
+            var languageBadge = document.getElementById("storyLanguageBadge");
+
+            var restartModal = document.getElementById("storyRestartModal");
+            var restartCancelBtn = document.getElementById("storyRestartCancel");
+            var restartConfirmBtn = document.getElementById("storyRestartConfirm");
+            var restartConfirmText = document.getElementById("storyRestartConfirmText");
+            var restartConfirmIcon = document.getElementById("storyRestartConfirmIcon");
+
+            var storySkipBtn = document.getElementById("storySkipBtn");
+            var storyNextArea = document.getElementById("storyNextArea");
+
+            var INTRO_STORAGE_KEY = "bca_story_intro_seen";
+            var STORY_MUSIC_KEY = "bca_story_music_volume";
+            var STORY_SFX_KEY = "bca_story_sfx_volume";
+            var STORY_LANGUAGE_KEY = "bca_story_language";
+            var DEFAULT_STAGE_IMAGE = "assets/images/ch-1.1.png";
+            var DEFAULT_TITLE_IMAGE = "assets/images/story/title.png";
+            var DEFAULT_CHARACTER_IMAGE = "";
+            var introReady = false;
+            var backgroundMusicStarted = false;
+            var backgroundMusicUserPrimed = false;
+
+            var UI_TEXT = {
+                en: {
+                    intro: {
+                        title: "The Prince and the Witch's Shadow",
+                        chapterMeta: "Chapter 1 of 23",
+                        difficultyMeta: "Difficulty: Story Adventure",
+                        desc: "A dark witch steals Princess Elira into a cursed land. Prince Adrian must begin a dangerous journey, solve ancient trials, and bring light back to the world.",
+                        note: "A very clean design often looks more professional than a very complex one.",
+                        preparing: "Preparing story...",
+                        play: "Play Story"
+                    },
+                    nav: {
+                        brand: "Brain Challenge Arcade",
+                        home: "Home",
+                        story: "Story Mode",
+                        games: "Games",
+                        leaderboard: "Leaderboard",
+                        achievements: "Achievements",
+                        profile: "Profile",
+                        settings: "Settings",
+                        about: "About"
+                    },
+                    status: {
+                        chapterLabel: "Chapter",
+                        chapterSub: "Current chapter being played.",
+                        progressLabel: "Progress",
+                        progressSub: "Story progress updates automatically.",
+                        routeLabel: "Route",
+                        routeSub: "Main path selected by player choice.",
+                        inventoryLabel: "Inventory",
+                        inventorySub: "Key story items collected so far.",
+                        notChosen: "Not Chosen"
+                    },
+                    buttons: {
+                        backward: "Backward",
+                        forward: "Forward",
+                        restartStory: "Restart Story",
+                        exitGame: "Exit Game",
+                        cancel: "Cancel",
+                        checking: "Checking...",
+                        updated: "Updated"
+                    },
+                    choices: {
+                        title: "Choices and Progress"
+                    },
+                    lock: {
+                        title: "Story Challenge Locked",
+                        default: "Complete the required challenge first.",
+                        challenge: "Complete this brain-game test to unlock the next chapter."
+                    },
+                    settings: {
+                        title: "Settings",
+                        languageLabel: "Language",
+                        languageSub: "Choose your story language",
+                        musicLabel: "Music",
+                        musicSub: "Background music volume",
+                        soundsLabel: "Sounds",
+                        soundsSub: "Button clicks and game effects",
+                        restartLabel: "Restart Story",
+                        restartSub: "Start again from Chapter 1",
+                        exitLabel: "Exit Game",
+                        exitSub: "Return to the home page",
+                        note: "Your language, music, and sound settings are saved automatically for this browser.",
+                        selectedSuffix: "Selected"
+                    },
+                    restart: {
+                        title: "Restart Story?",
+                        text: "You will start again from Chapter 1. Your current story progress will be reset."
+                    },
+                    misc: {
+                        storyArtwork: "Story artwork for the current chapter.",
+                        hint: "Space / Enter / → / ←",
+                        chapterWord: "Chapter"
+                    }
+                },
+                zh: {
+                    intro: {
+                        title: "王子与女巫之影",
+                        chapterMeta: "第 1 章，共 23 章",
+                        difficultyMeta: "难度：故事冒险",
+                        desc: "黑暗女巫将艾莉拉公主带入被诅咒的土地。阿德里安王子必须踏上危险的旅程，解开古老试炼，把光明带回世界。",
+                        note: "简洁干净的设计通常比过于复杂的设计更专业。",
+                        preparing: "正在准备故事……",
+                        play: "开始故事"
+                    },
+                    nav: {
+                        brand: "脑力挑战街机",
+                        home: "首页",
+                        story: "故事模式",
+                        games: "游戏",
+                        leaderboard: "排行榜",
+                        achievements: "成就",
+                        profile: "个人资料",
+                        settings: "设置",
+                        about: "关于"
+                    },
+                    status: {
+                        chapterLabel: "章节",
+                        chapterSub: "当前正在游玩的章节。",
+                        progressLabel: "进度",
+                        progressSub: "故事进度会自动更新。",
+                        routeLabel: "路线",
+                        routeSub: "玩家选择的主路线。",
+                        inventoryLabel: "物品",
+                        inventorySub: "目前收集到的重要故事物品。",
+                        notChosen: "未选择"
+                    },
+                    buttons: {
+                        backward: "后退",
+                        forward: "前进",
+                        restartStory: "重新开始故事",
+                        exitGame: "退出游戏",
+                        cancel: "取消",
+                        checking: "检查中……",
+                        updated: "已更新"
+                    },
+                    choices: {
+                        title: "选择与进度"
+                    },
+                    lock: {
+                        title: "故事挑战已锁定",
+                        default: "请先完成所需挑战。",
+                        challenge: "请先完成这个脑力小游戏测试，才能解锁下一章。"
+                    },
+                    settings: {
+                        title: "设置",
+                        languageLabel: "语言",
+                        languageSub: "选择故事语言",
+                        musicLabel: "音乐",
+                        musicSub: "背景音乐音量",
+                        soundsLabel: "音效",
+                        soundsSub: "按钮点击与游戏效果",
+                        restartLabel: "重新开始故事",
+                        restartSub: "从第 1 章重新开始",
+                        exitLabel: "退出游戏",
+                        exitSub: "返回首页",
+                        note: "你的语言、音乐和音效设置会自动保存在此浏览器中。",
+                        selectedSuffix: "已选择"
+                    },
+                    restart: {
+                        title: "重新开始故事？",
+                        text: "你将从第 1 章重新开始。当前故事进度将被重置。"
+                    },
+                    misc: {
+                        storyArtwork: "当前章节的故事画面。",
+                        hint: "空格 / 回车 / → / ←",
+                        chapterWord: "第"
+                    }
+                },
+                ja: {
+                    intro: {
+                        title: "王子と魔女の影",
+                        chapterMeta: "第1章 / 全23章",
+                        difficultyMeta: "難易度：ストーリーアドベンチャー",
+                        desc: "闇の魔女がエリラ姫を呪われた地へ連れ去ります。エイドリアン王子は危険な旅に出て、古代の試練を乗り越え、世界に光を取り戻さなければなりません。",
+                        note: "とても複雑なデザインよりも、すっきりしたデザインの方がよりプロらしく見えることが多いです。",
+                        preparing: "ストーリーを準備中…",
+                        play: "ストーリー開始"
+                    },
+                    nav: {
+                        brand: "ブレインチャレンジアーケード",
+                        home: "ホーム",
+                        story: "ストーリーモード",
+                        games: "ゲーム",
+                        leaderboard: "ランキング",
+                        achievements: "実績",
+                        profile: "プロフィール",
+                        settings: "設定",
+                        about: "情報"
+                    },
+                    status: {
+                        chapterLabel: "章",
+                        chapterSub: "現在プレイ中の章です。",
+                        progressLabel: "進行度",
+                        progressSub: "ストーリー進行は自動で更新されます。",
+                        routeLabel: "ルート",
+                        routeSub: "プレイヤーが選んだメインルートです。",
+                        inventoryLabel: "持ち物",
+                        inventorySub: "これまでに集めた重要なアイテムです。",
+                        notChosen: "未選択"
+                    },
+                    buttons: {
+                        backward: "戻る",
+                        forward: "進む",
+                        restartStory: "物語を最初から",
+                        exitGame: "ゲーム終了",
+                        cancel: "キャンセル",
+                        checking: "確認中…",
+                        updated: "更新完了"
+                    },
+                    choices: {
+                        title: "選択肢と進行状況"
+                    },
+                    lock: {
+                        title: "ストーリーチャレンジはロック中",
+                        default: "先に必要なチャレンジをクリアしてください。",
+                        challenge: "次の章を解放するには、この脳力ゲームテストをクリアしてください。"
+                    },
+                    settings: {
+                        title: "設定",
+                        languageLabel: "言語",
+                        languageSub: "ストーリーの言語を選んでください",
+                        musicLabel: "音楽",
+                        musicSub: "BGM 音量",
+                        soundsLabel: "効果音",
+                        soundsSub: "ボタンクリックとゲーム効果音",
+                        restartLabel: "物語を最初から",
+                        restartSub: "第1章からやり直す",
+                        exitLabel: "ゲーム終了",
+                        exitSub: "ホームページへ戻る",
+                        note: "言語、音楽、効果音の設定はこのブラウザに自動保存されます。",
+                        selectedSuffix: "選択中"
+                    },
+                    restart: {
+                        title: "物語をやり直しますか？",
+                        text: "第1章から再開します。現在の進行状況はリセットされます。"
+                    },
+                    misc: {
+                        storyArtwork: "現在の章のストーリー画像です。",
+                        hint: "スペース / Enter / → / ←",
+                        chapterWord: "第"
+                    }
+                },
+                ko: {
+                    intro: {
+                        title: "왕자와 마녀의 그림자",
+                        chapterMeta: "23장 중 1장",
+                        difficultyMeta: "난이도: 스토리 어드벤처",
+                        desc: "어두운 마녀가 엘리라 공주를 저주받은 땅으로 데려갑니다. 아드리안 왕자는 위험한 여정을 시작해 고대의 시련을 풀고 세상에 빛을 되돌려야 합니다.",
+                        note: "너무 복잡한 디자인보다 깔끔한 디자인이 더 전문적으로 보일 때가 많습니다.",
+                        preparing: "스토리를 준비하는 중…",
+                        play: "스토리 시작"
+                    },
+                    nav: {
+                        brand: "브레인 챌린지 아케이드",
+                        home: "홈",
+                        story: "스토리 모드",
+                        games: "게임",
+                        leaderboard: "리더보드",
+                        achievements: "업적",
+                        profile: "프로필",
+                        settings: "설정",
+                        about: "소개"
+                    },
+                    status: {
+                        chapterLabel: "챕터",
+                        chapterSub: "현재 플레이 중인 챕터입니다.",
+                        progressLabel: "진행도",
+                        progressSub: "스토리 진행도는 자동으로 업데이트됩니다.",
+                        routeLabel: "경로",
+                        routeSub: "플레이어가 선택한 주요 경로입니다.",
+                        inventoryLabel: "인벤토리",
+                        inventorySub: "지금까지 모은 핵심 스토리 아이템입니다.",
+                        notChosen: "선택 안 함"
+                    },
+                    buttons: {
+                        backward: "뒤로",
+                        forward: "앞으로",
+                        restartStory: "스토리 다시 시작",
+                        exitGame: "게임 종료",
+                        cancel: "취소",
+                        checking: "확인 중…",
+                        updated: "업데이트됨"
+                    },
+                    choices: {
+                        title: "선택과 진행도"
+                    },
+                    lock: {
+                        title: "스토리 도전 잠김",
+                        default: "먼저 필요한 도전을 완료하세요.",
+                        challenge: "다음 챕터를 열려면 이 두뇌 게임 테스트를 먼저 완료하세요."
+                    },
+                    settings: {
+                        title: "설정",
+                        languageLabel: "언어",
+                        languageSub: "스토리 언어를 선택하세요",
+                        musicLabel: "음악",
+                        musicSub: "배경 음악 볼륨",
+                        soundsLabel: "사운드",
+                        soundsSub: "버튼 클릭과 게임 효과음",
+                        restartLabel: "스토리 다시 시작",
+                        restartSub: "챕터 1부터 다시 시작",
+                        exitLabel: "게임 종료",
+                        exitSub: "홈페이지로 돌아가기",
+                        note: "언어, 음악, 사운드 설정은 이 브라우저에 자동으로 저장됩니다.",
+                        selectedSuffix: "선택됨"
+                    },
+                    restart: {
+                        title: "스토리를 다시 시작할까요?",
+                        text: "챕터 1부터 다시 시작합니다. 현재 스토리 진행은 초기화됩니다."
+                    },
+                    misc: {
+                        storyArtwork: "현재 챕터의 스토리 이미지입니다.",
+                        hint: "Space / Enter / → / ←",
+                        chapterWord: "챕터"
+                    }
+                }
+            };
+
+            if (navBtn && mobileMenu) {
+                navBtn.addEventListener("click", function() {
+                    var isOpen = navBtn.getAttribute("aria-expanded") === "true";
+                    navBtn.setAttribute("aria-expanded", String(!isOpen));
+                    mobileMenu.classList.toggle("hidden", isOpen);
+                });
+            }
+
+            function safeStorageGet(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    return null;
+                }
+            }
+
+            function safeStorageSet(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {}
+            }
+
+            function getSafeNumber(key, fallback) {
+                var value = safeStorageGet(key);
+                var num = Number(value);
+                return Number.isFinite(num) ? num : fallback;
+            }
+
+            function clamp(value, min, max) {
+                return Math.max(min, Math.min(max, Number(value) || 0));
+            }
+
+            function goHome() {
+                window.location.href = "index.html";
+            }
+
+            function getSelectedLanguage() {
+                return safeStorageGet(STORY_LANGUAGE_KEY) || "en";
+            }
+
+            function getUiPack(lang) {
+                return UI_TEXT[lang] || UI_TEXT.en;
+            }
+
+            function getUiText(path) {
+                var lang = getSelectedLanguage();
+                var pack = getUiPack(lang);
+                var parts = String(path || "").split(".");
+                var value = pack;
+                var i;
+
+                for (i = 0; i < parts.length; i++) {
+                    if (!value || typeof value !== "object") break;
+                    value = value[parts[i]];
+                }
+
+                if (typeof value === "string") return value;
+
+                value = UI_TEXT.en;
+                for (i = 0; i < parts.length; i++) {
+                    if (!value || typeof value !== "object") break;
+                    value = value[parts[i]];
+                }
+
+                return typeof value === "string" ? value : "";
+            }
+
+            function getLanguageLabel(code) {
+                var labels = {
+                    en: "English",
+                    ja: "日本語",
+                    ko: "한국어",
+                    zh: "中文"
+                };
+                return labels[code] || "English";
+            }
+
+            function formatStoryText(text) {
+                return String(text || "").replace(/\n\n/g, "<br><br>").replace(/\n/g, "<br>");
+            }
+
+            function setIntroProgress(percent) {
+                percent = Math.max(0, Math.min(100, Number(percent) || 0));
+                if (introProgressFill) introProgressFill.style.width = percent + "%";
+            }
+
+            function applyStaticTranslations() {
+                var nodes = document.querySelectorAll("[data-i18n]");
+                var i, key, text;
+
+                for (i = 0; i < nodes.length; i++) {
+                    key = nodes[i].getAttribute("data-i18n");
+                    text = getUiText(key);
+                    if (text) nodes[i].textContent = text;
+                }
+
+                var hint = document.getElementById("storyHintText");
+                if (hint) hint.textContent = getUiText("misc.hint");
+
+                var backBtn = document.getElementById("storyBackBtn");
+                var forwardBtn = document.getElementById("storyForwardBtn");
+                if (backBtn) backBtn.setAttribute("aria-label", getUiText("buttons.backward"));
+                if (forwardBtn) forwardBtn.setAttribute("aria-label", getUiText("buttons.forward"));
+
+                var lockTitle = document.getElementById("storyLockedTitle");
+                if (lockTitle) lockTitle.textContent = getUiText("lock.title");
+
+                var introPlayTextNode = document.getElementById("storyIntroPlayText");
+                if (introPlayTextNode) {
+                    introPlayTextNode.textContent = introReady ? getUiText("intro.play") : getUiText("intro.preparing");
+                }
+
+                if (restartConfirmText && !restartConfirmBtn.classList.contains("is-checking") && !restartConfirmBtn.classList.contains("is-success")) {
+                    restartConfirmText.textContent = getUiText("buttons.restartStory");
+                }
+
+                if (figureCaption) {
+                    figureCaption.textContent = getUiText("misc.storyArtwork");
+                }
+            }
+
+            function setIntroReady() {
+                introReady = true;
+                if (introPlay) {
+                    introPlay.disabled = false;
+                    introPlay.setAttribute("aria-disabled", "false");
+                    introPlay.classList.remove("is-loading");
+                    introPlay.classList.add("ready");
+                }
+                if (introPlayText) introPlayText.textContent = getUiText("intro.play");
+                setIntroProgress(100);
+            }
+
+            function preloadImages(urls, onDone) {
+                var list = [];
+                var seen = {};
+                var i, u;
+
+                for (i = 0; i < urls.length; i++) {
+                    u = String(urls[i] || "").trim();
+                    if (!u || seen[u]) continue;
+                    seen[u] = true;
+                    list.push(u);
+                }
+
+                if (!list.length) {
+                    setIntroReady();
+                    if (typeof onDone === "function") onDone();
+                    return;
+                }
+
+                var total = list.length;
+                var loaded = 0;
+                var finished = false;
+
+                function markOneDone() {
+                    loaded++;
+                    setIntroProgress(Math.round((loaded / total) * 100));
+                    if (loaded >= total && !finished) {
+                        finished = true;
+                        setIntroReady();
+                        if (typeof onDone === "function") onDone();
+                    }
+                }
+
+                for (i = 0; i < list.length; i++) {
+                    (function(src) {
+                        var img = new Image();
+                        img.onload = markOneDone;
+                        img.onerror = markOneDone;
+                        img.src = src;
+                    })(list[i]);
+                }
+            }
+
+            function closeIntro(markSeen) {
+                if (!introModal || !introReady) return;
+                introModal.classList.add("hidden");
+                introModal.setAttribute("aria-hidden", "true");
+                if (markSeen !== false) safeStorageSet(INTRO_STORAGE_KEY, "1");
+            }
+
+            function openIntro() {
+                if (!introModal) return;
+                introModal.classList.remove("hidden");
+                introModal.setAttribute("aria-hidden", "false");
+            }
+
+            function setDialogueVisibility(text) {
+                if (!storyDialogueWrap) return;
+                storyDialogueWrap.style.display = String(text || "").trim() ? "inline-block" : "none";
+            }
+
+            function updateStoryStatus() {
+                var progress = getSafeNumber("bca_story_progress", 0);
+                var mountRaw = safeStorageGet("bca_story_mount") || "";
+                var mount = mountRaw || getUiText("status.notChosen");
+                var chapterBanner = document.querySelector(".chapter-banner");
+
+                var charm = safeStorageGet("bca_story_inv_charm") === "1";
+                var map = safeStorageGet("bca_story_inv_map") === "1";
+                var sword = safeStorageGet("bca_story_inv_sword") === "1";
+
+                var inventoryCount = 0;
+                if (charm) inventoryCount++;
+                if (map) inventoryCount++;
+                if (sword) inventoryCount++;
+
+                if (mountRaw === "Horse") {
+                    mount = getSelectedLanguage() === "zh" ? "马" :
+                        getSelectedLanguage() === "ja" ? "馬" :
+                        getSelectedLanguage() === "ko" ? "말" : "Horse";
+                } else if (mountRaw === "Dragon") {
+                    mount = getSelectedLanguage() === "zh" ? "龙" :
+                        getSelectedLanguage() === "ja" ? "ドラゴン" :
+                        getSelectedLanguage() === "ko" ? "드래곤" : "Dragon";
+                }
+
+                var chapterText = getUiText("misc.chapterWord") + " ?";
+                if (chapterBanner) {
+                    var bannerText = chapterBanner.textContent.trim();
+                    var match = bannerText.match(/(\d+)/);
+                    if (match) {
+                        if (getSelectedLanguage() === "zh") chapterText = "第 " + match[1] + " 章";
+                        else if (getSelectedLanguage() === "ja") chapterText = "第" + match[1] + "章";
+                        else if (getSelectedLanguage() === "ko") chapterText = "챕터 " + match[1];
+                        else chapterText = "Chapter " + match[1];
+                    }
+                }
+
+                if (statusChapter) statusChapter.textContent = chapterText;
+                if (statusProgress) statusProgress.textContent = progress + "%";
+                if (statusRoute) statusRoute.textContent = mount;
+                if (statusInventory) statusInventory.textContent = inventoryCount + " / 3";
+            }
+
+            function updateSliderText(slider, label) {
+                if (!slider || !label) return;
+                label.textContent = clamp(slider.value, 0, 100) + "%";
+            }
+
+            function syncMusicElementVolume() {
+                if (!storyBgMusic) return;
+                var music = getSafeNumber(STORY_MUSIC_KEY, 80);
+                var volume = clamp(music, 0, 100) / 100;
+                storyBgMusic.volume = volume;
+                storyBgMusic.muted = volume <= 0;
+            }
+
+            function startBackgroundMusic() {
+                if (!storyBgMusic) return;
+
+                backgroundMusicUserPrimed = true;
+                syncMusicElementVolume();
+
+                if (storyBgMusic.muted || storyBgMusic.volume <= 0) {
+                    backgroundMusicStarted = false;
+                    return;
+                }
+
+                var playPromise = storyBgMusic.play();
+                if (playPromise && typeof playPromise.then === "function") {
+                    playPromise.then(function() {
+                        backgroundMusicStarted = true;
+                    }).catch(function() {
+                        backgroundMusicStarted = false;
+                    });
+                } else {
+                    backgroundMusicStarted = true;
+                }
+            }
+
+            function pauseBackgroundMusic() {
+                if (!storyBgMusic) return;
+                storyBgMusic.pause();
+                backgroundMusicStarted = false;
+            }
+
+            function stopBackgroundMusic() {
+                if (!storyBgMusic) return;
+                storyBgMusic.pause();
+                storyBgMusic.currentTime = 0;
+                backgroundMusicStarted = false;
+            }
+
+            function tryStartBackgroundMusicAfterInteraction() {
+                if (!backgroundMusicUserPrimed) {
+                    startBackgroundMusic();
+                } else if (!backgroundMusicStarted) {
+                    startBackgroundMusic();
+                }
+            }
+
+            function applyAudioPreferences() {
+                var music = getSafeNumber(STORY_MUSIC_KEY, 80);
+                var sfx = getSafeNumber(STORY_SFX_KEY, 80);
+
+                if (musicSlider) musicSlider.value = clamp(music, 0, 100);
+                if (sfxSlider) sfxSlider.value = clamp(sfx, 0, 100);
+
+                updateSliderText(musicSlider, musicValue);
+                updateSliderText(sfxSlider, sfxValue);
+
+                document.documentElement.style.setProperty("--story-music-volume", String(clamp(music, 0, 100) / 100));
+                document.documentElement.style.setProperty("--story-sfx-volume", String(clamp(sfx, 0, 100) / 100));
+
+                syncMusicElementVolume();
+
+                if (storyBgMusic) {
+                    if (clamp(music, 0, 100) === 0) {
+                        pauseBackgroundMusic();
+                    } else if (backgroundMusicUserPrimed && !document.hidden) {
+                        startBackgroundMusic();
+                    }
+                }
+
+                try {
+                    window.dispatchEvent(new CustomEvent("bca:story-audio-change", {
+                        detail: {
+                            music: clamp(music, 0, 100),
+                            sfx: clamp(sfx, 0, 100)
+                        }
+                    }));
+                } catch (e) {}
+            }
+
+            function applyLanguageSelection() {
+                var lang = getSelectedLanguage();
+
+                if (languageSelect) languageSelect.value = lang;
+                if (languageBadge) languageBadge.textContent = getLanguageLabel(lang) + " " + getUiText("settings.selectedSuffix");
+
+                document.documentElement.setAttribute("lang", lang);
+                applyStaticTranslations();
+                updateStoryStatus();
+
+                try {
+                    window.dispatchEvent(new CustomEvent("bca:story-language-change", {
+                        detail: {
+                            language: lang
+                        }
+                    }));
+                } catch (e) {}
+
+                if (window.BCA_STORY && typeof window.BCA_STORY.render === "function") {
+                    window.BCA_STORY.render();
+                }
+            }
+
+            function openSettings() {
+                if (!settingsModal) return;
+                settingsModal.classList.remove("hidden");
+                settingsModal.setAttribute("aria-hidden", "false");
+                applyAudioPreferences();
+                applyLanguageSelection();
+            }
+
+            function closeSettings() {
+                if (!settingsModal) return;
+                settingsModal.classList.add("hidden");
+                settingsModal.setAttribute("aria-hidden", "true");
+            }
+
+            function openRestartModal() {
+                if (!restartModal) return;
+                restartModal.classList.remove("hidden");
+                restartModal.setAttribute("aria-hidden", "false");
+
+                if (restartConfirmBtn) {
+                    restartConfirmBtn.disabled = false;
+                    restartConfirmBtn.classList.remove("is-checking", "is-success");
+                }
+                if (restartConfirmText) restartConfirmText.textContent = getUiText("buttons.restartStory");
+                if (restartConfirmIcon) restartConfirmIcon.textContent = "↻";
+            }
+
+            function closeRestartModal() {
+                if (!restartModal) return;
+                restartModal.classList.add("hidden");
+                restartModal.setAttribute("aria-hidden", "true");
+            }
+
+            function runRestartEffect() {
+                if (!restartConfirmBtn) return;
+
+                restartConfirmBtn.disabled = true;
+                restartConfirmBtn.classList.remove("is-success");
+                restartConfirmBtn.classList.add("is-checking");
+                if (restartConfirmText) restartConfirmText.textContent = getUiText("buttons.checking");
+                if (restartConfirmIcon) restartConfirmIcon.textContent = "⏳";
+
+                window.setTimeout(function() {
+                    restartConfirmBtn.classList.remove("is-checking");
+                    restartConfirmBtn.classList.add("is-success");
+                    if (restartConfirmText) restartConfirmText.textContent = getUiText("buttons.updated");
+                    if (restartConfirmIcon) restartConfirmIcon.textContent = "✅";
+                }, 800);
+
+                window.setTimeout(function() {
+                    closeRestartModal();
+                    closeSettings();
+
+                    if (window.BCA_STORY && typeof window.BCA_STORY.restart === "function") {
+                        window.BCA_STORY.restart(false);
+                    }
+                }, 1350);
+            }
+
+            function bindIntroEvents() {
+                if (introPlay) {
+                    introPlay.addEventListener("click", function() {
+                        if (!introReady) return;
+                        startBackgroundMusic();
+                        closeIntro(true);
+                    });
+                }
+
+                if (introClose) {
+                    introClose.addEventListener("click", function() {
+                        goHome();
+                    });
+                }
+
+                if (introModal) {
+                    introModal.addEventListener("click", function(e) {
+                        if ((e.target === introModal || e.target.classList.contains("story-intro-backdrop")) && introReady) {
+                            goHome();
+                        }
+                    });
+                }
+            }
+
+            function setupImageFallbacks() {
+                var chapterImage = document.getElementById("chapterImage");
+
+                if (chapterImage) {
+                    chapterImage.addEventListener("error", function() {
+                        if (chapterImage.getAttribute("src") !== DEFAULT_STAGE_IMAGE) {
+                            chapterImage.src = DEFAULT_STAGE_IMAGE;
+                        }
+                    });
+                }
+
+                if (introImage) {
+                    introImage.addEventListener("error", function() {
+                        if (introImage.getAttribute("src") !== DEFAULT_TITLE_IMAGE) {
+                            introImage.src = DEFAULT_TITLE_IMAGE;
+                        }
+                    });
+                }
+
+                if (characterSprite) {
+                    characterSprite.addEventListener("error", function() {
+                        characterSprite.classList.remove("is-visible");
+                        characterSprite.src = DEFAULT_CHARACTER_IMAGE;
+                    });
+                }
+            }
+
+            function bindSettingsEvents() {
+                if (settingsOpenBtn) {
+                    settingsOpenBtn.addEventListener("click", function() {
+                        openSettings();
+                    });
+                }
+
+                if (settingsCloseBtn) {
+                    settingsCloseBtn.addEventListener("click", function() {
+                        closeSettings();
+                    });
+                }
+
+                if (settingsModal) {
+                    settingsModal.addEventListener("click", function(e) {
+                        if (e.target === settingsModal || e.target.classList.contains("story-settings-backdrop")) {
+                            closeSettings();
+                        }
+                    });
+                }
+
+                if (musicSlider) {
+                    musicSlider.addEventListener("input", function() {
+                        safeStorageSet(STORY_MUSIC_KEY, String(clamp(musicSlider.value, 0, 100)));
+                        updateSliderText(musicSlider, musicValue);
+                        applyAudioPreferences();
+                    });
+                }
+
+                if (sfxSlider) {
+                    sfxSlider.addEventListener("input", function() {
+                        safeStorageSet(STORY_SFX_KEY, String(clamp(sfxSlider.value, 0, 100)));
+                        updateSliderText(sfxSlider, sfxValue);
+                        applyAudioPreferences();
+                    });
+                }
+
+                if (languageSelect) {
+                    languageSelect.addEventListener("change", function() {
+                        safeStorageSet(STORY_LANGUAGE_KEY, languageSelect.value);
+                        applyLanguageSelection();
+                    });
+                }
+
+                if (restartBtn) {
+                    restartBtn.addEventListener("click", function() {
+                        openRestartModal();
+                    });
+                }
+
+                if (restartCancelBtn) {
+                    restartCancelBtn.addEventListener("click", function() {
+                        closeRestartModal();
+                    });
+                }
+
+                if (restartConfirmBtn) {
+                    restartConfirmBtn.addEventListener("click", function() {
+                        runRestartEffect();
+                    });
+                }
+
+                if (restartModal) {
+                    restartModal.addEventListener("click", function(e) {
+                        if (e.target === restartModal || e.target.classList.contains("story-restart-backdrop")) {
+                            closeRestartModal();
+                        }
+                    });
+                }
+
+                if (exitBtn) {
+                    exitBtn.addEventListener("click", function() {
+                        closeSettings();
+                        goHome();
+                    });
+                }
+
+                document.addEventListener("keydown", function(e) {
+                    if (e.key === "Escape") {
+                        if (restartModal && !restartModal.classList.contains("hidden")) {
+                            closeRestartModal();
+                            return;
+                        }
+
+                        if (settingsModal && !settingsModal.classList.contains("hidden")) {
+                            closeSettings();
+                        }
+                    }
+                });
+            }
+
+            function bindBackgroundMusicLifecycle() {
+                document.addEventListener("pointerdown", function() {
+                    tryStartBackgroundMusicAfterInteraction();
+                }, {
+                    passive: true
+                });
+
+                document.addEventListener("keydown", function() {
+                    tryStartBackgroundMusicAfterInteraction();
+                });
+
+                document.addEventListener("visibilitychange", function() {
+                    if (!storyBgMusic) return;
+
+                    if (document.hidden) {
+                        pauseBackgroundMusic();
+                    } else {
+                        var music = getSafeNumber(STORY_MUSIC_KEY, 80);
+                        if (clamp(music, 0, 100) > 0 && backgroundMusicUserPrimed) {
+                            startBackgroundMusic();
+                        }
+                    }
+                });
+
+                window.addEventListener("beforeunload", function() {
+                    stopBackgroundMusic();
+                });
+            }
+
+            window.BCA_I18N = {
+                getLanguage: function() {
+                    return getSelectedLanguage();
+                },
+                getText: function(path) {
+                    return getUiText(path);
+                },
+                setLanguage: function(lang) {
+                    safeStorageSet(STORY_LANGUAGE_KEY, lang || "en");
+                    applyLanguageSelection();
+                }
+            };
+
+            window.BCA_STAGE = {
+                setImage: function(url) {
+                    var img = document.getElementById("chapterImage");
+                    if (!img) return;
+                    if (!url || !String(url).trim()) return;
+                    img.src = String(url).trim();
+                },
+                getImage: function() {
+                    var img = document.getElementById("chapterImage");
+                    return img ? img.getAttribute("src") || "" : "";
+                },
+
+                setSpeaker: function(name) {
+                    var speaker = String(name || "Narrator").trim() || "Narrator";
+
+                    if (speakerName) {
+                        speakerName.textContent = speaker;
+                    }
+
+                    var box = document.querySelector(".stage-story-copy");
+                    if (box) {
+                        box.setAttribute("data-speaker", speaker.toUpperCase());
+                    }
+                },
+
+                setCharacter: function(url, alt) {
+                    if (!characterSprite) return;
+                    url = String(url || "").trim();
+
+                    if (!url) {
+                        characterSprite.classList.remove("is-visible");
+                        characterSprite.removeAttribute("src");
+                        return;
+                    }
+
+                    characterSprite.alt = String(alt || "Current speaking character");
+                    characterSprite.src = url;
+                    characterSprite.classList.add("is-visible");
+                },
+                clearCharacter: function() {
+                    if (!characterSprite) return;
+                    characterSprite.classList.remove("is-visible");
+                    characterSprite.removeAttribute("src");
+                },
+                setStoryText: function(text) {
+                    if (!storyTextEl) return;
+                    storyTextEl.innerHTML = formatStoryText(text);
+                    updateStoryStatus();
+                },
+                setDialogue: function(html) {
+                    if (!storyDialogueEl) return;
+                    storyDialogueEl.innerHTML = String(html || "");
+                    setDialogueVisibility(storyDialogueEl.textContent || storyDialogueEl.innerText || "");
+                },
+                setFigureCaption: function(text) {
+                    if (!figureCaption) return;
+                    figureCaption.textContent = String(text || getUiText("misc.storyArtwork"));
+                }
+            };
+
+            bindIntroEvents();
+            bindSettingsEvents();
+            bindBackgroundMusicLifecycle();
+            bindStoryForwardHotspots();
+            bindStoryMiniBackButton();
+            setupImageFallbacks();
+            setDialogueVisibility("");
+
+            function bindStoryMiniBackButton() {
+                var miniBackBtn = document.getElementById("storyMiniBackBtn");
+
+                if (!miniBackBtn) return;
+
+                function runBack(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        if (typeof e.stopImmediatePropagation === "function") {
+                            e.stopImmediatePropagation();
+                        }
+                    }
+
+                    if (window.BCA_STORY && typeof window.BCA_STORY.back === "function") {
+                        window.BCA_STORY.back();
+                    }
+                }
+
+                miniBackBtn.addEventListener("pointerdown", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (typeof e.stopImmediatePropagation === "function") {
+                        e.stopImmediatePropagation();
+                    }
+                }, true);
+
+                miniBackBtn.addEventListener("mousedown", function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (typeof e.stopImmediatePropagation === "function") {
+                        e.stopImmediatePropagation();
+                    }
+                }, true);
+
+                miniBackBtn.addEventListener("click", function(e) {
+                    runBack(e);
+                }, true);
+
+                miniBackBtn.addEventListener("keydown", function(e) {
+                    if (e.key === "Enter" || e.key === " ") {
+                        runBack(e);
+                    }
+                }, true);
+            }
+
+            if (window.BCA_STAGE && typeof window.BCA_STAGE.setSpeaker === "function") {
+                window.BCA_STAGE.setSpeaker("Narrator");
+            }
+
+            function goForwardStory() {
+                var introModal = document.getElementById("storyIntroModal");
+                var settingsModal = document.getElementById("storySettingsModal");
+                var restartModal = document.getElementById("storyRestartModal");
+
+                var introOpen = introModal && !introModal.classList.contains("hidden");
+                var settingsOpen = settingsModal && !settingsModal.classList.contains("hidden");
+                var restartOpen = restartModal && !restartModal.classList.contains("hidden");
+
+                if (introOpen || settingsOpen || restartOpen) return;
+
+                if (window.BCA_STORY && typeof window.BCA_STORY.forward === "function") {
+                    window.BCA_STORY.forward();
+                }
+            }
+
+            function bindStoryForwardHotspots() {
+                var miniBackBtn = document.getElementById("storyMiniBackBtn");
+                var miniNextBtn = document.getElementById("storyMiniNextBtn");
+
+                if (storySkipBtn) {
+                    storySkipBtn.addEventListener("click", function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goForwardStory();
+                    });
+                }
+
+                if (storyNextArea) {
+                    storyNextArea.addEventListener("click", function(e) {
+                        var clickedNavButton = e.target.closest(".story-mini-back, .story-mini-next");
+
+                        if (clickedNavButton) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return;
+                        }
+
+                        goForwardStory();
+                    });
+
+                    storyNextArea.addEventListener("keydown", function(e) {
+                        if (e.key === "Enter" || e.key === " ") {
+                            var focusedNavButton = e.target.closest(".story-mini-back, .story-mini-next");
+
+                            if (focusedNavButton) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                return;
+                            }
+
+                            e.preventDefault();
+                            goForwardStory();
+                        }
+                    });
+                }
+
+                if (miniNextBtn) {
+                    miniNextBtn.addEventListener("click", function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        goForwardStory();
+                    });
+                }
+            }
+
+
+            updateStoryStatus();
+            setIntroProgress(0);
+            applyAudioPreferences();
+            applyLanguageSelection();
+
+
+
+            var preloadList = [
+                DEFAULT_TITLE_IMAGE,
+                DEFAULT_STAGE_IMAGE,
+                "assets/images/story/title.png",
+                "assets/images/ch-1.1.png",
+                "assets/images/ch-1.2.png",
+                "assets/images/ch-1.3.png",
+                "assets/images/ch-1.4.png",
+                "assets/images/ch-2.1.png",
+                "assets/images/ch-3.1.png"
+            ];
+
+            if (safeStorageGet(INTRO_STORAGE_KEY) === "1") {
+                setIntroReady();
+                closeIntro(false);
+            } else {
+                openIntro();
+                preloadImages(preloadList);
+            }
+        })();
+    </script>
+
+    <script>
+        var pendingGuideMessage = null;
+
+        function showStoryGuideBubble(message, avatarSrc, avatarAlt) {
+            var bubble = document.getElementById("storyGuideBubble");
+            var bubbleText = document.getElementById("storyGuideText");
+            var avatarImg = document.getElementById("storyGuideAvatarImg");
+            var stagePanel = document.querySelector(".stage-panel");
+
+            if (!bubble || !stagePanel) return;
+
+            if (bubbleText && message) {
+                bubbleText.textContent = String(message);
+            }
+
+            if (avatarImg && avatarSrc) {
+                avatarImg.src = String(avatarSrc);
+                avatarImg.alt = String(avatarAlt || "Story guide");
+            }
+
+            bubble.classList.remove("hidden");
+            stagePanel.classList.add("guide-active");
+        }
+
+        function hideStoryGuideBubble() {
+            var bubble = document.getElementById("storyGuideBubble");
+            var stagePanel = document.querySelector(".stage-panel");
+
+            if (bubble) {
+                bubble.classList.add("hidden");
+            }
+
+            if (stagePanel) {
+                stagePanel.classList.remove("guide-active");
+            }
+        }
+
+        function queueStoryGuideBubble(message, avatarSrc, avatarAlt) {
+            pendingGuideMessage = {
+                message: String(message || ""),
+                avatarSrc: String(avatarSrc || "assets/images/story/characters/Traveler.png"),
+                avatarAlt: String(avatarAlt || "Story guide")
+            };
+        }
+
+        function flushStoryGuideBubble() {
+            if (!pendingGuideMessage) return;
+
+            showStoryGuideBubble(
+                pendingGuideMessage.message,
+                pendingGuideMessage.avatarSrc,
+                pendingGuideMessage.avatarAlt
+            );
+
+            pendingGuideMessage = null;
+        }
+
+        window.showStoryGuideBubble = showStoryGuideBubble;
+        window.hideStoryGuideBubble = hideStoryGuideBubble;
+        window.queueStoryGuideBubble = queueStoryGuideBubble;
+        window.flushStoryGuideBubble = flushStoryGuideBubble;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var storyGuideClose = document.getElementById("storyGuideClose");
+
+            if (storyGuideClose) {
+                storyGuideClose.addEventListener("click", hideStoryGuideBubble);
+            }
+        });
+    </script>
+</body>
+
+</html>

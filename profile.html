@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- =========================================================
+         Brain Challenge Arcade - profile.html
+
+         ✅ Theme loader to stop flash issue
+         ✅ Modern profile page design
+         ✅ Username save and preview
+         ✅ Local stats and progress display
+         ✅ Reset profile modal
+         ✅ Reset all local browser data
+         ✅ Responsive layout for mobile and desktop
+    ========================================================== -->
+
+    <!-- This script loads the saved theme before the page appears -->
+    <script>
+        (function() {
+            // Get saved theme from localStorage
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            // Check if the user's device prefers dark mode
+            function systemPrefersDark() {
+                return window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches;
+            }
+
+            // Apply theme class to the root html element
+            var theme = getTheme();
+            var root = document.documentElement;
+            root.classList.remove("theme-dark", "theme-light");
+
+            if (theme === "dark") root.classList.add("theme-dark");
+            else if (theme === "light") root.classList.add("theme-light");
+            else root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+        })();
+    </script>
+
+    <!-- Basic page information -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Profile • Brain Challenge Arcade</title>
+    <meta name="description" content="Set your username, view stats, and jump back into Brain Challenge Arcade." />
+
+    <!-- External CSS files -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+
+    <style>
+        /* Main color variables for dark theme */
+        
+         :root {
+            --bg0: #070914;
+            --bg1: #0b1028;
+            --ink: #eaf0ff;
+            --muted: rgba(234, 240, 255, .75);
+            --muted2: rgba(234, 240, 255, .55);
+            --card: rgba(255, 255, 255, .06);
+            --card-strong: rgba(255, 255, 255, .09);
+            --border: rgba(255, 255, 255, .12);
+            --blue: #4ea1ff;
+            --violet: #9b7bff;
+            --pink: #ff4fd8;
+            --cyan: #40f6ff;
+            --gold: #ffd86b;
+            --danger: #ff6464;
+            --ok: #54f3a5;
+            --shadow: 0 22px 70px rgba(0, 0, 0, .55);
+            --shadow2: 0 14px 40px rgba(0, 0, 0, .45);
+            --r-xl: 24px;
+            --r-lg: 18px;
+            --r-md: 14px;
+        }
+        /* Color variables for light theme */
+        
+        .theme-light {
+            --bg0: #f4f6ff;
+            --bg1: #e9edff;
+            --ink: #111827;
+            --muted: rgba(17, 24, 39, .75);
+            --muted2: rgba(17, 24, 39, .55);
+            --card: #ffffff;
+            --card-strong: #ffffff;
+            --border: rgba(0, 0, 0, .08);
+            --blue: #3b82f6;
+            --violet: #7c3aed;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --gold: #d19d12;
+            --danger: #dc2626;
+            --ok: #059669;
+            --shadow: 0 20px 40px rgba(0, 0, 0, .08);
+            --shadow2: 0 10px 20px rgba(0, 0, 0, .06);
+        }
+        /* Make sizing easier for all elements */
+        
+        * {
+            box-sizing: border-box;
+        }
+        /* Page background and text color */
+        
+        body {
+            background: radial-gradient(900px 500px at 15% 20%, rgba(255, 79, 216, .18), transparent 55%), radial-gradient(900px 520px at 85% 25%, rgba(78, 161, 255, .18), transparent 55%), radial-gradient(900px 520px at 55% 95%, rgba(155, 123, 255, .16), transparent 55%), linear-gradient(180deg, var(--bg0), var(--bg1));
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+        /* Main page spacing */
+        
+        .page {
+            padding-top: 26px;
+            padding-bottom: 56px;
+        }
+        /* Accessibility focus outline */
+        
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid rgba(64, 246, 255, .45);
+            outline-offset: 3px;
+            border-radius: 12px;
+        }
+        /* Navbar design */
+        
+        .navbar {
+            background: rgba(0, 0, 0, .35) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, .10);
+            backdrop-filter: blur(12px);
+        }
+        /* Navbar text colors */
+        
+        .nav-link,
+        .brand-text {
+            color: rgba(234, 240, 255, .88) !important;
+        }
+        /* Active navigation item */
+        
+        .nav-link.nav-active {
+            color: rgba(234, 240, 255, 1) !important;
+        }
+        /* Light mode navbar styling */
+        
+        .theme-light .navbar {
+            background: rgba(255, 255, 255, .82) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, .08);
+        }
+        
+        .theme-light .nav-link,
+        .theme-light .brand-text {
+            color: rgba(17, 24, 39, .86) !important;
+        }
+        
+        .theme-light .nav-link.nav-active {
+            color: rgba(17, 24, 39, 1) !important;
+        }
+        /* Main hero section */
+        
+        .pro-hero {
+            border-radius: var(--r-xl);
+            background: radial-gradient(700px 320px at 15% 30%, rgba(255, 79, 216, .22), transparent 60%), radial-gradient(650px 300px at 85% 30%, rgba(78, 161, 255, .24), transparent 60%), linear-gradient(135deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .03));
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Glow effect behind hero section */
+        
+        .pro-hero::after {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(90deg, rgba(64, 246, 255, .15), rgba(255, 79, 216, .12), rgba(155, 123, 255, .12));
+            filter: blur(24px);
+            opacity: .6;
+            z-index: 0;
+        }
+        
+        .theme-light .pro-hero::after {
+            opacity: .25;
+            filter: blur(18px);
+        }
+        /* Hero content uses grid layout */
+        
+        .pro-hero-inner {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1.25fr .75fr;
+            gap: 18px;
+            align-items: center;
+        }
+        /* Small label on top of hero */
+        
+        .pro-kicker {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, .28);
+            border: 1px solid rgba(255, 255, 255, .14);
+            color: rgba(234, 240, 255, .9);
+            font-weight: 900;
+            letter-spacing: .3px;
+            font-size: 13px;
+        }
+        
+        .theme-light .pro-kicker {
+            background: rgba(17, 24, 39, .06);
+            border: 1px solid rgba(0, 0, 0, .08);
+            color: rgba(17, 24, 39, .85);
+        }
+        /* Main hero heading */
+        
+        .pro-title {
+            margin: 12px 0 8px;
+            font-size: clamp(30px, 4vw, 52px);
+            line-height: 1.02;
+            letter-spacing: -.8px;
+            font-weight: 950;
+        }
+        /* Gradient text style */
+        
+        .pro-title .grad {
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        /* Hero paragraph text */
+        
+        .pro-sub {
+            margin: 0;
+            max-width: 70ch;
+            color: var(--muted);
+            font-size: 15.5px;
+            line-height: 1.58;
+        }
+        /* Action buttons area */
+        
+        .pro-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 18px;
+        }
+        /* Main button style */
+        
+        .btn-arcade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 950;
+            letter-spacing: .2px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .25);
+            color: var(--ink);
+            box-shadow: var(--shadow2);
+            transition: transform .16s ease, filter .16s ease, background .16s ease;
+            user-select: none;
+            cursor: pointer;
+        }
+        
+        .theme-light .btn-arcade {
+            background: rgba(17, 24, 39, .06);
+            border: 1px solid rgba(0, 0, 0, .08);
+            color: var(--ink);
+        }
+        /* Special button versions */
+        
+        .btn-arcade.primary {
+            border: 1px solid rgba(64, 246, 255, .25);
+            background: linear-gradient(135deg, rgba(78, 161, 255, .25), rgba(255, 79, 216, .20));
+        }
+        
+        .btn-arcade.gold {
+            border: 1px solid rgba(255, 216, 107, .28);
+            background: linear-gradient(135deg, rgba(255, 216, 107, .18), rgba(255, 79, 216, .14));
+        }
+        
+        .btn-arcade.danger {
+            border-color: rgba(255, 79, 79, .35);
+            background: rgba(255, 79, 79, .16);
+        }
+        /* Button hover and click effect */
+        
+        .btn-arcade:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.06);
+        }
+        
+        .btn-arcade:active {
+            transform: translateY(0) scale(.99);
+        }
+        /* Right side hero cards */
+        
+        .hero-side {
+            display: grid;
+            gap: 14px;
+        }
+        /* Shared card style */
+        
+        .player-card,
+        .motivate-card {
+            border-radius: var(--r-lg);
+            background: rgba(0, 0, 0, .22);
+            border: 1px solid rgba(255, 255, 255, .14);
+            box-shadow: var(--shadow2);
+            padding: 16px;
+        }
+        
+        .theme-light .player-card,
+        .theme-light .motivate-card {
+            background: rgba(255, 255, 255, .72);
+            border: 1px solid rgba(0, 0, 0, .08);
+        }
+        /* Top part of player profile card */
+        
+        .player-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        /* Circular avatar ring */
+        
+        .avatar-ring {
+            width: 74px;
+            height: 74px;
+            border-radius: 50%;
+            position: relative;
+            display: grid;
+            place-items: center;
+            background: conic-gradient(from 0deg, var(--cyan), var(--blue), var(--violet), var(--pink), var(--cyan));
+            box-shadow: 0 0 28px rgba(64, 246, 255, .22);
+            flex-shrink: 0;
+        }
+        
+        .avatar-ring::before {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            border-radius: 50%;
+            background: linear-gradient(180deg, rgba(6, 10, 28, .98), rgba(18, 24, 52, .98));
+        }
+        
+        .theme-light .avatar-ring::before {
+            background: linear-gradient(180deg, #ffffff, #f2f5ff);
+        }
+        
+        .avatar-ring span {
+            position: relative;
+            z-index: 1;
+            font-size: 28px;
+            font-weight: 950;
+            color: var(--ink);
+        }
+        /* Player name */
+        
+        .player-name {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 950;
+            letter-spacing: -.4px;
+        }
+        /* Player rank badge */
+        
+        .player-rank {
+            margin-top: 4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--ink);
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid var(--border);
+        }
+        
+        .rank-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gold);
+            box-shadow: 0 0 12px rgba(255, 216, 107, .8);
+        }
+        /* Small stat boxes */
+        
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+        
+        .mini {
+            border-radius: 14px;
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        
+        .mini .label {
+            font-size: 11px;
+            letter-spacing: .25px;
+            font-weight: 900;
+            color: rgba(234, 240, 255, .65);
+            text-transform: uppercase;
+        }
+        
+        .theme-light .mini .label {
+            color: rgba(17, 24, 39, .55);
+        }
+        
+        .mini .value {
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: 950;
+            color: rgba(234, 240, 255, .95);
+        }
+        
+        .theme-light .mini .value {
+            color: rgba(17, 24, 39, .92);
+        }
+        /* Motivation card heading and text */
+        
+        .motivate-card h3 {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 950;
+        }
+        
+        .motivate-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.55;
+            font-size: 14px;
+        }
+        /* Section heading style */
+        
+        .section-head {
+            margin-top: 20px;
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        
+        .section-head h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 950;
+            letter-spacing: -0.3px;
+        }
+        
+        .section-head p {
+            margin: 0;
+            color: var(--muted2);
+            font-weight: 700;
+        }
+        /* 2-column and 3-column layouts */
+        
+        .tiles2 {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        
+        .tiles3 {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        /* Tile/card styling */
+        
+        .tile {
+            position: relative;
+            border-radius: var(--r-xl);
+            padding: 18px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            overflow: hidden;
+        }
+        
+        .tile::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            opacity: .22;
+            filter: blur(18px);
+            z-index: 0;
+        }
+        
+        .tile>* {
+            position: relative;
+            z-index: 1;
+        }
+        /* Different glow color per tile type */
+        
+        .tile.t1::before {
+            background: radial-gradient(circle at 30% 20%, rgba(64, 246, 255, .9), transparent 55%);
+        }
+        
+        .tile.t2::before {
+            background: radial-gradient(circle at 30% 20%, rgba(255, 79, 216, .9), transparent 55%);
+        }
+        
+        .tile.t3::before {
+            background: radial-gradient(circle at 30% 20%, rgba(255, 216, 107, .85), transparent 55%);
+        }
+        /* Tile heading and paragraph */
+        
+        .tile-title {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+        }
+        
+        .tile-sub {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.5;
+            font-weight: 650;
+        }
+        /* Custom input design */
+        
+        .input-arcade {
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .22);
+            color: var(--ink);
+            font-weight: 800;
+            outline: none;
+        }
+        
+        .input-arcade::placeholder {
+            color: var(--muted2);
+        }
+        
+        .theme-light .input-arcade {
+            background: rgba(17, 24, 39, .05);
+            color: rgba(17, 24, 39, .92);
+            border: 1px solid rgba(0, 0, 0, .08);
+        }
+        /* Shared button row inside tiles */
+        
+        .tile-actions {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .tile-actions button,
+        .tile-actions a {
+            flex: 1;
+            text-align: center;
+            padding: 11px 12px;
+            border-radius: 14px;
+            font-weight: 950;
+            border: 1px solid rgba(255, 255, 255, .14);
+            background: rgba(0, 0, 0, .22);
+            color: rgba(234, 240, 255, .92);
+            cursor: pointer;
+            text-decoration: none;
+            transition: transform .15s ease, filter .15s ease;
+        }
+        
+        .theme-light .tile-actions button,
+        .theme-light .tile-actions a {
+            border: 1px solid rgba(0, 0, 0, .08);
+            background: rgba(17, 24, 39, .05);
+            color: rgba(17, 24, 39, .92);
+        }
+        
+        .tile-actions .play {
+            border: 1px solid rgba(64, 246, 255, .24);
+            background: rgba(64, 246, 255, .10);
+            color: rgba(234, 240, 255, .98);
+        }
+        
+        .tile-actions .gold {
+            border: 1px solid rgba(255, 216, 107, .24);
+            background: rgba(255, 216, 107, .10);
+        }
+        
+        .theme-light .tile-actions .play {
+            border: 1px solid rgba(59, 130, 246, .25);
+            background: rgba(59, 130, 246, .10);
+            color: rgba(17, 24, 39, .92);
+        }
+        
+        .tile-actions button:hover,
+        .tile-actions a:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+        
+        .tile-actions button:active,
+        .tile-actions a:active {
+            transform: translateY(0) scale(.99);
+        }
+        /* Message text style */
+        
+        .msg {
+            margin-top: 10px;
+            font-weight: 800;
+            color: var(--muted);
+        }
+        
+        .msg.hidden {
+            display: none;
+        }
+        /* Username preview box */
+        
+        .preview-name {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, .18);
+            border: 1px solid var(--border);
+        }
+        
+        .theme-light .preview-name {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .preview-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 38px;
+            height: 38px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-weight: 950;
+            background: linear-gradient(135deg, rgba(78, 161, 255, .25), rgba(255, 79, 216, .24));
+            border: 1px solid rgba(255, 255, 255, .14);
+        }
+        
+        .preview-text {
+            font-weight: 900;
+        }
+        /* Best stats card design */
+        
+        .best-box {
+            margin-top: 14px;
+            border-radius: var(--r-xl);
+            padding: 14px;
+            background: rgba(0, 0, 0, .18);
+            border: 1px solid rgba(255, 255, 255, .12);
+        }
+        
+        .theme-light .best-box {
+            background: rgba(17, 24, 39, .04);
+            border: 1px solid rgba(0, 0, 0, .08);
+        }
+        
+        .stat-list {
+            margin: 12px 0 0;
+            padding: 0;
+            list-style: none;
+            display: grid;
+            gap: 10px;
+        }
+        
+        .stat-line {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid rgba(255, 255, 255, .08);
+        }
+        
+        .theme-light .stat-line {
+            background: rgba(17, 24, 39, .03);
+            border: 1px solid rgba(0, 0, 0, .06);
+        }
+        
+        .stat-name {
+            color: var(--muted);
+            font-weight: 800;
+        }
+        
+        .stat-value {
+            font-weight: 950;
+            color: var(--ink);
+            text-align: right;
+        }
+        /* Progress box with bars */
+        
+        .progress-box {
+            display: grid;
+            gap: 12px;
+            margin-top: 14px;
+        }
+        
+        .progress-item {
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .18);
+        }
+        
+        .theme-light .progress-item {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .progress-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .progress-head strong {
+            font-weight: 900;
+        }
+        
+        .progress-head span {
+            color: var(--muted);
+            font-weight: 800;
+            font-size: 13px;
+        }
+        
+        .bar {
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .08);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, .06);
+        }
+        
+        .theme-light .bar {
+            background: rgba(17, 24, 39, .08);
+            border: 1px solid rgba(0, 0, 0, .04);
+        }
+        /* The filled part of progress bar */
+        
+        .fill {
+            height: 100%;
+            width: 0%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            transition: width .35s ease;
+        }
+        /* Quick play cards layout */
+        
+        .play-cards {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        
+        .play-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--r-xl);
+            padding: 18px;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .03));
+            box-shadow: var(--shadow2);
+        }
+        /* Glow circle decoration for play cards */
+        
+        .play-card::before {
+            content: "";
+            position: absolute;
+            inset: -40% auto auto -10%;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            filter: blur(10px);
+            opacity: .28;
+        }
+        
+        .play-card.pc1::before {
+            background: rgba(64, 246, 255, .65);
+        }
+        
+        .play-card.pc2::before {
+            background: rgba(255, 79, 216, .65);
+        }
+        
+        .play-card.pc3::before {
+            background: rgba(255, 216, 107, .65);
+        }
+        
+        .play-icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .play-card h3 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            font-weight: 950;
+        }
+        
+        .play-card p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.5;
+            min-height: 66px;
+        }
+        
+        .play-card .tile-actions {
+            margin-top: 14px;
+        }
+        /* Danger zone section */
+        
+        .danger-zone {
+            margin-top: 14px;
+            border-radius: var(--r-xl);
+            padding: 18px;
+            background: rgba(255, 79, 79, .10);
+            border: 1px solid rgba(255, 79, 79, .25);
+            box-shadow: var(--shadow2);
+        }
+        
+        .danger-zone h3 {
+            margin: 0 0 8px;
+            font-size: 19px;
+            font-weight: 950;
+        }
+        
+        .danger-zone p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+        /* Footer style */
+        
+        .footer {
+            background: rgba(0, 0, 0, .35);
+            border-top: 1px solid rgba(255, 255, 255, .10);
+        }
+        
+        .footer .muted,
+        .footer a {
+            color: rgba(234, 240, 255, .72) !important;
+        }
+        
+        .theme-light .footer {
+            background: rgba(255, 255, 255, .75);
+            border-top: 1px solid rgba(0, 0, 0, .08);
+        }
+        
+        .theme-light .footer .muted,
+        .theme-light .footer a {
+            color: rgba(17, 24, 39, .7) !important;
+        }
+        /* Reset profile button style */
+        
+        .reset-profile-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-height: 68px;
+            text-align: left;
+        }
+        
+        .reset-profile-btn span:last-child {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.15;
+        }
+        
+        .reset-profile-btn strong {
+            font-size: 18px;
+            font-weight: 950;
+        }
+        
+        .reset-profile-btn small {
+            margin-top: 4px;
+            font-size: 12px;
+            font-weight: 750;
+            opacity: .82;
+        }
+        
+        .reset-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        /* Hide modal when needed */
+        
+        .arcade-modal.hidden {
+            display: none;
+        }
+        /* Modal full screen container */
+        
+        .arcade-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+        }
+        /* Dark background behind modal */
+        
+        .arcade-modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(4, 8, 20, .62);
+            backdrop-filter: blur(8px);
+        }
+        /* Main modal box */
+        
+        .arcade-modal-card {
+            position: relative;
+            width: min(92vw, 560px);
+            margin: 8vh auto 0;
+            padding: 24px;
+            border-radius: 24px;
+            background: radial-gradient(500px 220px at 18% 18%, rgba(255, 79, 216, .18), transparent 60%), radial-gradient(500px 220px at 82% 20%, rgba(78, 161, 255, .18), transparent 60%), linear-gradient(180deg, rgba(12, 18, 40, .96), rgba(7, 11, 28, .98));
+            border: 1px solid rgba(255, 255, 255, .14);
+            box-shadow: 0 30px 90px rgba(0, 0, 0, .48);
+            color: var(--ink);
+            overflow: hidden;
+        }
+        
+        .theme-light .arcade-modal-card {
+            background: radial-gradient(500px 220px at 18% 18%, rgba(236, 72, 153, .12), transparent 60%), radial-gradient(500px 220px at 82% 20%, rgba(59, 130, 246, .12), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(245, 247, 255, .98));
+            border: 1px solid rgba(0, 0, 0, .08);
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .14);
+        }
+        /* Modal close button */
+        
+        .arcade-modal-close {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .06);
+            color: var(--ink);
+            font-size: 18px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform .16s ease, filter .16s ease;
+        }
+        
+        .theme-light .arcade-modal-close {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .arcade-modal-close:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+        /* Badge at top of modal */
+        
+        .arcade-modal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: .3px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid var(--border);
+            color: var(--muted);
+        }
+        
+        .arcade-modal-title {
+            margin: 14px 0 8px;
+            font-size: clamp(26px, 3vw, 34px);
+            line-height: 1.05;
+            font-weight: 950;
+            letter-spacing: -.5px;
+        }
+        
+        .arcade-modal-desc {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 15px;
+            max-width: 48ch;
+        }
+        /* Preview box inside modal */
+        
+        .reset-preview-box {
+            margin-top: 18px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+        }
+        
+        .theme-light .reset-preview-box {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .reset-preview-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+            font-weight: 950;
+            background: linear-gradient(135deg, rgba(78, 161, 255, .28), rgba(255, 79, 216, .24));
+            border: 1px solid rgba(255, 255, 255, .14);
+        }
+        
+        .reset-preview-label {
+            font-size: 12px;
+            font-weight: 850;
+            color: var(--muted2);
+            text-transform: uppercase;
+            letter-spacing: .25px;
+        }
+        
+        .reset-preview-name {
+            margin-top: 3px;
+            font-size: 20px;
+            font-weight: 950;
+            color: var(--ink);
+        }
+        /* Benefit items shown in modal */
+        
+        .reset-benefits {
+            margin-top: 16px;
+            display: grid;
+            gap: 10px;
+        }
+        
+        .reset-benefit {
+            padding: 11px 13px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(255, 255, 255, .08);
+            color: var(--muted);
+            font-weight: 800;
+            line-height: 1.4;
+        }
+        
+        .theme-light .reset-benefit {
+            background: rgba(17, 24, 39, .03);
+            border: 1px solid rgba(0, 0, 0, .06);
+        }
+        /* Modal action buttons */
+        
+        .arcade-modal-actions {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .arcade-modal-actions .btn-arcade {
+            width: 100%;
+            min-height: 50px;
+        }
+        
+        .hidden-file {
+            display: none;
+        }
+        /* Soft pastel style for reset all button */
+        
+        .reset-soft-btn {
+            appearance: none;
+            border: 1px solid rgba(180, 193, 231, 0.55);
+            background: linear-gradient(135deg, #dbeafe 0%, #e7ddfb 52%, #f3dbe8 100%);
+            color: #182033;
+            min-height: 62px;
+            padding: 12px 22px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 18px;
+            font-weight: 950;
+            letter-spacing: -0.2px;
+            box-shadow: 0 8px 18px rgba(133, 154, 205, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+            cursor: pointer;
+            transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, opacity .18s ease;
+        }
+        
+        .reset-soft-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 24px rgba(133, 154, 205, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+            filter: brightness(1.02);
+        }
+        
+        .reset-soft-btn:active {
+            transform: translateY(0) scale(.985);
+        }
+        
+        .reset-soft-btn[disabled] {
+            cursor: default;
+            opacity: .92;
+        }
+        
+        .reset-soft-icon {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 900;
+            color: #ffffff;
+            background: linear-gradient(180deg, #7eb4ff 0%, #5c95ee 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 4px 8px rgba(92, 149, 238, 0.28);
+            flex-shrink: 0;
+        }
+        
+        .reset-soft-text {
+            line-height: 1;
+            font-size: 18px;
+            font-weight: 950;
+            color: #182033;
+        }
+        
+        .theme-light .reset-soft-btn {
+            border: 1px solid rgba(180, 193, 231, 0.6);
+            background: linear-gradient(135deg, #dcecff 0%, #eadffd 52%, #f6dcea 100%);
+            color: #1f2937;
+        }
+        
+        .theme-light .reset-soft-text {
+            color: #1f2937;
+        }
+        
+        .theme-dark .reset-soft-btn,
+         :not(.theme-light) .reset-soft-btn {
+            border: 1px solid rgba(197, 208, 255, 0.18);
+            background: linear-gradient(135deg, rgba(219, 234, 254, 0.96) 0%, rgba(231, 221, 251, 0.95) 52%, rgba(243, 219, 232, 0.95) 100%);
+            color: #182033;
+        }
+        /* Responsive adjustments for tablets */
+        
+        @media (max-width: 1100px) {
+            .mini-grid,
+            .play-cards,
+            .tiles3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        /* Responsive adjustments for smaller tablets */
+        
+        @media (max-width: 980px) {
+            .pro-hero-inner,
+            .tiles2,
+            .tiles3,
+            .play-cards {
+                grid-template-columns: 1fr;
+            }
+            .mini-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        /* Responsive adjustments for mobile */
+        
+        @media (max-width: 720px) {
+            .arcade-modal-card {
+                width: min(94vw, 560px);
+                margin-top: 5vh;
+                padding: 20px;
+            }
+            .arcade-modal-actions {
+                grid-template-columns: 1fr;
+            }
+            .reset-profile-btn {
+                min-height: 74px;
+            }
+        }
+        /* Extra small mobile adjustments */
+        
+        @media (max-width: 640px) {
+            .pro-title {
+                font-size: 32px;
+            }
+            .mini-grid {
+                grid-template-columns: 1fr;
+            }
+            .tile-actions {
+                flex-direction: column;
+            }
+            .player-top {
+                align-items: flex-start;
+            }
+            .reset-soft-btn {
+                width: 100%;
+                min-width: 0;
+                justify-content: center;
+                font-size: 17px;
+            }
+            .reset-soft-text {
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Skip link for accessibility -->
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Main navbar -->
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <!-- Desktop navigation -->
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link nav-active" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </nav>
+
+            <!-- Mobile menu button -->
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+        </div>
+
+        <!-- Mobile menu items -->
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link nav-active" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main page content -->
+    <main id="main" class="container page">
+
+        <!-- Profile hero section -->
+        <section class="pro-hero" aria-labelledby="proTitle">
+            <div class="pro-hero-inner">
+                <div>
+                    <div class="pro-kicker">👤 Player Hub • 🎮 Local arcade profile</div>
+                    <h1 id="proTitle" class="pro-title">
+                        Ready for your next <span class="grad">brain battle</span>?
+                    </h1>
+                    <p class="pro-sub">
+                        This is your command center. Set your username, track best scores, and jump straight into your next challenge. Your progress is stored locally on this device.
+                    </p>
+
+                    <!-- Quick action buttons -->
+                    <div class="pro-actions">
+                        <a class="btn-arcade primary" href="index.html#games">▶ Play Now</a>
+                        <a class="btn-arcade gold" href="story.html">✨ Continue Story</a>
+                        <a class="btn-arcade" href="leaderboard.html">🏆 View Leaderboard</a>
+                    </div>
+                </div>
+
+                <!-- Right side cards -->
+                <div class="hero-side">
+                    <!-- Player summary card -->
+                    <aside class="player-card" aria-label="Player profile summary">
+                        <div class="player-top">
+                            <div class="avatar-ring" aria-hidden="true">
+                                <span id="avatarInitial">G</span>
+                            </div>
+
+                            <div>
+                                <h2 class="player-name" id="heroPlayerName">Guest</h2>
+                                <div class="player-rank">
+                                    <span class="rank-dot" aria-hidden="true"></span>
+                                    <span id="playerRank">Rookie Mind</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick profile stats -->
+                        <div class="mini-grid" aria-label="Quick stats">
+                            <div class="mini">
+                                <div class="label">Total Plays</div>
+                                <div class="value" id="statPlays">0</div>
+                            </div>
+                            <div class="mini">
+                                <div class="label">Achievements</div>
+                                <div class="value" id="statAch">0</div>
+                            </div>
+                            <div class="mini">
+                                <div class="label">Story</div>
+                                <div class="value" id="statStory">0%</div>
+                            </div>
+                            <div class="mini">
+                                <div class="label">Best Game</div>
+                                <div class="value" id="statBestGame">—</div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Recommended action card -->
+                    <aside class="motivate-card" aria-label="Recommended next action">
+                        <h3>Recommended next move</h3>
+                        <p id="nextActionText">
+                            Start a game and build your first high score.
+                        </p>
+                        <div class="tile-actions">
+                            <a href="index.html#games" class="play" id="nextActionBtn">Play a challenge</a>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <!-- Account stats heading -->
+        <div class="section-head">
+            <h2>Account & Stats</h2>
+        </div>
+
+        <!-- Username and best stats section -->
+        <section class="tiles2" aria-label="Profile tiles">
+            <!-- Username card -->
+            <article class="tile t1" aria-label="Username settings">
+                <h3 class="tile-title">Username</h3>
+                <p class="tile-sub">
+                    Choose the name that appears in your local runs and leaderboard records.
+                </p>
+
+                <label for="usernameInput" class="tile-sub" style="display:block; margin-top:10px;">
+                    Display name
+                </label>
+                <input class="input-arcade" id="usernameInput" type="text" maxlength="20" placeholder="e.g. Alex" autocomplete="nickname" />
+
+                <!-- Username live preview -->
+                <div class="preview-name" aria-label="Username preview">
+                    <div class="preview-badge" id="previewBadge">G</div>
+                    <div>
+                        <div class="tile-sub" style="margin-bottom:4px;">Profile preview</div>
+                        <div class="preview-text" id="previewName">Guest</div>
+                    </div>
+                </div>
+
+                <!-- Username action buttons -->
+                <div class="tile-actions">
+                    <button class="play" id="btnSave" type="button">Save Username</button>
+                    <button id="btnGuest" type="button">Use Guest</button>
+                </div>
+
+                <!-- Status message text -->
+                <p class="msg hidden" id="msg"></p>
+
+                <!-- Reset profile name button -->
+                <div class="tile-actions" style="margin-top:12px;">
+                    <button class="btn-arcade danger reset-profile-btn" id="btnResetProfile" type="button" style="width:100%;">
+                        <span class="reset-icon" aria-hidden="true">🧹</span>
+                        <span>
+                            <strong>Reset Profile Name</strong>
+                        </span>
+                    </button>
+                </div>
+            </article>
+
+            <!-- Best stats card -->
+            <article class="tile t2" aria-label="Best stats">
+                <h3 class="tile-title">Your Best Stats</h3>
+                <p class="tile-sub">
+                    Clean snapshot of your strongest scores and current story journey.
+                </p>
+
+                <div class="best-box" aria-label="Best scores">
+                    <ul class="stat-list">
+                        <li class="stat-line">
+                            <span class="stat-name">Image Guess</span>
+                            <span class="stat-value" id="bestImage">—</span>
+                        </li>
+                        <li class="stat-line">
+                            <span class="stat-name">Memory Test</span>
+                            <span class="stat-value" id="bestMemory">—</span>
+                        </li>
+                        <li class="stat-line">
+                            <span class="stat-name">Card Matching</span>
+                            <span class="stat-value" id="bestMatch">—</span>
+                        </li>
+                        <li class="stat-line">
+                            <span class="stat-name">Story Progress</span>
+                            <span class="stat-value" id="storyProgress">0%</span>
+                        </li>
+                    </ul>
+
+                    <div class="tile-actions" style="margin-top:14px;">
+                        <a href="index.html#games" class="play">Play Games</a>
+                        <a href="story.html">Story Mode</a>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Progress section heading -->
+        <div class="section-head">
+            <h2>Progress Overview</h2>
+        </div>
+
+        <!-- Progress section -->
+        <section class="tiles2" aria-label="Progress overview">
+            <!-- Progress bar card -->
+            <article class="tile t3">
+                <h3 class="tile-title">Arcade Progress</h3>
+                <p class="tile-sub">
+                    A visual summary makes the page feel more interactive and gives the player a reason to continue.
+                </p>
+
+                <div class="progress-box">
+                    <div class="progress-item">
+                        <div class="progress-head">
+                            <strong>Story completion</strong>
+                            <span id="storyBarLabel">0%</span>
+                        </div>
+                        <div class="bar">
+                            <div class="fill" id="storyBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-head">
+                            <strong>Achievement progress</strong>
+                            <span id="achBarLabel">0%</span>
+                        </div>
+                        <div class="bar">
+                            <div class="fill" id="achBar"></div>
+                        </div>
+                    </div>
+
+                    <div class="progress-item">
+                        <div class="progress-head">
+                            <strong>Arcade activity</strong>
+                            <span id="playsBarLabel">0%</span>
+                        </div>
+                        <div class="bar">
+                            <div class="fill" id="playsBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Player tools card -->
+            <article class="tile t1">
+                <h3 class="tile-title">Player Tools</h3>
+                <p class="tile-sub">
+                    Use your profile controls to personalise your account and keep your progress easy to manage.
+                </p>
+
+                <div class="best-box">
+                    <ul class="stat-list">
+                        <li class="stat-line">
+                            <span class="stat-name">Profile mode</span>
+                            <span class="stat-value">Local player</span>
+                        </li>
+                        <li class="stat-line">
+                            <span class="stat-name">Name preview</span>
+                            <span class="stat-value" id="toolPreviewName">Guest</span>
+                        </li>
+                        <li class="stat-line">
+                            <span class="stat-name">Data storage</span>
+                            <span class="stat-value">Browser save</span>
+                        </li>
+                    </ul>
+
+                    <div class="tile-actions">
+                        <button class="play" id="btnRefreshMini" type="button">Refresh Profile</button>
+                        <a href="leaderboard.html">View Scores</a>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- Quick play section heading -->
+        <div class="section-head">
+            <h2>Jump Back In</h2>
+        </div>
+
+        <!-- Game quick access cards -->
+        <section class="play-cards" aria-label="Game quick entry">
+            <article class="play-card pc1">
+                <div class="play-icon" aria-hidden="true">🖼️</div>
+                <h3>Image Guess</h3>
+                <p>
+                    Quick, fun, and easy to restart. Great for setting a new personal best in seconds.
+                </p>
+                <div class="tile-actions">
+                    <a class="play" href="games/image-guess/index.html">Play Now</a>
+                </div>
+            </article>
+
+            <article class="play-card pc2">
+                <div class="play-icon" aria-hidden="true">🧠</div>
+                <h3>Memory Test</h3>
+                <p>
+                    Train focus and reaction speed. Perfect if you want a more intense brain challenge.
+                </p>
+                <div class="tile-actions">
+                    <a class="play" href="games/memory-test/index.html">Start Challenge</a>
+                </div>
+            </article>
+
+            <article class="play-card pc3">
+                <div class="play-icon" aria-hidden="true">📖</div>
+                <h3>Story Mode</h3>
+                <p>
+                    Return to your fantasy adventure and continue your journey through the magical world.
+                </p>
+                <div class="tile-actions">
+                    <a class="play" href="story.html">Continue Story</a>
+                </div>
+            </article>
+        </section>
+
+        <!-- Data management heading -->
+        <div class="section-head">
+            <h2>Data Management</h2>
+        </div>
+
+        <!-- Danger zone for resetting data -->
+        <section class="danger-zone" aria-label="Data management">
+            <h3>Danger zone</h3>
+            <p>
+                You can clear local saved data for testing or for a fresh start. This removes username, scores, achievements, and story progress from this browser.
+            </p>
+
+            <div class="pro-actions" style="margin-top:14px;">
+                <button class="reset-soft-btn" id="btnResetAll" type="button" aria-label="Reset all site data">
+                    <span class="reset-soft-icon" id="resetAllIcon" aria-hidden="true">↺</span>
+                    <span class="reset-soft-text" id="resetAllTitle">Reset All Site Data</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Reset profile name modal -->
+        <div class="arcade-modal hidden" id="resetProfileModal" aria-hidden="true">
+            <div class="arcade-modal-backdrop" data-close-reset-modal></div>
+
+            <div class="arcade-modal-card" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle" aria-describedby="resetModalDesc">
+                <button class="arcade-modal-close" id="btnCloseResetModal" type="button" aria-label="Close reset profile dialog">✕</button>
+
+                <div class="arcade-modal-badge">Profile Action</div>
+
+                <h3 id="resetModalTitle" class="arcade-modal-title">Reset profile name?</h3>
+                <p id="resetModalDesc" class="arcade-modal-desc">
+                    Your username will go back to <strong>Guest</strong>, but your scores, achievements, and story progress will stay safe.
+                </p>
+
+                <div class="reset-preview-box">
+                    <div class="reset-preview-avatar" aria-hidden="true">G</div>
+                    <div>
+                        <div class="reset-preview-label">After reset</div>
+                        <div class="reset-preview-name">Guest</div>
+                    </div>
+                </div>
+
+                <div class="reset-benefits">
+                    <div class="reset-benefit">✅ Scores stay saved</div>
+                    <div class="reset-benefit">✅ Story progress stays saved</div>
+                    <div class="reset-benefit">✅ You can jump back into the arcade right away</div>
+                </div>
+
+                <div class="arcade-modal-actions">
+                    <button class="btn-arcade" id="btnCancelResetProfile" type="button">Keep Current Name</button>
+                    <button class="btn-arcade danger" id="btnConfirmResetProfile" type="button">Reset to Guest</button>
+                    <a class="btn-arcade primary" id="btnResetAndPlay" href="index.html#games">Reset &amp; Play</a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer area -->
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">© <span id="year"></span> Brain Challenge Arcade</div>
+            <div class="footer-links">
+                <a href="settings.html">Settings</a>
+                <a href="about.html">Credits</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- External JavaScript files -->
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Show the current year in the footer
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        // Mobile menu open/close logic
+        (function() {
+            const btn = document.querySelector(".nav-toggle");
+            const menu = document.getElementById("mobileMenu");
+            if (!btn || !menu) return;
+            btn.addEventListener("click", () => {
+                const isOpen = btn.getAttribute("aria-expanded") === "true";
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+
+        // Shortcut function for getElementById
+        const $ = (id) => document.getElementById(id);
+
+        // Safely get data from localStorage
+        function safeGet(key, fallback) {
+            try {
+                const v = localStorage.getItem(key);
+                return v === null ? fallback : v;
+            } catch {
+                return fallback;
+            }
+        }
+
+        // Safely save data to localStorage
+        function safeSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch {}
+        }
+
+        // Safely remove data from localStorage
+        function safeRemove(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch {}
+        }
+
+        // Show a message under the username area
+        function showMsg(text, isError = false) {
+            const el = $("msg");
+            el.textContent = text;
+            el.classList.remove("hidden");
+            el.style.color = isError ? "var(--danger)" : "var(--muted)";
+        }
+
+        // Hide the message
+        function hideMsg() {
+            $("msg").classList.add("hidden");
+        }
+
+        // All storage keys used in this page
+        const KEYS = {
+            username: "bca_username",
+            totalPlays: "bca_totalPlays",
+            achievementsCount: "bca_achievementsCount",
+            bestImage: "bca_best_imageGuess",
+            bestMemory: "bca_best_memoryTest",
+            bestMatch: "bca_best_cardMatching",
+            storyProgress: "bca_story_progress",
+            unlockedAchievements: "bca_achievements_unlocked",
+            storyState: "bca_story_state",
+            runsImage: "bca_runs_imageGuess",
+            runsMemory: "bca_runs_memoryTest",
+            runsMatch: "bca_runs_cardMatching"
+        };
+
+        // Clean the username and return Guest if empty
+        function sanitizeName(name) {
+            const trimmed = String(name || "").trim();
+            return trimmed.length ? trimmed : "Guest";
+        }
+
+        // Get first letter of username for avatar
+        function getInitial(name) {
+            const clean = sanitizeName(name);
+            return clean.charAt(0).toUpperCase();
+        }
+
+        // Try to parse string as JSON if possible
+        function parseJSONMaybe(raw) {
+            if (raw === null || raw === undefined || raw === "") return null;
+            if (typeof raw !== "string") return raw;
+            try {
+                return JSON.parse(raw);
+            } catch {
+                return raw;
+            }
+        }
+
+        // Format best score display depending on game type
+        function formatBestScore(raw, gameType) {
+            const value = parseJSONMaybe(raw);
+
+            if (value === null || value === undefined || value === "" || value === "—") {
+                return "—";
+            }
+
+            if (typeof value === "number") return String(value);
+
+            if (typeof value === "string") {
+                const asNum = Number(value);
+                if (Number.isFinite(asNum)) return String(asNum);
+                return value;
+            }
+
+            if (typeof value === "object") {
+                if (gameType === "memory") {
+                    const level = Number(value.level || 0);
+                    const score = Number(value.value || 0);
+                    if (level > 0 && score > 0) return "Lvl " + level + " • Score " + score;
+                    if (level > 0) return "Level " + level;
+                    if (score > 0) return String(score);
+                }
+
+                if (gameType === "match") {
+                    const level = Number(value.level || 0);
+                    const display = value.display ? String(value.display) : "";
+                    const seconds = Number(value.value || 0);
+
+                    if (level > 0 && display) return "Lvl " + level + " • " + display;
+                    if (level > 0 && seconds > 0) return "Lvl " + level + " • " + seconds + "s";
+                    if (display) return display;
+                }
+
+                if ("value" in value) return String(value.value);
+            }
+
+            return "—";
+        }
+
+        // Get story progress percent
+        function getStoryPercent() {
+            const sp = Number(safeGet(KEYS.storyProgress, "0")) || 0;
+            return Math.max(0, Math.min(100, sp));
+        }
+
+        // Get achievement count
+        function getAchievementsCount() {
+            const stored = Number(safeGet(KEYS.achievementsCount, "0"));
+            if (Number.isFinite(stored) && stored > 0) return stored;
+
+            const unlocked = parseJSONMaybe(safeGet(KEYS.unlockedAchievements, "[]"));
+            if (Array.isArray(unlocked)) return unlocked.length;
+
+            return 0;
+        }
+
+        // Get total number of plays
+        function getTotalPlays() {
+            const direct = Number(safeGet(KEYS.totalPlays, "0"));
+            if (Number.isFinite(direct) && direct > 0) return direct;
+
+            const img = parseJSONMaybe(safeGet(KEYS.runsImage, "[]"));
+            const mem = parseJSONMaybe(safeGet(KEYS.runsMemory, "[]"));
+            const match = parseJSONMaybe(safeGet(KEYS.runsMatch, "[]"));
+
+            let count = 0;
+            if (Array.isArray(img)) count += img.length;
+            if (Array.isArray(mem)) count += mem.length;
+            if (Array.isArray(match)) count += match.length;
+
+            return count;
+        }
+
+        // Decide which game is the best based on score strength
+        function getBestGameLabel(imageText, memoryText, matchText) {
+            const candidates = [{
+                name: "Image",
+                score: extractStrength(imageText)
+            }, {
+                name: "Memory",
+                score: extractStrength(memoryText)
+            }, {
+                name: "Cards",
+                score: extractStrength(matchText)
+            }];
+
+            candidates.sort((a, b) => b.score - a.score);
+            if (candidates[0].score <= 0) return "—";
+            return candidates[0].name;
+        }
+
+        // Extract biggest number from text
+        function extractStrength(text) {
+            if (!text || text === "—") return 0;
+            const nums = String(text).match(/\d+/g);
+            if (!nums) return 0;
+            return Math.max.apply(null, nums.map(Number));
+        }
+
+        // Calculate player rank using plays, achievements, and story progress
+        function getPlayerRank(plays, ach, story) {
+            const power = plays + ach * 6 + story;
+
+            if (power >= 180) return "Legend Mind";
+            if (power >= 120) return "Master Thinker";
+            if (power >= 75) return "Elite Challenger";
+            if (power >= 35) return "Rising Strategist";
+            return "Rookie Mind";
+        }
+
+        // Recommend what the player should do next
+        function getRecommendation(plays, story, imageText, memoryText, matchText) {
+            if (plays === 0) {
+                return {
+                    text: "You have not started yet. Enter your first challenge and build your first high score.",
+                    label: "Play a challenge",
+                    href: "index.html#games"
+                };
+            }
+
+            if (story < 100 && story > 0) {
+                return {
+                    text: "Your adventure is not finished yet. Continue Story Mode and push your progress closer to 100%.",
+                    label: "Continue Story",
+                    href: "story.html"
+                };
+            }
+
+            if (imageText === "—") {
+                return {
+                    text: "Try Image Guess next. It is the fastest way to grow your leaderboard stats.",
+                    label: "Play Image Guess",
+                    href: "games/image-guess/index.html"
+                };
+            }
+
+            if (memoryText === "—") {
+                return {
+                    text: "Memory Test is still waiting for your best run. Challenge your focus and reaction speed.",
+                    label: "Play Memory Test",
+                    href: "games/memory-test/index.html"
+                };
+            }
+
+            if (matchText === "—") {
+                return {
+                    text: "You have room to improve in Card Matching. Jump in and unlock another best score.",
+                    label: "Play Card Matching",
+                    href: "games/card-matching/index.html"
+                };
+            }
+
+            return {
+                text: "You already have progress across the arcade. Try to beat your best score and climb even higher.",
+                label: "Beat your high score",
+                href: "index.html#games"
+            };
+        }
+
+        // Update all places showing username and initials
+        function updateUsernamePreview(name) {
+            const clean = sanitizeName(name);
+            const initial = getInitial(clean);
+            $("previewName").textContent = clean;
+            $("previewBadge").textContent = initial;
+            $("avatarInitial").textContent = initial;
+            $("heroPlayerName").textContent = clean;
+            $("toolPreviewName").textContent = clean;
+        }
+
+        // Load saved username from storage
+        function loadUsername() {
+            const name = sanitizeName(safeGet(KEYS.username, "Guest"));
+            $("usernameInput").value = name === "Guest" ? "" : name;
+            updateUsernamePreview(name);
+        }
+
+        // Refresh all stats shown on the page
+        function refreshStats() {
+            const name = sanitizeName(safeGet(KEYS.username, "Guest"));
+            const plays = getTotalPlays();
+            const ach = getAchievementsCount();
+            const story = getStoryPercent();
+
+            const bestImageText = formatBestScore(safeGet(KEYS.bestImage, "—"), "image");
+            const bestMemoryText = formatBestScore(safeGet(KEYS.bestMemory, "—"), "memory");
+            const bestMatchText = formatBestScore(safeGet(KEYS.bestMatch, "—"), "match");
+            const bestGame = getBestGameLabel(bestImageText, bestMemoryText, bestMatchText);
+
+            updateUsernamePreview(name);
+
+            $("statPlays").textContent = String(plays);
+            $("statAch").textContent = String(ach);
+            $("statStory").textContent = story + "%";
+            $("statBestGame").textContent = bestGame;
+
+            $("bestImage").textContent = bestImageText;
+            $("bestMemory").textContent = bestMemoryText;
+            $("bestMatch").textContent = bestMatchText;
+            $("storyProgress").textContent = story + "%";
+
+            const rank = getPlayerRank(plays, ach, story);
+            $("playerRank").textContent = rank;
+
+            const storyFill = Math.max(0, Math.min(100, story));
+            const achFill = Math.max(0, Math.min(100, Math.round((ach / 12) * 100)));
+            const playsFill = Math.max(0, Math.min(100, Math.round((plays / 30) * 100)));
+
+            $("storyBar").style.width = storyFill + "%";
+            $("storyBarLabel").textContent = storyFill + "%";
+
+            $("achBar").style.width = achFill + "%";
+            $("achBarLabel").textContent = ach + "/12";
+
+            $("playsBar").style.width = playsFill + "%";
+            $("playsBarLabel").textContent = plays + " plays";
+
+            const rec = getRecommendation(plays, story, bestImageText, bestMemoryText, bestMatchText);
+            $("nextActionText").textContent = rec.text;
+            $("nextActionBtn").textContent = rec.label;
+            $("nextActionBtn").setAttribute("href", rec.href);
+        }
+
+        // Save username after validation
+        function saveUsername() {
+            const input = $("usernameInput").value.trim();
+
+            if (input.length === 0) {
+                safeSet(KEYS.username, "Guest");
+                loadUsername();
+                refreshStats();
+                showMsg("Username set to Guest.");
+                return;
+            }
+
+            const ok = /^[a-zA-Z0-9 _-]{2,20}$/.test(input);
+            if (!ok) {
+                showMsg("Use 2–20 characters: letters, numbers, spaces, _ or -.", true);
+                return;
+            }
+
+            safeSet(KEYS.username, input);
+            loadUsername();
+            refreshStats();
+            showMsg("Username saved!");
+        }
+
+        // Reset username to Guest
+        function useGuest() {
+            safeSet(KEYS.username, "Guest");
+            $("usernameInput").value = "";
+            loadUsername();
+            refreshStats();
+            showMsg("Using Guest.");
+        }
+
+        // Open reset profile modal
+        function openResetProfileModal() {
+            const modal = $("resetProfileModal");
+            modal.classList.remove("hidden");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        // Close reset profile modal
+        function closeResetProfileModal() {
+            const modal = $("resetProfileModal");
+            modal.classList.add("hidden");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        // Confirm resetting profile name
+        function confirmResetProfile(goPlay = false) {
+            safeSet(KEYS.username, "Guest");
+            $("usernameInput").value = "";
+            loadUsername();
+            refreshStats();
+            closeResetProfileModal();
+            showMsg("Profile reset to Guest.");
+
+            if (goPlay) {
+                window.location.href = "index.html#games";
+            }
+        }
+
+        // Change reset all button text and icon depending on state
+        function setResetAllButtonState(state) {
+            const btn = $("btnResetAll");
+            const icon = $("resetAllIcon");
+            const title = $("resetAllTitle");
+
+            if (!btn || !icon || !title) return;
+
+            btn.disabled = false;
+
+            if (state === "idle") {
+                icon.textContent = "↺";
+                title.textContent = "Reset All Site Data";
+                return;
+            }
+
+            if (state === "checking") {
+                btn.disabled = true;
+                icon.textContent = "⏳";
+                title.textContent = "Checking...";
+                return;
+            }
+
+            if (state === "done") {
+                icon.textContent = "✅";
+                title.textContent = "Updated";
+            }
+        }
+
+        // Reset all saved local data
+        function resetAllData() {
+            setResetAllButtonState("checking");
+
+            setTimeout(() => {
+                Object.values(KEYS).forEach(safeRemove);
+
+                safeSet(KEYS.storyProgress, "0");
+                safeSet(KEYS.totalPlays, "0");
+                safeSet(KEYS.achievementsCount, "0");
+                safeSet(KEYS.username, "Guest");
+
+                hideMsg();
+                loadUsername();
+                refreshStats();
+                showMsg("All site data reset.");
+
+                setResetAllButtonState("done");
+
+                setTimeout(() => {
+                    setResetAllButtonState("idle");
+                }, 1700);
+            }, 950);
+        }
+
+        // Button event listeners
+        $("btnSave").addEventListener("click", saveUsername);
+        $("btnGuest").addEventListener("click", useGuest);
+        $("btnResetProfile").addEventListener("click", openResetProfileModal);
+        $("btnCancelResetProfile").addEventListener("click", closeResetProfileModal);
+        $("btnCloseResetModal").addEventListener("click", closeResetProfileModal);
+        $("btnConfirmResetProfile").addEventListener("click", () => confirmResetProfile(false));
+        $("btnResetAndPlay").addEventListener("click", (e) => {
+            e.preventDefault();
+            confirmResetProfile(true);
+        });
+
+        $("btnResetAll").addEventListener("click", resetAllData);
+
+        // Refresh small tool panel
+        $("btnRefreshMini").addEventListener("click", () => {
+            refreshStats();
+            showMsg("Profile tools refreshed.");
+            setTimeout(hideMsg, 1200);
+        });
+
+        // Close modal if backdrop is clicked
+        document.querySelectorAll("[data-close-reset-modal]").forEach((el) => {
+            el.addEventListener("click", closeResetProfileModal);
+        });
+
+        // Close modal with Escape key
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeResetProfileModal();
+        });
+
+        // Live username preview while typing
+        $("usernameInput").addEventListener("input", (e) => {
+            const live = e.target.value.trim() || "Guest";
+            updateUsernamePreview(live);
+        });
+
+        // Save username when Enter key is pressed
+        $("usernameInput").addEventListener("keydown", (e) => {
+            if (e.key === "Enter") saveUsername();
+        });
+
+        // Run on page load
+        loadUsername();
+        refreshStats();
+        setResetAllButtonState("idle");
+    </script>
+</body>
+
+</html>

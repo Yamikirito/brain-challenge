@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Memory Cards Game</title>
+
+    <meta name="description" content="A full-screen arcade style memory card matching game." />
+
+    <link rel="stylesheet" href="game.css" />
+</head>
+
+<body>
+    <main class="mc-game" id="main">
+        <!-- Loading Screen -->
+        <section class="mc-loading" id="loadingScreen" aria-label="Loading game">
+            <div class="mc-loading-bg" aria-hidden="true"></div>
+
+            <div class="mc-loading-card">
+                <div class="mc-logo-card" aria-hidden="true">
+                    <div class="mc-logo-text">
+                        MEMORY<br /> CARDS
+                    </div>
+                </div>
+
+                <h1>Memory Cards</h1>
+
+                <div class="mc-progress" aria-hidden="true">
+                    <div class="mc-progress-fill" id="loadingFill"></div>
+                </div>
+
+                <p id="loadingText">Almost there...</p>
+            </div>
+        </section>
+
+        <!-- Main Game Scene -->
+        <section class="mc-scene" id="gameScene" aria-label="Memory Cards game scene">
+            <div class="mc-bg" aria-hidden="true"></div>
+            <div class="mc-dim" aria-hidden="true"></div>
+
+            <!-- HUD -->
+            <header class="mc-hud">
+                <div class="mc-hud-left">
+                    <button class="mc-pause" id="btnPause" type="button" aria-label="Pause game" title="Pause game">
+                        <span class="mc-pause-icon">Ⅱ</span>
+                    </button>
+
+                    <div class="mc-stars" id="starsText" aria-label="Stars">
+                        ★★★
+                    </div>
+                </div>
+
+                <div class="mc-level-pill" aria-label="Current level">
+                    Lvl. <span id="levelText">1</span>
+                </div>
+            </header>
+
+
+
+            <!-- Board -->
+            <div class="mc-board-wrap">
+                <div id="board" class="mc-board" aria-label="Card matching board"></div>
+            </div>
+
+            <!-- Tutorial Message 1 -->
+            <div class="mc-tutorial" id="tutorialBox">
+                <div class="mc-tag">ⓘ Tutorial</div>
+
+                <div class="mc-message" id="tutorialText">
+                    Flip your first card — the memory challenge begins!
+                </div>
+            </div>
+
+            <!-- Tutorial Message 2 -->
+            <div class="mc-tutorial mc-wide hidden" id="tutorialMatchBox">
+                <div class="mc-tag">ⓘ Tutorial</div>
+
+                <div class="mc-message">
+                    Boom! That’s a match! Now try to find the rest on your own and complete the board.
+
+                    <button class="mc-ok" id="btnTutorialOk" type="button">
+                        OK, I’m ready
+                    </button>
+                </div>
+            </div>
+
+            <!-- Match Popup Animation -->
+            <div class="mc-match-pop hidden" id="matchPop" aria-hidden="true">
+                <div class="mc-rays"></div>
+
+                <div class="mc-match-cards">
+                    <img id="matchImgA" src="" alt="" />
+                    <img id="matchImgB" src="" alt="" />
+                </div>
+            </div>
+
+            <!-- Pause Modal -->
+            <div class="mc-pause-modal hidden" id="pauseModal" aria-hidden="true">
+                <div class="mc-pause-card" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+                    <div class="mc-pause-badge" aria-hidden="true">
+                        Ⅱ
+                    </div>
+
+                    <h2 id="pauseTitle">Pause</h2>
+
+                    <div class="mc-pause-level">
+                        Level <span id="pauseLevelText">1</span>
+                    </div>
+
+                    <div class="mc-settings-box">
+                        <div class="mc-setting-row">
+                            <div class="mc-setting-label">
+                                <span class="mc-setting-icon">🔊</span>
+                                <span>Sound</span>
+                            </div>
+
+                            <button class="mc-switch is-on" id="pauseSoundToggle" type="button" aria-label="Toggle sound" aria-pressed="true">
+                                <span></span>
+                            </button>
+                        </div>
+
+                        <div class="mc-setting-divider"></div>
+
+                        <div class="mc-setting-row">
+                            <div class="mc-setting-label">
+                                <span class="mc-setting-icon">♪</span>
+                                <span>Music</span>
+                            </div>
+
+                            <button class="mc-switch is-on" id="pauseMusicToggle" type="button" aria-label="Toggle music" aria-pressed="true">
+                                <span></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="mc-pause-primary" id="btnContinueGame" type="button">
+                        Continue playing
+                    </button>
+
+                    <button class="mc-pause-outline" id="btnPauseBackLevels" type="button">
+                        Back to levels
+                    </button>
+
+                    <button class="mc-howto" id="btnHowToPlay" type="button">
+                        <span>?</span>
+                        How to play
+                    </button>
+                </div>
+            </div>
+
+            <!-- How To Play Modal -->
+            <div class="mc-howto-modal hidden" id="howToModal" aria-hidden="true">
+                <div class="mc-howto-card" role="dialog" aria-modal="true" aria-labelledby="howToTitle">
+                    <h2 id="howToTitle">How to play</h2>
+
+                    <p>
+                        Flip two cards at a time. If the pictures match, they disappear. Match all pairs to complete the level and earn stars.
+                    </p>
+
+                    <button class="mc-howto-close" id="btnHowToClose" type="button">
+                        Got it!
+                    </button>
+                </div>
+            </div>
+
+            <!-- Win Modal -->
+            <div class="mc-win hidden" id="winModal" aria-hidden="true">
+                <button class="mc-close" id="btnWinClose" type="button" aria-label="Close win popup" title="Close">
+                    ×
+                </button>
+
+                <div class="mc-win-card" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+                    <div class="mc-ribbon" id="winTitle">
+                        CONGRATULATIONS!
+                    </div>
+
+                    <div class="mc-score">
+                        Level:
+                        <span id="winLevel">1</span> • Score:
+                        <span id="winScore">0</span>
+                    </div>
+
+                    <div class="mc-big-stars" id="winStars" aria-label="Stars earned">
+                        ★★★
+                    </div>
+
+                    <button class="mc-next" id="btnNext" type="button">
+                        Next level →
+                    </button>
+
+                    <button class="mc-win-levels" id="btnWinLevels" type="button">
+                        Back to levels
+                    </button>
+                </div>
+            </div>
+
+            <!-- Level Start Modal -->
+            <div class="mc-level-start hidden" id="levelStartModal" aria-hidden="true">
+                <div class="mc-level-card" role="dialog" aria-modal="true" aria-labelledby="levelStartTitle">
+                    <div class="mc-level-number" id="startLevelNumber">
+                        2
+                    </div>
+
+                    <div class="mc-level-title" id="levelStartTitle">
+                        LEVEL
+                    </div>
+
+                    <div class="mc-difficulty" id="difficultyText">
+                        MEDIUM
+                    </div>
+
+                    <button class="mc-start-btn" id="btnStartLevel" type="button">
+                        Start level
+                    </button>
+
+                    <button class="mc-back-levels" id="btnBackLevels" type="button">
+                        Back to levels
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="game.js"></script>
+</body>
+
+</html>

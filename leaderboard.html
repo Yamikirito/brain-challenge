@@ -1,0 +1,2175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- =========================================================
+         Brain Challenge Arcade - leaderboard.html
+
+         Updated fix:
+         - Color Bubble Challenge now clears cbc_progress_v3 data.
+         - Color Bubble Challenge now clears cbc_selected_level_v3 data.
+         - Color Bubble Challenge now clears cbc_settings_v3 data.
+         - Color Bubble Challenge now clears cbc_achievements_v3 data.
+         - Clear This Game and Clear All Data now clear the real Color Bubble game storage keys.
+         - Leaderboard reads Color Bubble progress from v3 first, then older v2/legacy keys.
+
+         Important:
+         If Color Bubble still shows level 3 unlocked / 6 stars after clearing,
+         also update game.js default progress because the game itself creates those defaults.
+    ========================================================== -->
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Leaderboard • Brain Challenge Arcade</title>
+    <meta name="description" content="Track best scores, highest levels, stars, combos, and recent runs across Brain Challenge Arcade." />
+
+    <script>
+        (function() {
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            function systemPrefersDark() {
+                return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+            }
+
+            var theme = getTheme();
+            var root = document.documentElement;
+            root.classList.remove("theme-dark", "theme-light");
+
+            if (theme === "dark") root.classList.add("theme-dark");
+            else if (theme === "light") root.classList.add("theme-light");
+            else root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+        })();
+    </script>
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+
+    <style>
+         :root {
+            --bg0: #0d1326;
+            --bg1: #171f3f;
+            --ink: #eef2ff;
+            --muted: rgba(238, 242, 255, 0.78);
+            --muted2: rgba(238, 242, 255, 0.58);
+            --card: rgba(255, 255, 255, 0.08);
+            --card-strong: rgba(255, 255, 255, 0.11);
+            --border: rgba(255, 255, 255, 0.12);
+            --blue: #60a5fa;
+            --cyan: #22d3ee;
+            --violet: #8b5cf6;
+            --pink: #ec4899;
+            --gold: #fbbf24;
+            --red: #f87171;
+            --green: #4ade80;
+            --shadow-lg: 0 24px 60px rgba(0, 0, 0, .34);
+            --shadow-md: 0 14px 34px rgba(0, 0, 0, .22);
+            --radius-xl: 28px;
+        }
+        
+        .theme-light {
+            --bg0: #f3f6ff;
+            --bg1: #e8efff;
+            --ink: #0f172a;
+            --muted: rgba(15, 23, 42, 0.78);
+            --muted2: rgba(15, 23, 42, 0.58);
+            --card: rgba(255, 255, 255, 0.9);
+            --card-strong: rgba(255, 255, 255, 0.97);
+            --border: rgba(15, 23, 42, 0.08);
+            --shadow-lg: 0 18px 44px rgba(15, 23, 42, .08);
+            --shadow-md: 0 10px 24px rgba(15, 23, 42, .06);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body.leaderboard-page {
+            color: var(--ink);
+            background: radial-gradient(700px 420px at 12% 10%, rgba(236, 72, 153, .10), transparent 60%), radial-gradient(760px 460px at 88% 12%, rgba(96, 165, 250, .10), transparent 60%), linear-gradient(180deg, var(--bg0), var(--bg1));
+            overflow-x: hidden;
+        }
+        
+        .leaderboard-page .navbar {
+            background: rgba(15, 23, 42, .46) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, .10);
+            backdrop-filter: blur(14px);
+        }
+        
+        .theme-light .leaderboard-page .navbar {
+            background: rgba(255, 255, 255, .82) !important;
+            border-bottom: 1px solid rgba(15, 23, 42, .07);
+        }
+        
+        .leaderboard-page .nav-link,
+        .leaderboard-page .brand-text {
+            color: var(--ink) !important;
+        }
+        
+        .leaderboard-page .nav-link.nav-active {
+            color: var(--ink) !important;
+            font-weight: 900;
+        }
+        
+        .leaderboard-page #main.container.page {
+            width: 100% !important;
+            max-width: none !important;
+            padding-top: 28px;
+            padding-bottom: 64px;
+            padding-left: clamp(14px, 3vw, 40px) !important;
+            padding-right: clamp(14px, 3vw, 40px) !important;
+        }
+        
+        .leaderboard-page a:focus-visible,
+        .leaderboard-page button:focus-visible,
+        .leaderboard-page input:focus-visible,
+        .leaderboard-page select:focus-visible {
+            outline: 3px solid rgba(34, 211, 238, .45);
+            outline-offset: 3px;
+            border-radius: 12px;
+        }
+        
+        .leaderboard-page .lb-hero {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            background: radial-gradient(420px 220px at 8% 18%, rgba(236, 72, 153, .08), transparent 65%), radial-gradient(420px 240px at 92% 22%, rgba(96, 165, 250, .08), transparent 65%), linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .02));
+            box-shadow: var(--shadow-lg);
+            padding: 40px;
+            margin: 0 auto 28px;
+        }
+        
+        .leaderboard-page .lb-hero-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 48px;
+            width: 100%;
+        }
+        
+        .leaderboard-page .lb-hero-left {
+            flex: 1 1 auto;
+            min-width: 0;
+            max-width: 760px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            gap: 18px;
+        }
+        
+        .leaderboard-page .lb-hero-right {
+            flex: 0 0 760px;
+            width: 760px;
+            max-width: 760px;
+            margin-left: auto;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-start;
+        }
+        
+        .leaderboard-page .lb-top-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .leaderboard-page .lb-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .07);
+            color: var(--ink);
+            font-size: 14px;
+            font-weight: 900;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .leaderboard-page .lb-hero-title {
+            margin: 0;
+            font-size: clamp(44px, 6vw, 84px);
+            line-height: .95;
+            letter-spacing: -1.6px;
+            font-weight: 950;
+            word-break: break-word;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-grad {
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .leaderboard-page .lb-hero-sub {
+            margin: 0;
+            max-width: 34ch;
+            color: var(--muted);
+            font-size: 18px;
+            line-height: 1.65;
+        }
+        
+        .leaderboard-page .lb-hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 8px;
+        }
+        
+        .leaderboard-page .lb-btn {
+            min-height: 56px;
+            padding: 14px 22px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 16px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform .16s ease, filter .16s ease, background .16s ease;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .leaderboard-page .lb-btn-main {
+            color: #fff;
+            background: #111;
+        }
+        
+        .leaderboard-page .lb-btn-sub {
+            color: var(--ink);
+            background: rgba(255, 255, 255, .06);
+        }
+        
+        .leaderboard-page .lb-btn-danger {
+            color: #ffffff;
+            background: linear-gradient(180deg, #ef4444, #dc2626);
+            border: 1px solid #b91c1c;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+        }
+        
+        .leaderboard-page .lb-btn-danger:hover,
+        .leaderboard-page .lb-btn:hover {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+        }
+        
+        .leaderboard-page .lb-overview {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            background: var(--card-strong);
+            box-shadow: var(--shadow-md);
+            padding: 22px;
+            display: grid;
+            gap: 14px;
+        }
+        
+        .leaderboard-page .lb-overview h2 {
+            margin: 0 0 4px;
+            font-size: 22px;
+            font-weight: 950;
+            line-height: 1.1;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-quick-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+        
+        .leaderboard-page .lb-stat-card {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: rgba(255, 255, 255, .04);
+            padding: 16px 14px;
+            min-height: 92px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .leaderboard-page .lb-stat-label {
+            font-size: 11px;
+            color: var(--muted2);
+            text-transform: uppercase;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+        
+        .leaderboard-page .lb-stat-value {
+            margin-top: 8px;
+            font-size: 16px;
+            line-height: 1.2;
+            font-weight: 950;
+            color: var(--ink);
+            word-break: break-word;
+        }
+        
+        .leaderboard-page .lb-section-head {
+            margin-top: 28px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .leaderboard-page .lb-section-head-right {
+            justify-content: flex-end;
+            text-align: right;
+        }
+        
+        .leaderboard-page .lb-section-head-right h2 {
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .leaderboard-page .lb-section-head h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 950;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            background: var(--card);
+            box-shadow: var(--shadow-md);
+            padding: 18px;
+        }
+        
+        .leaderboard-page .lb-controls-grid {
+            display: grid;
+            gap: 16px;
+        }
+        
+        .leaderboard-page .lb-row {
+            display: grid;
+            gap: 8px;
+        }
+        
+        .leaderboard-page .lb-label {
+            font-size: 13px;
+            color: var(--muted2);
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: .3px;
+        }
+        
+        .leaderboard-page .lb-input,
+        .leaderboard-page .lb-select {
+            width: 100%;
+            min-height: 50px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .04));
+            color: var(--ink);
+            padding: 12px 14px;
+            font-weight: 800;
+            color-scheme: dark;
+        }
+        
+        .leaderboard-page .lb-input::placeholder {
+            color: var(--muted);
+            opacity: 1;
+        }
+        
+        .leaderboard-page .lb-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .04)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23eaf2ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat;
+            background-position: 0 0, right 14px center;
+            background-size: auto, 18px 18px;
+            padding-right: 46px;
+        }
+        
+        .leaderboard-page .lb-select option {
+            background: #0f172a;
+            color: #ffffff;
+        }
+        
+        .theme-light .leaderboard-page .lb-input,
+        .theme-light .leaderboard-page .lb-select {
+            color-scheme: light;
+            background: rgba(255, 255, 255, .9);
+            color: #0f172a;
+        }
+        
+        .theme-light .leaderboard-page .lb-select {
+            background-image: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .98)), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%230f172a' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+        }
+        
+        .theme-light .leaderboard-page .lb-select option {
+            background: #ffffff;
+            color: #0f172a;
+        }
+        
+        .leaderboard-page .lb-muted-note {
+            color: var(--muted);
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .leaderboard-page .lb-chip-row,
+        .leaderboard-page .lb-actions-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .leaderboard-page .lb-actions-row .lb-btn {
+            min-width: 210px;
+        }
+        
+        .leaderboard-page .lb-chip {
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .06);
+            color: var(--ink);
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-weight: 900;
+            cursor: pointer;
+            transition: transform .16s ease, filter .16s ease;
+        }
+        
+        .leaderboard-page .lb-chip.active {
+            background: linear-gradient(135deg, rgba(96, 165, 250, .24), rgba(236, 72, 153, .16));
+            border-color: rgba(34, 211, 238, .25);
+        }
+        
+        .leaderboard-page .lb-chip:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+        
+        .leaderboard-page .lb-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+        
+        .leaderboard-page .lb-info-card h3 {
+            margin: 0 0 12px;
+            font-size: 20px;
+            font-weight: 950;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-info-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .leaderboard-page .lb-info-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .leaderboard-page .lb-info-item:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .leaderboard-page .lb-info-key {
+            color: var(--muted2);
+            font-weight: 800;
+        }
+        
+        .leaderboard-page .lb-info-value {
+            font-weight: 950;
+            text-align: right;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-table-wrap {
+            overflow: auto;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+        }
+        
+        .leaderboard-page .lb-table {
+            width: 100%;
+            min-width: 860px;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, .03);
+        }
+        
+        .leaderboard-page .lb-table th,
+        .leaderboard-page .lb-table td {
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+            text-align: left;
+            vertical-align: middle;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-table th {
+            background: rgba(255, 255, 255, .05);
+            color: var(--muted2);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: .3px;
+            font-weight: 950;
+        }
+        
+        .leaderboard-page .lb-table tbody tr:hover td {
+            background: rgba(255, 255, 255, .035);
+        }
+        
+        .leaderboard-page .lb-rank-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: inline-grid;
+            place-items: center;
+            font-weight: 950;
+            background: rgba(255, 255, 255, .08);
+            border: 1px solid var(--border);
+        }
+        
+        .leaderboard-page .lb-rank-1 {
+            background: rgba(251, 191, 36, .16);
+            color: var(--gold);
+        }
+        
+        .leaderboard-page .lb-rank-2 {
+            background: rgba(203, 213, 225, .18);
+        }
+        
+        .leaderboard-page .lb-rank-3 {
+            background: rgba(251, 146, 60, .16);
+        }
+        
+        .leaderboard-page .lb-badge-inline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, .06);
+            font-size: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-empty-state {
+            padding: 24px;
+            text-align: center;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+        
+        .leaderboard-page .footer {
+            background: rgba(0, 0, 0, .32);
+            border-top: 1px solid rgba(255, 255, 255, .08);
+        }
+        
+        .leaderboard-page .footer .muted,
+        .leaderboard-page .footer a {
+            color: var(--muted) !important;
+        }
+        
+        .leaderboard-page .lb-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(3, 8, 24, .58);
+            backdrop-filter: blur(6px);
+            display: grid;
+            place-items: center;
+            padding: 16px;
+            z-index: 9998;
+        }
+        
+        .leaderboard-page .lb-modal-backdrop.hidden {
+            display: none;
+        }
+        
+        .leaderboard-page .lb-modal {
+            width: min(520px, 100%);
+            border: 1px solid rgba(255, 255, 255, .14);
+            border-radius: 24px;
+            background: radial-gradient(420px 200px at 18% 18%, rgba(96, 165, 250, .10), transparent 60%), radial-gradient(360px 200px at 82% 18%, rgba(139, 92, 246, .10), transparent 60%), linear-gradient(180deg, rgba(34, 43, 78, .98), rgba(24, 31, 60, .98));
+            box-shadow: 0 24px 70px rgba(0, 0, 0, .38);
+            padding: 22px;
+            color: var(--ink);
+        }
+        
+        .leaderboard-page .lb-modal-title {
+            font-size: 24px;
+            font-weight: 950;
+            line-height: 1.1;
+            margin-bottom: 10px;
+            color: #f8fbff;
+        }
+        
+        .leaderboard-page .lb-modal-text {
+            color: rgba(238, 242, 255, 0.78);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .leaderboard-page .lb-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .leaderboard-page .lb-modal-actions .lb-btn {
+            min-width: 124px;
+        }
+        
+        .leaderboard-page .lb-modal-actions .lb-btn-sub {
+            background: rgba(255, 255, 255, .10);
+            color: #eef2ff;
+            border: 1px solid rgba(255, 255, 255, .12);
+        }
+        
+        .theme-light .leaderboard-page .lb-modal-backdrop {
+            background: rgba(15, 23, 42, .18);
+            backdrop-filter: blur(6px);
+        }
+        
+        .theme-light .leaderboard-page .lb-modal {
+            border: 1px solid rgba(15, 23, 42, .10);
+            background: radial-gradient(420px 200px at 18% 18%, rgba(96, 165, 250, .12), transparent 60%), radial-gradient(360px 200px at 82% 18%, rgba(236, 72, 153, .10), transparent 60%), linear-gradient(180deg, rgba(255, 255, 255, .98), rgba(244, 247, 255, .98));
+            box-shadow: 0 24px 70px rgba(15, 23, 42, .16);
+            color: #0f172a;
+        }
+        
+        .theme-light .leaderboard-page .lb-modal-title {
+            color: #0f172a;
+        }
+        
+        .theme-light .leaderboard-page .lb-modal-text {
+            color: rgba(15, 23, 42, 0.72);
+        }
+        
+        .theme-light .leaderboard-page .lb-modal-actions .lb-btn-sub {
+            background: #e9eefc;
+            color: #0f172a;
+            border: 1px solid rgba(15, 23, 42, .10);
+        }
+        
+        .theme-light .leaderboard-page .lb-modal-actions .lb-btn-main {
+            background: #111827;
+            color: #ffffff;
+            border: 1px solid #111827;
+        }
+        
+        .theme-light .leaderboard-page .lb-modal-actions .lb-btn-danger {
+            background: linear-gradient(180deg, #ef4444, #dc2626);
+            color: #ffffff;
+            border: 1px solid #b91c1c;
+        }
+        
+        .leaderboard-page .lb-toast {
+            position: fixed;
+            left: 50%;
+            bottom: 28px;
+            transform: translateX(-50%) translateY(18px) scale(.96);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 62px;
+            padding: 14px 20px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            background: linear-gradient(180deg, rgba(74, 222, 128, .18), rgba(34, 197, 94, .12));
+            color: #ecfdf5;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, .28);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity .22s ease, transform .22s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .leaderboard-page .lb-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+        
+        .leaderboard-page .lb-toast.is-danger {
+            background: linear-gradient(180deg, rgba(248, 113, 113, .20), rgba(239, 68, 68, .12));
+            color: #fff5f5;
+        }
+        
+        .leaderboard-page .lb-toast.is-info {
+            background: linear-gradient(180deg, rgba(96, 165, 250, .18), rgba(59, 130, 246, .12));
+            color: #eff6ff;
+        }
+        
+        .leaderboard-page .lb-toast-icon {
+            width: 22px;
+            height: 22px;
+            display: inline-grid;
+            place-items: center;
+            font-size: 18px;
+            line-height: 1;
+        }
+        
+        .leaderboard-page .lb-toast-text {
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: .2px;
+        }
+        
+        @media (max-width: 1400px) {
+            .leaderboard-page .lb-hero-right {
+                flex: 0 0 640px;
+                width: 640px;
+                max-width: 640px;
+            }
+            .leaderboard-page .lb-quick-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        
+        @media (max-width: 1100px) {
+            .leaderboard-page .lb-hero {
+                padding: 28px;
+            }
+            .leaderboard-page .lb-hero-grid {
+                flex-direction: column;
+                gap: 28px;
+            }
+            .leaderboard-page .lb-hero-left,
+            .leaderboard-page .lb-hero-right {
+                width: 100%;
+                max-width: 100%;
+            }
+            .leaderboard-page .lb-hero-right {
+                flex: 1 1 auto;
+                margin-left: 0;
+                justify-content: stretch;
+            }
+            .leaderboard-page .lb-hero-sub {
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 860px) {
+            .leaderboard-page .lb-summary-grid {
+                grid-template-columns: 1fr;
+            }
+            .leaderboard-page .lb-quick-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        
+        @media (max-width: 700px) {
+            .leaderboard-page .lb-actions-row {
+                flex-direction: column;
+            }
+            .leaderboard-page .lb-actions-row .lb-btn {
+                width: 100%;
+                min-width: 0;
+            }
+            .leaderboard-page .lb-modal-actions {
+                flex-direction: column;
+            }
+            .leaderboard-page .lb-modal-actions .lb-btn {
+                width: 100%;
+            }
+            .leaderboard-page .lb-toast {
+                width: calc(100% - 24px);
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 560px) {
+            .leaderboard-page .lb-hero {
+                padding: 20px;
+            }
+            .leaderboard-page .lb-hero-title {
+                font-size: clamp(34px, 12vw, 52px);
+            }
+            .leaderboard-page .lb-top-tags,
+            .leaderboard-page .lb-hero-actions,
+            .leaderboard-page .lb-chip-row,
+            .leaderboard-page .lb-actions-row {
+                flex-direction: column;
+            }
+            .leaderboard-page .lb-btn,
+            .leaderboard-page .lb-chip {
+                width: 100%;
+            }
+            .leaderboard-page .lb-quick-grid {
+                grid-template-columns: 1fr;
+            }
+            .leaderboard-page .lb-table {
+                min-width: 720px;
+            }
+        }
+    </style>
+</head>
+
+<body class="leaderboard-page">
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link nav-active" href="leaderboard.html" aria-current="page">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </nav>
+
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+        </div>
+
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link nav-active" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="achievements.html">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <main id="main" class="container page">
+        <section class="lb-hero" aria-labelledby="lbTitle">
+            <div class="lb-hero-grid">
+                <div class="lb-hero-left">
+                    <div class="lb-top-tags">
+                        <div class="lb-pill">🏆 Leaderboard</div>
+                        <div class="lb-pill">📋 Your best scores</div>
+                    </div>
+
+                    <h1 id="lbTitle" class="lb-hero-title">
+                        Leaderboard <span class="lb-grad">Arena</span>
+                    </h1>
+
+                    <p class="lb-hero-sub">
+                        Scores are saved locally on this device (localStorage). If you open the site on another device or browser, your leaderboard will be different.
+                    </p>
+
+                    <div class="lb-hero-actions">
+                        <a class="lb-btn lb-btn-sub" href="index.html">← Back to Home</a>
+                        <a class="lb-btn lb-btn-main" href="profile.html">👤 Set Username</a>
+                    </div>
+                </div>
+
+                <div class="lb-hero-right">
+                    <aside class="lb-overview" aria-label="Quick overview">
+                        <h2>Quick overview</h2>
+
+                        <div class="lb-quick-grid">
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label">Player</div>
+                                <div class="lb-stat-value" id="playerName">Guest</div>
+                            </div>
+
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label">Game</div>
+                                <div class="lb-stat-value" id="gameLabel">Image Guess</div>
+                            </div>
+
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label" id="bestLabel">Best Score</div>
+                                <div class="lb-stat-value" id="bestValue">—</div>
+                            </div>
+
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label">Highest Level</div>
+                                <div class="lb-stat-value" id="bestLevel">—</div>
+                            </div>
+
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label">Stars</div>
+                                <div class="lb-stat-value" id="cbcTotalStars">0</div>
+                            </div>
+
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label">Combo</div>
+                                <div class="lb-stat-value" id="cbcBestCombo">0</div>
+                            </div>
+
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label">Lives</div>
+                                <div class="lb-stat-value" id="cbcLives">0</div>
+                            </div>
+
+                            <div class="lb-stat-card">
+                                <div class="lb-stat-label">Cleared</div>
+                                <div class="lb-stat-value" id="cbcCompleted">0</div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+
+        <div class="lb-section-head lb-section-head-right">
+            <h2>Controls</h2>
+        </div>
+
+        <section class="lb-card" aria-label="Leaderboard controls">
+            <div class="lb-controls-grid">
+                <div class="lb-row">
+                    <label class="lb-label" for="gameSelect">Select game</label>
+                    <select class="lb-select" id="gameSelect" aria-label="Select game leaderboard">
+                        <option value="image-guess">Image Guess</option>
+                        <option value="memory-test">Memory Test</option>
+                        <option value="card-matching">Card Matching</option>
+                        <option value="color-bubble-challenge">Color Bubble Challenge</option>
+                        <option value="story-mode">Story Mode</option>
+                    </select>
+                </div>
+
+                <div class="lb-row">
+                    <label class="lb-label" for="levelCapInput">Max level allowed</label>
+                    <input class="lb-input" id="levelCapInput" type="number" min="1" step="1" placeholder="e.g. 10" aria-label="Max level allowed" />
+                </div>
+
+                <div class="lb-row">
+                    <div class="lb-label">Sort runs</div>
+                    <div class="lb-chip-row" role="group" aria-label="Sort options">
+                        <button class="lb-chip active" type="button" data-sort="best">Best</button>
+                        <button class="lb-chip" type="button" data-sort="recent">Recent</button>
+                    </div>
+                </div>
+
+                <div class="lb-row">
+                    <div class="lb-label">Actions</div>
+                    <div class="lb-actions-row">
+                        <button class="lb-btn lb-btn-sub" id="btnResetProgress" type="button">Reset Highest Level</button>
+                        <button class="lb-btn lb-btn-sub" id="btnClearGame" type="button">Clear This Game</button>
+                        <button class="lb-btn lb-btn-danger" id="btnClearAll" type="button">Clear All Data</button>
+                        <a class="lb-btn lb-btn-main" id="btnPlayGame" href="index.html">▶ Play Selected Game</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="lb-section-head lb-section-head-right">
+            <h2>Performance summary</h2>
+        </div>
+
+        <section class="lb-summary-grid" aria-label="Leaderboard summary">
+            <article class="lb-card lb-info-card">
+                <h3>Your Best</h3>
+                <div class="lb-info-list">
+                    <div class="lb-info-item">
+                        <div class="lb-info-key">Player</div>
+                        <div class="lb-info-value" id="playerName2">Guest</div>
+                    </div>
+                    <div class="lb-info-item">
+                        <div class="lb-info-key" id="bestLabel2">Best Score</div>
+                        <div class="lb-info-value" id="bestValue2">—</div>
+                    </div>
+                    <div class="lb-info-item">
+                        <div class="lb-info-key">Highest Level</div>
+                        <div class="lb-info-value" id="bestLevel2">—</div>
+                    </div>
+                    <div class="lb-info-item" id="cbcWorldRow" hidden>
+                        <div class="lb-info-key">Bubble Progress</div>
+                        <div class="lb-info-value" id="cbcWorldText">—</div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="lb-card lb-info-card">
+                <h3>About scoring</h3>
+                <div class="lb-muted-note" id="scoringInfo">
+                    Image Guess and Memory Test are usually higher-is-better games. Card Matching is usually lower-time-is-better. Color Bubble Challenge is a score-based arcade game, so higher scores rank higher.
+                </div>
+            </article>
+        </section>
+
+        <div class="lb-section-head lb-section-head-right">
+            <h2>Runs</h2>
+        </div>
+
+        <section class="lb-card" aria-label="Leaderboard runs table">
+            <div class="lb-table-wrap">
+                <table class="lb-table" aria-label="Scores table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Rank</th>
+                            <th scope="col">Name</th>
+                            <th scope="col" id="valueHeading">Score</th>
+                            <th scope="col">Level</th>
+                            <th scope="col">Extra</th>
+                            <th scope="col">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rows"></tbody>
+                </table>
+            </div>
+
+            <div class="lb-empty-state" id="emptyMsg" style="display:none;">
+                No saved runs yet.<br>Play the selected game to create leaderboard entries.
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">© <span id="year"></span> Brain Challenge Arcade</div>
+            <div class="footer-links">
+                <a href="settings.html">Settings</a>
+                <a href="about.html">Credits</a>
+            </div>
+        </div>
+    </footer>
+
+    <div class="lb-modal-backdrop hidden" id="confirmModal">
+        <div class="lb-modal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+            <div class="lb-modal-title" id="confirmTitle">Confirm action</div>
+            <div class="lb-modal-text" id="confirmText">Are you sure?</div>
+            <div class="lb-modal-actions">
+                <button class="lb-btn lb-btn-sub" id="confirmCancelBtn" type="button">Cancel</button>
+                <button class="lb-btn lb-btn-danger" id="confirmOkBtn" type="button">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="lb-toast" id="actionToast" aria-live="polite" aria-atomic="true">
+        <span class="lb-toast-icon" id="actionToastIcon">✅</span>
+        <span class="lb-toast-text" id="actionToastText">Updated</span>
+    </div>
+
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        (function() {
+            const btn = document.querySelector(".nav-toggle");
+            const menu = document.getElementById("mobileMenu");
+            if (!btn || !menu) return;
+
+            btn.addEventListener("click", function() {
+                const isOpen = btn.getAttribute("aria-expanded") === "true";
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+
+        const $ = (id) => document.getElementById(id);
+
+        function safeGet(key, fallback) {
+            try {
+                const v = localStorage.getItem(key);
+                return v === null ? fallback : v;
+            } catch {
+                return fallback;
+            }
+        }
+
+        function safeSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch {}
+        }
+
+        function safeRemove(key) {
+            try {
+                localStorage.removeItem(key);
+            } catch {}
+        }
+
+        function safeJsonGet(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return fallback;
+                return JSON.parse(raw);
+            } catch {
+                return fallback;
+            }
+        }
+
+        function safeJsonSet(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch {}
+        }
+
+        function todayISO() {
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function clampInt(n, min, max) {
+            const x = Math.trunc(Number(n));
+            if (!Number.isFinite(x)) return min;
+            return Math.max(min, Math.min(max, x));
+        }
+
+        const GAMES = {
+            "image-guess": {
+                label: "Image Guess",
+                playLink: "games/image-guess/index.html",
+                bestKey: "bca_best_imageGuess",
+                runsKey: "bca_runs_imageGuess",
+                progressKey: "bca_progress_imageGuess",
+                levelCapKey: "bca_levelcap_imageGuess",
+                betterIs: "high",
+                valueLabel: "Score"
+            },
+            "memory-test": {
+                label: "Memory Test",
+                playLink: "games/memory-test/index.html",
+                bestKey: "bca_best_memoryTest",
+                runsKey: "bca_runs_memoryTest",
+                progressKey: "bca_progress_memoryTest",
+                levelCapKey: "bca_levelcap_memoryTest",
+                betterIs: "high",
+                valueLabel: "Score"
+            },
+            "card-matching": {
+                label: "Card Matching",
+                playLink: "games/card-matching/index.html",
+                bestKey: "bca_best_cardMatching",
+                runsKey: "bca_runs_cardMatching",
+                progressKey: "bca_progress_cardMatching",
+                levelCapKey: "bca_levelcap_cardMatching",
+                betterIs: "low",
+                valueLabel: "Time"
+            },
+            "color-bubble-challenge": {
+                label: "Color Bubble Challenge",
+                playLink: "games/color-bubble-challenge/index.html",
+                bestKey: "bca_best_colorBubbleChallenge",
+                runsKey: "bca_runs_colorBubbleChallenge",
+                progressKey: "bca_progress_colorBubbleChallenge",
+                levelCapKey: "bca_levelcap_colorBubbleChallenge",
+                betterIs: "high",
+                valueLabel: "Score"
+            },
+            "story-mode": {
+                label: "Story Mode",
+                playLink: "story.html",
+                bestKey: "bca_best_storyMode",
+                runsKey: "bca_runs_storyMode",
+                progressKey: "bca_story_progress",
+                levelCapKey: "",
+                betterIs: "high",
+                valueLabel: "Progress"
+            }
+        };
+
+        const CARD_MATCHING_KEYS = [
+            "mc_unlocked_level",
+            "mc_level_stars",
+            "mc_tutorial_done",
+            "mc_sound_muted",
+            "mc_music_muted",
+            "bca_story_last_test",
+            "bca_story_last_game",
+            "mc_story_last_level",
+            "bca_story_test_memory_test_1",
+            "bca_story_test_memory_cards_story_test"
+        ];
+
+        const CARD_MATCHING_PROGRESS_KEYS = [
+            "mc_unlocked_level",
+            "mc_level_stars",
+            "mc_tutorial_done"
+        ];
+
+        const COLOR_BUBBLE_KEYS = [
+            "cbc_progress_v3",
+            "cbc_selected_level_v3",
+            "cbc_settings_v3",
+            "cbc_achievements_v3",
+            "cbc_progress_v2",
+            "cbc_selected_level_v2",
+            "cbc_settings_v2",
+            "cbc_achievements_v2",
+            "cbc_progress",
+            "cbc_selected_level",
+            "bca_best_colorBubbleChallenge",
+            "bca_runs_colorBubbleChallenge",
+            "bca_progress_colorBubbleChallenge",
+            "bca_levelcap_colorBubbleChallenge"
+        ];
+
+        function clearCardMatchingGameData() {
+            CARD_MATCHING_KEYS.forEach(key => safeRemove(key));
+        }
+
+        function resetCardMatchingProgressOnly() {
+            CARD_MATCHING_PROGRESS_KEYS.forEach(key => safeRemove(key));
+        }
+
+        function clearColorBubbleGameData() {
+            COLOR_BUBBLE_KEYS.forEach(key => safeRemove(key));
+        }
+
+        const elGameSelect = $("gameSelect");
+        const elRows = $("rows");
+        const elEmptyMsg = $("emptyMsg");
+
+        const elPlayerName = $("playerName");
+        const elGameLabel = $("gameLabel");
+        const elBestValue = $("bestValue");
+        const elBestLevel = $("bestLevel");
+        const elBestLabel = $("bestLabel");
+
+        const elPlayerName2 = $("playerName2");
+        const elBestValue2 = $("bestValue2");
+        const elBestLevel2 = $("bestLevel2");
+        const elBestLabel2 = $("bestLabel2");
+
+        const elValueHeading = $("valueHeading");
+        const elLevelCapInput = $("levelCapInput");
+        const elScoringInfo = $("scoringInfo");
+
+        const elCbcTotalStars = $("cbcTotalStars");
+        const elCbcBestCombo = $("cbcBestCombo");
+        const elCbcLives = $("cbcLives");
+        const elCbcCompleted = $("cbcCompleted");
+        const elCbcWorldRow = $("cbcWorldRow");
+        const elCbcWorldText = $("cbcWorldText");
+
+        const elConfirmModal = $("confirmModal");
+        const elConfirmTitle = $("confirmTitle");
+        const elConfirmText = $("confirmText");
+        const elConfirmOkBtn = $("confirmOkBtn");
+        const elConfirmCancelBtn = $("confirmCancelBtn");
+
+        const elActionToast = $("actionToast");
+        const elActionToastIcon = $("actionToastIcon");
+        const elActionToastText = $("actionToastText");
+
+        const chips = Array.from(document.querySelectorAll(".lb-chip"));
+        let sortMode = "best";
+        let toastTimer = null;
+        let confirmAction = null;
+
+        function applyHashSelection() {
+            const hash = (location.hash || "").replace("#", "").trim();
+            if (hash && GAMES[hash]) elGameSelect.value = hash;
+        }
+
+        function getUsername() {
+            return safeGet("bca_username", "Guest");
+        }
+
+        function normalizeRun(raw) {
+            const name = raw && raw.name ? String(raw.name).trim() : "Guest";
+            const value = Number(raw && raw.value);
+            const date = raw && raw.date ? String(raw.date) : todayISO();
+            const level = raw && raw.level !== undefined && raw.level !== null && raw.level !== "" ? Number(raw.level) : null;
+            const stars = raw && raw.stars !== undefined && raw.stars !== null ? Number(raw.stars) : null;
+            const combo = raw && raw.combo !== undefined && raw.combo !== null ? Number(raw.combo) : null;
+
+            return {
+                name: name || "Guest",
+                value,
+                date,
+                level: Number.isFinite(level) ? Math.max(1, Math.trunc(level)) : null,
+                stars: Number.isFinite(stars) ? Math.max(0, Math.trunc(stars)) : null,
+                combo: Number.isFinite(combo) ? Math.max(0, Math.trunc(combo)) : null
+            };
+        }
+
+        function getCbcProgress() {
+            const v3 = safeJsonGet("cbc_progress_v3", null);
+            if (v3 && typeof v3 === "object") return v3;
+
+            const v2 = safeJsonGet("cbc_progress_v2", null);
+            if (v2 && typeof v2 === "object") return v2;
+
+            const legacy = safeJsonGet("cbc_progress", null);
+            if (legacy && typeof legacy === "object") return legacy;
+
+            return null;
+        }
+
+        function getCbcDerivedRuns() {
+            const progress = getCbcProgress();
+            const username = getUsername();
+            if (!progress || !Array.isArray(progress.levels)) return [];
+
+            return progress.levels
+                .filter(level => level && Number(level.bestScore) > 0)
+                .map(level => normalizeRun({
+                    name: username,
+                    value: Number(level.bestScore) || 0,
+                    date: todayISO(),
+                    level: Number(level.level) || null,
+                    stars: Number(level.stars) || 0,
+                    combo: Number(level.bestCombo) || 0
+                }));
+        }
+
+        function getStoryChapterFromStep() {
+            const step = Number(safeGet("bca_story_step", "0"));
+
+            if (step <= 0) return 1;
+            if (step <= 1) return 2;
+            if (step <= 2) return 3;
+            if (step <= 3) return 4;
+            if (step <= 4) return 5;
+            if (step <= 5) return 6;
+            if (step <= 6) return 7;
+            if (step <= 7) return 8;
+            if (step <= 8) return 9;
+            if (step <= 9) return 10;
+            if (step <= 10) return 11;
+            if (step <= 13) return 12;
+            if (step <= 14) return 13;
+            if (step <= 16) return 14;
+            if (step <= 19) return 15;
+            if (step <= 22) return 16;
+            if (step <= 23) return 17;
+            if (step <= 24) return 18;
+            if (step <= 25) return 19;
+            if (step <= 26) return 20;
+            if (step <= 29) return 21;
+            if (step <= 33) return 22;
+            return 23;
+        }
+
+        function getStoryEndingLabel() {
+            const ending = safeGet("bca_story_ending", "");
+            if (ending === "true") return "True Ending";
+            if (ending === "heroic") return "Heroic Ending";
+            if (ending === "normal") return "Normal Ending";
+            return "In Progress";
+        }
+
+        function getStoryRouteLabel() {
+            return safeGet("bca_story_mount", "") || "Not Chosen";
+        }
+
+        function getStoryDerivedRuns() {
+            const progress = Number(safeGet("bca_story_progress", "0"));
+            const started = safeGet("bca_story_started", "") === "1";
+
+            if (!started && progress <= 0) return [];
+
+            return [normalizeRun({
+                name: getUsername(),
+                value: Number.isFinite(progress) ? progress : 0,
+                date: todayISO(),
+                level: getStoryChapterFromStep()
+            })];
+        }
+
+        function getRuns(gameId) {
+            const meta = GAMES[gameId];
+            const savedRuns = safeJsonGet(meta.runsKey, []);
+            let runs = Array.isArray(savedRuns) ? savedRuns.map(normalizeRun).filter(r => Number.isFinite(r.value)) : [];
+
+            if (gameId === "color-bubble-challenge") {
+                const derivedRuns = getCbcDerivedRuns();
+
+                if (runs.length === 0) {
+                    runs = derivedRuns;
+                } else {
+                    derivedRuns.forEach(dRun => {
+                        const exists = runs.some(r => r.level === dRun.level && r.value === dRun.value);
+                        if (!exists) runs.push(dRun);
+                    });
+                }
+            }
+
+            if (gameId === "story-mode") {
+                const derivedRuns = getStoryDerivedRuns();
+
+                if (runs.length === 0) {
+                    runs = derivedRuns;
+                } else {
+                    derivedRuns.forEach(dRun => {
+                        const exists = runs.some(r => r.level === dRun.level && r.value === dRun.value);
+                        if (!exists) runs.push(dRun);
+                    });
+                }
+            }
+
+            return runs;
+        }
+
+        function getBestObj(gameId) {
+            const meta = GAMES[gameId];
+            const raw = safeGet(meta.bestKey, "");
+
+            if (raw) {
+                try {
+                    const obj = JSON.parse(raw);
+                    if (obj && typeof obj === "object" && Number.isFinite(Number(obj.value))) {
+                        return {
+                            value: Number(obj.value),
+                            date: typeof obj.date === "string" ? obj.date : todayISO(),
+                            level: Number.isFinite(Number(obj.level)) ? Math.max(1, Math.trunc(Number(obj.level))) : null
+                        };
+                    }
+                } catch {}
+
+                const n = Number(raw);
+                if (Number.isFinite(n)) {
+                    return {
+                        value: n,
+                        date: todayISO(),
+                        level: null
+                    };
+                }
+            }
+
+            if (gameId === "color-bubble-challenge") {
+                const derived = getCbcDerivedRuns();
+                if (derived.length) {
+                    const best = derived.reduce((a, b) => b.value > a.value ? b : a);
+                    return {
+                        value: best.value,
+                        date: best.date,
+                        level: best.level
+                    };
+                }
+            }
+
+            if (gameId === "story-mode") {
+                const derived = getStoryDerivedRuns();
+                if (derived.length) {
+                    return {
+                        value: derived[0].value,
+                        date: derived[0].date,
+                        level: derived[0].level
+                    };
+                }
+            }
+
+            return null;
+        }
+
+        function setBestObj(gameId, bestObj) {
+            const meta = GAMES[gameId];
+            if (!bestObj || !Number.isFinite(Number(bestObj.value))) return;
+
+            safeSet(meta.bestKey, JSON.stringify({
+                value: Number(bestObj.value),
+                date: bestObj.date || todayISO(),
+                level: Number.isFinite(Number(bestObj.level)) ? Math.max(1, Math.trunc(Number(bestObj.level))) : undefined
+            }));
+        }
+
+        function isBetter(meta, candidateValue, currentBestValue) {
+            if (!Number.isFinite(candidateValue)) return false;
+            if (!Number.isFinite(currentBestValue)) return true;
+            return meta.betterIs === "low" ? candidateValue < currentBestValue : candidateValue > currentBestValue;
+        }
+
+        function getHighestLevel(gameId) {
+            const meta = GAMES[gameId];
+
+            if (gameId === "story-mode") {
+                return getStoryChapterFromStep();
+            }
+
+            if (gameId === "card-matching") {
+                const mcUnlocked = Number(safeGet("mc_unlocked_level", ""));
+                if (Number.isFinite(mcUnlocked) && mcUnlocked > 0) {
+                    return Math.max(0, Math.trunc(mcUnlocked));
+                }
+            }
+
+            if (gameId === "color-bubble-challenge") {
+                const progress = getCbcProgress();
+                if (!progress) return 0;
+
+                if (Number.isFinite(Number(progress.unlockedLevel))) {
+                    return Math.max(0, Math.trunc(Number(progress.unlockedLevel)));
+                }
+
+                if (Array.isArray(progress.levels)) {
+                    let highest = 0;
+                    progress.levels.forEach(level => {
+                        if (level && level.unlocked && Number.isFinite(Number(level.level))) {
+                            highest = Math.max(highest, Math.trunc(Number(level.level)));
+                        }
+                    });
+                    return highest;
+                }
+            }
+
+            const n = Number(safeGet(meta.progressKey, ""));
+            return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0;
+        }
+
+        function setHighestLevel(gameId, level) {
+            const meta = GAMES[gameId];
+            const lv = clampInt(level, 0, 9999);
+            safeSet(meta.progressKey, String(lv));
+
+            if (gameId === "card-matching") {
+                safeSet("mc_unlocked_level", String(Math.max(1, lv)));
+            }
+        }
+
+        function getLevelCap(gameId) {
+            const meta = GAMES[gameId];
+            if (!meta.levelCapKey) return 10;
+            const n = Number(safeGet(meta.levelCapKey, ""));
+            return Number.isFinite(n) ? clampInt(n, 1, 9999) : 10;
+        }
+
+        function setLevelCap(gameId, cap) {
+            const meta = GAMES[gameId];
+            if (!meta.levelCapKey) return;
+            safeSet(meta.levelCapKey, String(clampInt(cap, 1, 9999)));
+        }
+
+        function getCbcSummary() {
+            const progress = getCbcProgress();
+
+            if (!progress) {
+                return {
+                    totalStars: 0,
+                    bestCombo: 0,
+                    lives: 0,
+                    completed: 0,
+                    worldText: "No progress yet"
+                };
+            }
+
+            const levels = Array.isArray(progress.levels) ? progress.levels : [];
+            const totalStars = levels.reduce((sum, level) => sum + (Number(level && level.stars) || 0), 0);
+            const bestCombo = levels.reduce((best, level) => Math.max(best, Number(level && level.bestCombo) || 0), 0);
+            const completed = levels.filter(level => level && level.completed).length;
+            const lives = Number(progress.lives) || 0;
+            const unlocked = Number(progress.unlockedLevel) || 1;
+
+            let worldText = "Tutorial Meadow";
+            if (unlocked >= 91) worldText = "Champion Summit";
+            else if (unlocked >= 81) worldText = "Crown Heights";
+            else if (unlocked >= 66) worldText = "River Route";
+            else if (unlocked >= 51) worldText = "Forest Trail";
+            else if (unlocked >= 36) worldText = "Garden Path";
+            else if (unlocked >= 21) worldText = "Arc Valley";
+            else if (unlocked >= 11) worldText = "Starter Hills";
+
+            return {
+                totalStars,
+                bestCombo,
+                lives,
+                completed,
+                worldText
+            };
+        }
+
+        function updateScoringText(gameId) {
+            const meta = GAMES[gameId];
+
+            if (gameId === "story-mode") {
+                elScoringInfo.textContent = "Story Mode is tracked by chapter progress percentage. Higher progress means deeper story completion. The level column shows the current chapter reached.";
+                elValueHeading.textContent = "Progress";
+                elBestLabel.textContent = "Best Progress";
+                elBestLabel2.textContent = "Best Progress";
+                return;
+            }
+
+            if (meta.betterIs === "low") {
+                elScoringInfo.textContent = `${meta.label} is configured as a lower-is-better game, so smaller values rank higher. This is useful for timer-based gameplay where faster completion produces a better run.`;
+                elValueHeading.textContent = "Time";
+                elBestLabel.textContent = "Best Time";
+                elBestLabel2.textContent = "Best Time";
+            } else {
+                elScoringInfo.textContent = `${meta.label} is configured as a higher-is-better game, so larger values rank higher. Score-based games reward strong performance, replay value, and player improvement over time.`;
+                elValueHeading.textContent = meta.valueLabel;
+                elBestLabel.textContent = `Best ${meta.valueLabel}`;
+                elBestLabel2.textContent = `Best ${meta.valueLabel}`;
+            }
+        }
+
+        function renderCbcExtras(show) {
+            elCbcWorldRow.hidden = !show;
+
+            if (!show) {
+                elCbcTotalStars.textContent = "0";
+                elCbcBestCombo.textContent = "0";
+                elCbcLives.textContent = "0";
+                elCbcCompleted.textContent = "0";
+                return;
+            }
+
+            const summary = getCbcSummary();
+            elCbcTotalStars.textContent = String(summary.totalStars);
+            elCbcBestCombo.textContent = String(summary.bestCombo);
+            elCbcLives.textContent = String(summary.lives);
+            elCbcCompleted.textContent = String(summary.completed);
+            elCbcWorldText.textContent = summary.worldText;
+        }
+
+        function updateLevelCapUI(gameId) {
+            const isStory = gameId === "story-mode";
+
+            elLevelCapInput.disabled = isStory;
+            elLevelCapInput.placeholder = isStory ? "Not used in Story Mode" : "e.g. 10";
+
+            if (isStory) {
+                elLevelCapInput.value = "";
+            }
+        }
+
+        function showToast(message, type = "success") {
+            clearTimeout(toastTimer);
+
+            elActionToastText.textContent = message;
+            elActionToast.classList.remove("is-danger", "is-info", "show");
+
+            if (type === "danger") {
+                elActionToast.classList.add("is-danger");
+                elActionToastIcon.textContent = "🗑️";
+            } else if (type === "info") {
+                elActionToast.classList.add("is-info");
+                elActionToastIcon.textContent = "🔄";
+            } else {
+                elActionToastIcon.textContent = "✅";
+            }
+
+            requestAnimationFrame(() => {
+                elActionToast.classList.add("show");
+            });
+
+            toastTimer = setTimeout(() => {
+                elActionToast.classList.remove("show");
+            }, 1800);
+        }
+
+        function openConfirmModal(title, message, confirmLabel, onConfirm, danger = false) {
+            elConfirmTitle.textContent = title;
+            elConfirmText.textContent = message;
+            elConfirmOkBtn.textContent = confirmLabel;
+            confirmAction = onConfirm;
+
+            elConfirmOkBtn.classList.remove("lb-btn-sub", "lb-btn-main", "lb-btn-danger");
+            elConfirmOkBtn.classList.add("lb-btn", danger ? "lb-btn-danger" : "lb-btn-main");
+
+            elConfirmModal.classList.remove("hidden");
+            elConfirmOkBtn.focus();
+        }
+
+        function closeConfirmModal() {
+            elConfirmModal.classList.add("hidden");
+            confirmAction = null;
+        }
+
+        function clearStoryModeData() {
+            const storyKeys = [
+                "bca_story_started",
+                "bca_story_step",
+                "bca_story_history",
+                "bca_story_progress",
+                "bca_story_character",
+                "bca_story_mount",
+                "bca_story_inv_charm",
+                "bca_story_inv_map",
+                "bca_story_inv_sword",
+                "bca_story_pending_test",
+                "bca_story_pending_next",
+                "bca_story_scene_index",
+                "bca_story_ending",
+                "bca_story_achievements",
+                "bca_best_storyMode",
+                "bca_runs_storyMode",
+                "bca_story_last_test",
+                "bca_story_last_game",
+                "mc_story_last_level"
+            ];
+
+            const storyTests = [
+                "bca_story_test_test1_first_puzzle",
+                "bca_story_test_test2_traveler",
+                "bca_story_test_test3_wise_old_man",
+                "bca_story_test_test4_magic_map",
+                "bca_story_test_test5_sword_light",
+                "bca_story_test_test7_castle_gate",
+                "bca_story_test_test6_final_battle",
+                "bca_story_test_memory_test_1",
+                "bca_story_test_memory_cards_story_test"
+            ];
+
+            storyKeys.concat(storyTests).forEach(key => safeRemove(key));
+        }
+
+        window.BCA = window.BCA || {};
+
+        window.BCA.recordRun = function(gameId, data) {
+            const meta = GAMES[gameId];
+            if (!meta) return;
+
+            const run = normalizeRun({
+                name: data && data.name ? String(data.name) : getUsername(),
+                value: data && data.value,
+                date: data && data.date ? String(data.date) : todayISO(),
+                level: data && data.level,
+                stars: data && data.stars,
+                combo: data && data.combo
+            });
+
+            if (!Number.isFinite(run.value)) return;
+
+            const runs = safeJsonGet(meta.runsKey, []);
+            const normalizedRuns = Array.isArray(runs) ? runs.map(normalizeRun).filter(r => Number.isFinite(r.value)) : [];
+
+            normalizedRuns.unshift(run);
+            safeJsonSet(meta.runsKey, normalizedRuns.slice(0, 200));
+
+            const best = getBestObj(gameId);
+            if (!best || isBetter(meta, run.value, best.value)) {
+                setBestObj(gameId, {
+                    value: run.value,
+                    date: run.date,
+                    level: run.level
+                });
+            }
+
+            if (run.level !== null) {
+                const currentLv = getHighestLevel(gameId);
+                if (run.level > currentLv) setHighestLevel(gameId, run.level);
+            }
+
+            if (elGameSelect.value === gameId) renderAll();
+        };
+
+        window.BCA.setProgress = function(gameId, level) {
+            if (!GAMES[gameId]) return;
+            const lv = clampInt(level, 0, 9999);
+            const current = getHighestLevel(gameId);
+            if (lv > current) setHighestLevel(gameId, lv);
+            if (elGameSelect.value === gameId) renderAll();
+        };
+
+        window.BCA.getProgress = function(gameId) {
+            if (!GAMES[gameId]) return 0;
+            return getHighestLevel(gameId);
+        };
+
+        window.BCA.getLevelCap = function(gameId) {
+            if (!GAMES[gameId]) return 10;
+            return getLevelCap(gameId);
+        };
+
+        window.BCA.setLevelCap = function(gameId, cap) {
+            if (!GAMES[gameId]) return;
+            setLevelCap(gameId, cap);
+            if (elGameSelect.value === gameId) renderAll();
+        };
+
+        function renderSummary(gameId) {
+            const meta = GAMES[gameId];
+            const user = getUsername();
+            const best = getBestObj(gameId);
+            const highest = getHighestLevel(gameId);
+            const cap = meta.levelCapKey ? getLevelCap(gameId) : null;
+
+            elPlayerName.textContent = user;
+            elPlayerName2.textContent = user;
+            elGameLabel.textContent = meta.label;
+
+            if (meta.levelCapKey) {
+                elLevelCapInput.value = String(cap);
+            }
+
+            updateLevelCapUI(gameId);
+
+            document.getElementById("btnPlayGame").href = meta.playLink;
+
+            updateScoringText(gameId);
+
+            if (gameId === "story-mode") {
+                elBestValue.textContent = best ? `${best.value}%` : "—";
+                elBestValue2.textContent = best ? `${best.value}%` : "—";
+                elBestLevel.textContent = best && best.level ? `Chapter ${best.level}` : "—";
+                elBestLevel2.textContent = best && best.level ? `Chapter ${best.level}` : "—";
+            } else {
+                elBestValue.textContent = best ? String(best.value) : "—";
+                elBestValue2.textContent = best ? String(best.value) : "—";
+                elBestLevel.textContent = highest > 0 ? String(highest) : "—";
+                elBestLevel2.textContent = highest > 0 ? String(highest) : "—";
+            }
+
+            renderCbcExtras(gameId === "color-bubble-challenge");
+        }
+
+        function makeExtraCell(run, gameId) {
+            if (gameId === "story-mode") {
+                return `<span class="lb-badge-inline">${getStoryEndingLabel()}</span> <span class="lb-badge-inline">${getStoryRouteLabel()}</span>`;
+            }
+
+            const parts = [];
+            if (run.stars !== null) parts.push(`<span class="lb-badge-inline">★ ${run.stars}</span>`);
+            if (run.combo !== null && run.combo > 0) parts.push(`<span class="lb-badge-inline">🔥 x${run.combo}</span>`);
+            return parts.length ? parts.join(" ") : `<span class="lb-badge-inline">Standard Run</span>`;
+        }
+
+        function renderTable(gameId) {
+            const meta = GAMES[gameId];
+            const runs = getRuns(gameId).slice();
+
+            if (sortMode === "recent") {
+                runs.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+            } else {
+                runs.sort((a, b) => meta.betterIs === "low" ? a.value - b.value : b.value - a.value);
+            }
+
+            elRows.innerHTML = "";
+
+            if (runs.length === 0) {
+                elEmptyMsg.style.display = "block";
+                return;
+            }
+
+            elEmptyMsg.style.display = "none";
+
+            runs.slice(0, 50).forEach((run, index) => {
+                const rankClass = index === 0 ? "lb-rank-1" : index === 1 ? "lb-rank-2" : index === 2 ? "lb-rank-3" : "";
+                const tr = document.createElement("tr");
+
+                const valueText = gameId === "story-mode" ? `${run.value}%` : `${run.value}`;
+                const levelText = gameId === "story-mode" ?
+                    (run.level !== null ? `<span class="lb-badge-inline">Chapter ${run.level}</span>` : "—") :
+                    (run.level !== null ? `<span class="lb-badge-inline">Level ${run.level}</span>` : "—");
+
+                tr.innerHTML = `
+                    <td><span class="lb-rank-badge ${rankClass}">${index + 1}</span></td>
+                    <td>${run.name}</td>
+                    <td><strong>${valueText}</strong></td>
+                    <td>${levelText}</td>
+                    <td>${makeExtraCell(run, gameId)}</td>
+                    <td>${run.date}</td>
+                `;
+
+                elRows.appendChild(tr);
+            });
+        }
+
+        function renderAll() {
+            const gameId = elGameSelect.value;
+            history.replaceState(null, "", `#${gameId}`);
+            renderSummary(gameId);
+            renderTable(gameId);
+        }
+
+        function clearGame(gameId) {
+            const meta = GAMES[gameId];
+
+            if (gameId === "story-mode") {
+                clearStoryModeData();
+                renderAll();
+                return;
+            }
+
+            if (gameId === "color-bubble-challenge") {
+                clearColorBubbleGameData();
+                renderAll();
+                return;
+            }
+
+            safeRemove(meta.runsKey);
+            safeRemove(meta.bestKey);
+            safeRemove(meta.progressKey);
+
+            if (gameId === "card-matching") {
+                clearCardMatchingGameData();
+            }
+
+            renderAll();
+        }
+
+        function clearAll() {
+            Object.keys(GAMES).forEach(gameId => {
+                if (gameId === "story-mode") {
+                    clearStoryModeData();
+                    return;
+                }
+
+                if (gameId === "color-bubble-challenge") {
+                    clearColorBubbleGameData();
+                    return;
+                }
+
+                const meta = GAMES[gameId];
+                safeRemove(meta.runsKey);
+                safeRemove(meta.bestKey);
+                safeRemove(meta.progressKey);
+            });
+
+            clearColorBubbleGameData();
+            clearCardMatchingGameData();
+
+            renderAll();
+        }
+
+        function resetColorBubbleProgressOnly() {
+            const progress = getCbcProgress();
+
+            safeRemove("bca_progress_colorBubbleChallenge");
+            safeRemove("bca_best_colorBubbleChallenge");
+            safeRemove("bca_runs_colorBubbleChallenge");
+
+            if (progress && typeof progress === "object") {
+                progress.version = 3;
+                progress.unlockedLevel = 1;
+                progress.selectedLevel = 1;
+                progress.currentLevel = 1;
+                progress.totalStars = 0;
+                progress.bestScore = 0;
+                progress.lives = 5;
+                progress.maxLives = 5;
+                progress.nextLifeAt = 0;
+                progress.coins = 0;
+
+                progress.stats = {
+                    totalShots: 0,
+                    totalPopped: 0,
+                    completedLevels: 0,
+                    totalStars: 0,
+                    threeStarLevels: 0,
+                    totalWins: 0,
+                    totalLosses: 0,
+                    bestComboOverall: 0
+                };
+
+                if (Array.isArray(progress.levels)) {
+                    progress.levels = progress.levels.map((level, index) => ({
+                        level: index + 1,
+                        unlocked: index === 0,
+                        stars: 0,
+                        bestScore: 0,
+                        completed: false,
+                        bestCombo: 0,
+                        attempts: 0,
+                        wins: 0,
+                        losses: 0
+                    }));
+                }
+
+                safeJsonSet("cbc_progress_v3", progress);
+                safeSet("cbc_selected_level_v3", "1");
+                safeRemove("cbc_achievements_v3");
+            } else {
+                clearColorBubbleGameData();
+            }
+        }
+
+        function resetProgress(gameId) {
+            const meta = GAMES[gameId];
+
+            if (gameId === "story-mode") {
+                clearStoryModeData();
+                renderAll();
+                return;
+            }
+
+            if (gameId === "color-bubble-challenge") {
+                resetColorBubbleProgressOnly();
+                renderAll();
+                return;
+            }
+
+            safeRemove(meta.progressKey);
+
+            if (gameId === "card-matching") {
+                resetCardMatchingProgressOnly();
+            }
+
+            renderAll();
+        }
+
+        elGameSelect.addEventListener("change", renderAll);
+
+        chips.forEach(chip => {
+            chip.addEventListener("click", function() {
+                chips.forEach(c => c.classList.remove("active"));
+                chip.classList.add("active");
+                sortMode = chip.dataset.sort || "best";
+                renderAll();
+            });
+        });
+
+        document.getElementById("btnResetProgress").addEventListener("click", function() {
+            const gameId = elGameSelect.value;
+
+            openConfirmModal(
+                gameId === "story-mode" ? "Reset story progress?" : "Reset highest level?",
+                gameId === "story-mode" ?
+                `Reset all Story Mode progress, choices, achievements, and chapter data?` :
+                `Reset highest level and progression for "${GAMES[gameId].label}"?`,
+                "Reset",
+                function() {
+                    resetProgress(gameId);
+                    closeConfirmModal();
+                    showToast(gameId === "story-mode" ? "Story progress reset" : "Highest level reset", "info");
+                }
+            );
+        });
+
+        document.getElementById("btnClearGame").addEventListener("click", function() {
+            const gameId = elGameSelect.value;
+
+            openConfirmModal(
+                "Clear this game?",
+                gameId === "story-mode" ?
+                `Clear all saved data for Story Mode?` :
+                `Clear saved leaderboard, best result, and progress for "${GAMES[gameId].label}"?`,
+                "Clear Game",
+                function() {
+                    clearGame(gameId);
+                    closeConfirmModal();
+                    showToast(`${GAMES[gameId].label} cleared`, "danger");
+                },
+                true
+            );
+        });
+
+        document.getElementById("btnClearAll").addEventListener("click", function() {
+            openConfirmModal(
+                "Clear all data?",
+                "Clear ALL saved leaderboard and progress data on this device?",
+                "Clear All",
+                function() {
+                    clearAll();
+                    closeConfirmModal();
+                    showToast("All data cleared", "danger");
+                },
+                true
+            );
+        });
+
+        elConfirmCancelBtn.addEventListener("click", closeConfirmModal);
+
+        elConfirmOkBtn.addEventListener("click", function() {
+            if (typeof confirmAction === "function") {
+                confirmAction();
+            }
+        });
+
+        elConfirmModal.addEventListener("click", function(e) {
+            if (e.target === elConfirmModal) {
+                closeConfirmModal();
+            }
+        });
+
+        window.addEventListener("keydown", function(e) {
+            if (e.key === "Escape" && !elConfirmModal.classList.contains("hidden")) {
+                closeConfirmModal();
+            }
+        });
+
+        let capTimer = null;
+        elLevelCapInput.addEventListener("input", function() {
+            const gameId = elGameSelect.value;
+            if (gameId === "story-mode") return;
+
+            clearTimeout(capTimer);
+
+            capTimer = setTimeout(function() {
+                const cap = Number(elLevelCapInput.value);
+                if (!Number.isFinite(cap)) return;
+
+                setLevelCap(gameId, cap);
+                renderAll();
+                showToast(`Level cap updated to ${cap}`);
+            }, 250);
+        });
+
+        window.addEventListener("storage", function(e) {
+            if (!e || !e.key) return;
+
+            const watched = [
+                "bca_username",
+                "bca_best_imageGuess",
+                "bca_best_memoryTest",
+                "bca_best_cardMatching",
+                "bca_best_colorBubbleChallenge",
+                "bca_best_storyMode",
+                "bca_runs_imageGuess",
+                "bca_runs_memoryTest",
+                "bca_runs_cardMatching",
+                "bca_runs_colorBubbleChallenge",
+                "bca_runs_storyMode",
+                "bca_progress_imageGuess",
+                "bca_progress_memoryTest",
+                "bca_progress_cardMatching",
+                "bca_progress_colorBubbleChallenge",
+                "bca_story_started",
+                "bca_story_step",
+                "bca_story_progress",
+                "bca_story_mount",
+                "bca_story_ending",
+                "bca_story_achievements",
+                "bca_levelcap_imageGuess",
+                "bca_levelcap_memoryTest",
+                "bca_levelcap_cardMatching",
+                "bca_levelcap_colorBubbleChallenge",
+                "cbc_progress_v3",
+                "cbc_selected_level_v3",
+                "cbc_settings_v3",
+                "cbc_achievements_v3",
+                "cbc_progress_v2",
+                "cbc_selected_level_v2",
+                "cbc_settings_v2",
+                "cbc_achievements_v2",
+                "cbc_progress",
+                "cbc_selected_level",
+                "mc_unlocked_level",
+                "mc_level_stars",
+                "mc_tutorial_done",
+                "mc_sound_muted",
+                "mc_music_muted",
+                "bca_story_last_test",
+                "bca_story_last_game",
+                "mc_story_last_level",
+                "bca_story_test_memory_test_1",
+                "bca_story_test_memory_cards_story_test"
+            ];
+
+            if (watched.includes(e.key)) renderAll();
+        });
+
+        applyHashSelection();
+        renderAll();
+    </script>
+</body>
+
+</html>

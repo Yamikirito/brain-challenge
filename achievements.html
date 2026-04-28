@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- =========================================================
+         Brain Challenge Arcade - achievements.html
+
+         ✅ Theme loader to stop flash issue
+         ✅ Modern achievements page design
+         ✅ Achievement progress bar
+         ✅ Search and filter system
+         ✅ Badge collection cards
+         ✅ Responsive layout for mobile and desktop
+    ========================================================== -->
+
+    <!-- This script loads the saved theme before the page shows -->
+    <script>
+        (function() {
+            // Get theme from localStorage
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            // Check if system theme is dark
+            function systemPrefersDark() {
+                return !!(
+                    window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches
+                );
+            }
+
+            // Apply theme class to html
+            var theme = getTheme();
+            var root = document.documentElement;
+            root.classList.remove("theme-dark", "theme-light");
+
+            if (theme === "dark") root.classList.add("theme-dark");
+            else if (theme === "light") root.classList.add("theme-light");
+            else root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+        })();
+    </script>
+
+    <!-- Basic page setup -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Achievements • Brain Challenge Arcade</title>
+    <meta name="description" content="Track unlocked badges, story milestones, and achievement progress in Brain Challenge Arcade." />
+
+    <!-- External CSS files -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/games.css" />
+
+    <style>
+        /* Main dark theme colors */
+        
+         :root {
+            --bg0: #070914;
+            --bg1: #0b1028;
+            --ink: #eaf0ff;
+            --muted: rgba(234, 240, 255, .74);
+            --muted2: rgba(234, 240, 255, .56);
+            --card: rgba(255, 255, 255, .06);
+            --card-strong: rgba(255, 255, 255, .08);
+            --border: rgba(255, 255, 255, .12);
+            --blue: #4ea1ff;
+            --violet: #9b7bff;
+            --pink: #ff4fd8;
+            --cyan: #40f6ff;
+            --shadow: 0 22px 70px rgba(0, 0, 0, .45);
+            --shadow2: 0 14px 40px rgba(0, 0, 0, .28);
+            --r-xl: 24px;
+            --r-lg: 18px;
+            --r-md: 14px;
+        }
+        /* Light theme colors */
+        
+        .theme-light {
+            --bg0: #f4f6ff;
+            --bg1: #e9edff;
+            --ink: #111827;
+            --muted: rgba(17, 24, 39, .74);
+            --muted2: rgba(17, 24, 39, .56);
+            --card: rgba(255, 255, 255, .86);
+            --card-strong: #ffffff;
+            --border: rgba(0, 0, 0, .08);
+            --blue: #3b82f6;
+            --violet: #7c3aed;
+            --pink: #ec4899;
+            --cyan: #06b6d4;
+            --shadow: 0 20px 40px rgba(0, 0, 0, .08);
+            --shadow2: 0 10px 20px rgba(0, 0, 0, .06);
+        }
+        /* Make sizing easier */
+        
+        * {
+            box-sizing: border-box;
+        }
+        /* Page background */
+        
+        body {
+            background: radial-gradient(900px 520px at 15% 20%, rgba(255, 79, 216, .14), transparent 58%), radial-gradient(900px 520px at 85% 25%, rgba(78, 161, 255, .14), transparent 58%), radial-gradient(900px 520px at 50% 100%, rgba(155, 123, 255, .12), transparent 58%), linear-gradient(180deg, var(--bg0), var(--bg1));
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+        /* Main page spacing */
+        
+        .page {
+            padding-top: 26px;
+            padding-bottom: 56px;
+        }
+        /* Skip link for accessibility */
+        
+        .skip-link {
+            position: absolute;
+            left: 12px;
+            top: -48px;
+            z-index: 9999;
+            background: #fff;
+            color: #111;
+            padding: 10px 14px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            transition: top .18s ease;
+        }
+        
+        .skip-link:focus {
+            top: 12px;
+        }
+        /* Focus style for accessibility */
+        
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible {
+            outline: 3px solid rgba(64, 246, 255, .45);
+            outline-offset: 3px;
+            border-radius: 12px;
+        }
+        /* Navbar style */
+        
+        .navbar {
+            background: rgba(0, 0, 0, .35) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, .10);
+            backdrop-filter: blur(12px);
+        }
+        
+        .nav-link,
+        .brand-text {
+            color: rgba(234, 240, 255, .90) !important;
+        }
+        
+        .nav-link.nav-active {
+            color: rgba(234, 240, 255, 1) !important;
+        }
+        /* Navbar light mode */
+        
+        .theme-light .navbar {
+            background: rgba(255, 255, 255, .82) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, .08);
+        }
+        
+        .theme-light .nav-link,
+        .theme-light .brand-text {
+            color: rgba(17, 24, 39, .86) !important;
+        }
+        
+        .theme-light .nav-link.nav-active {
+            color: rgba(17, 24, 39, 1) !important;
+        }
+        /* Hero section */
+        
+        .hero {
+            border-radius: var(--r-xl);
+            background: var(--card-strong);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 18px;
+        }
+        
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+        
+        .hero-title {
+            margin: 0;
+            font-size: clamp(30px, 4vw, 48px);
+            line-height: 1.05;
+            font-weight: 950;
+            letter-spacing: -.6px;
+        }
+        /* Gradient text in title */
+        
+        .hero-title .grad {
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .hero-sub {
+            margin: 8px 0 0;
+            max-width: 60ch;
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.45;
+        }
+        /* Hero buttons */
+        
+        .hero-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+        /* Shared arcade button */
+        
+        .btn-arcade {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 900;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .16);
+            color: var(--ink);
+            box-shadow: var(--shadow2);
+            cursor: pointer;
+            transition: transform .16s ease, filter .16s ease, opacity .16s ease;
+        }
+        
+        .theme-light .btn-arcade {
+            background: rgba(17, 24, 39, .05);
+        }
+        
+        .btn-arcade.primary {
+            background: linear-gradient(135deg, rgba(78, 161, 255, .20), rgba(255, 79, 216, .16));
+        }
+        
+        .btn-arcade:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.04);
+        }
+        
+        .btn-arcade:disabled {
+            opacity: .72;
+            cursor: wait;
+            transform: none;
+        }
+        /* Top summary stats */
+        
+        .stats-row {
+            margin-top: 0;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+        }
+        
+        .stat-card {
+            border-radius: var(--r-lg);
+            padding: 12px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            min-height: 96px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            font-weight: 900;
+            color: var(--muted2);
+        }
+        
+        .stat-value {
+            margin-top: 6px;
+            font-size: 18px;
+            font-weight: 950;
+        }
+        /* Progress bar area */
+        
+        .progress-wrap {
+            margin-top: 14px;
+        }
+        
+        .progressbar {
+            height: 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .16);
+            overflow: hidden;
+        }
+        
+        .theme-light .progressbar {
+            background: rgba(17, 24, 39, .05);
+        }
+        
+        .progressbar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--cyan), var(--blue), var(--violet), var(--pink));
+            transition: width .24s ease;
+        }
+        
+        .progress-text {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: 14px;
+        }
+        /* Section heading */
+        
+        .section-head {
+            margin-top: 22px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+        
+        .section-head h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 950;
+        }
+        
+        .section-head p {
+            margin: 0;
+            color: var(--muted2);
+            font-weight: 700;
+        }
+        /* Search and filter toolbar */
+        
+        .toolbar {
+            border-radius: var(--r-xl);
+            padding: 16px;
+            background: var(--card-strong);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+        }
+        
+        .search-box {
+            width: 100%;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .15);
+            color: var(--ink);
+            padding: 13px 14px;
+            font-size: 15px;
+        }
+        
+        .theme-light .search-box {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .filter-row {
+            margin-top: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            appearance: none;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .14);
+            color: var(--ink);
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-weight: 850;
+            cursor: pointer;
+            transition: transform .16s ease, filter .16s ease;
+        }
+        
+        .theme-light .filter-btn {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .filter-btn.active {
+            background: linear-gradient(135deg, rgba(78, 161, 255, .20), rgba(255, 79, 216, .14));
+        }
+        
+        .filter-btn:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+        /* Badge grid layout */
+        
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+        /* Single badge card */
+        
+        .badge-tile {
+            border-radius: var(--r-xl);
+            padding: 16px;
+            background: var(--card-strong);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            display: grid;
+            gap: 12px;
+            min-height: 220px;
+            transition: transform .16s ease, filter .16s ease;
+        }
+        
+        .badge-tile:hover {
+            transform: translateY(-3px);
+            filter: brightness(1.03);
+        }
+        
+        .badge-tile.locked {
+            opacity: .9;
+        }
+        
+        .badge-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .badge-icon {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            display: grid;
+            place-items: center;
+            font-size: 28px;
+            background: rgba(0, 0, 0, .18);
+            border: 1px solid var(--border);
+        }
+        
+        .theme-light .badge-icon {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .badge-chip {
+            font-size: 12px;
+            font-weight: 900;
+            padding: 6px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .14);
+            color: var(--ink);
+        }
+        
+        .theme-light .badge-chip {
+            background: rgba(17, 24, 39, .04);
+        }
+        
+        .badge-title {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 950;
+        }
+        
+        .badge-desc {
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.45;
+        }
+        
+        .badge-meta {
+            margin: 0;
+            color: var(--muted2);
+            font-size: 13px;
+            line-height: 1.4;
+            font-weight: 700;
+        }
+        
+        .badge-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .badge-tag {
+            font-size: 11px;
+            font-weight: 900;
+            padding: 5px 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            text-transform: uppercase;
+        }
+        
+        .badge-action {
+            margin-top: auto;
+        }
+        
+        .badge-link {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 900;
+            border: 1px solid var(--border);
+            background: rgba(0, 0, 0, .14);
+            color: var(--ink);
+        }
+        
+        .theme-light .badge-link {
+            background: rgba(17, 24, 39, .04);
+        }
+        /* Empty state message */
+        
+        .empty-state {
+            border-radius: var(--r-xl);
+            padding: 24px;
+            background: var(--card-strong);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow2);
+            text-align: center;
+            color: var(--muted);
+            line-height: 1.55;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        /* Footer */
+        
+        .footer {
+            background: rgba(0, 0, 0, .35);
+            border-top: 1px solid rgba(255, 255, 255, .10);
+        }
+        
+        .footer .muted,
+        .footer a {
+            color: rgba(234, 240, 255, .72) !important;
+        }
+        
+        .theme-light .footer {
+            background: rgba(255, 255, 255, .75);
+            border-top: 1px solid rgba(0, 0, 0, .08);
+        }
+        
+        .theme-light .footer .muted,
+        .theme-light .footer a {
+            color: rgba(17, 24, 39, .7) !important;
+        }
+        /* Tablet layout */
+        
+        @media (max-width: 980px) {
+            .stats-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .badge-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        /* Mobile layout */
+        
+        @media (max-width: 640px) {
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+            .hero-actions,
+            .filter-row {
+                flex-direction: column;
+            }
+            .btn-arcade,
+            .filter-btn {
+                width: 100%;
+            }
+            .badge-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Skip link for accessibility -->
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- Top navigation -->
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <!-- Desktop menu -->
+            <nav class="nav" aria-label="Primary">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link nav-active" href="achievements.html" aria-current="page">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </nav>
+
+            <!-- Mobile menu button -->
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+        </div>
+
+        <!-- Mobile menu -->
+        <div class="mobile-menu hidden" id="mobileMenu">
+            <div class="container mobile-menu-inner">
+                <a class="nav-link" href="index.html">Home</a>
+                <a class="nav-link" href="story.html">Story Mode</a>
+                <a class="nav-link" href="games.html">Games</a>
+                <a class="nav-link" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link nav-active" href="achievements.html" aria-current="page">Achievements</a>
+                <a class="nav-link" href="profile.html">Profile</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+                <a class="nav-link" href="about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main id="main" class="container page">
+        <!-- Hero section -->
+        <section class="hero" aria-labelledby="achTitle">
+            <div class="hero-layout">
+                <div>
+                    <h1 id="achTitle" class="hero-title">Achievements <span class="grad">Vault</span></h1>
+                    <p class="hero-sub">
+                        Unlock badges by playing mini-games, progressing through Story Mode, collecting important items, and reaching stronger endings.
+                    </p>
+
+                    <!-- Hero action buttons -->
+                    <div class="hero-actions">
+                        <a class="btn-arcade" href="index.html">← Back to Home</a>
+                        <button class="btn-arcade primary" id="btnRecheck" type="button">🔄 Re-check Progress</button>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="progress-wrap">
+                        <div class="progressbar" role="progressbar" aria-label="Achievements progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progressbar-fill" id="progressFill"></div>
+                        </div>
+                        <p class="progress-text" id="progressMsg">Play games and continue the story to unlock achievements.</p>
+                    </div>
+                </div>
+
+                <!-- Stats cards -->
+                <div class="stats-row" aria-label="Achievement overview">
+                    <div class="stat-card">
+                        <div class="stat-label">Player</div>
+                        <div class="stat-value" id="playerName">Guest</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Unlocked</div>
+                        <div class="stat-value" id="unlockedCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total</div>
+                        <div class="stat-value" id="totalCount">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Story Ending</div>
+                        <div class="stat-value" id="endingType">Not Reached</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search section heading -->
+        <div class="section-head">
+            <h2>Find achievements</h2>
+        </div>
+
+        <!-- Search and filter tools -->
+        <section class="toolbar" aria-label="Achievement search and filters">
+            <input id="searchInput" class="search-box" type="search" placeholder="Search achievements by name, category, or hint..." aria-label="Search achievements" />
+
+            <div class="filter-row" role="group" aria-label="Achievement filters">
+                <button class="filter-btn active" type="button" data-filter="all">All</button>
+                <button class="filter-btn" type="button" data-filter="unlocked">Unlocked</button>
+                <button class="filter-btn" type="button" data-filter="locked">Locked</button>
+                <button class="filter-btn" type="button" data-filter="story">Story</button>
+                <button class="filter-btn" type="button" data-filter="game">Games</button>
+                <button class="filter-btn" type="button" data-filter="ending">Endings</button>
+            </div>
+        </section>
+
+        <!-- Badge section heading -->
+        <div class="section-head">
+            <h2>Badge collection</h2>
+        </div>
+
+        <!-- Achievement badge cards -->
+        <section aria-label="Achievement badges">
+            <div class="badge-grid" id="badgeGrid" aria-live="polite"></div>
+            <div id="emptyState" class="empty-state hidden">
+                No achievements match your current search or filter.
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">© <span id="year"></span> Brain Challenge Arcade</div>
+            <div class="footer-links">
+                <a href="settings.html">Settings</a>
+                <a href="about.html">Credits</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- External scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Show current year in footer
+        document.getElementById("year").textContent = new Date().getFullYear();
+
+        // Mobile menu toggle
+        (function() {
+            var btn = document.querySelector(".nav-toggle");
+            var menu = document.getElementById("mobileMenu");
+            if (!btn || !menu) return;
+
+            btn.addEventListener("click", function() {
+                var isOpen = btn.getAttribute("aria-expanded") === "true";
+                btn.setAttribute("aria-expanded", String(!isOpen));
+                menu.classList.toggle("hidden", isOpen);
+            });
+        })();
+
+        // Short helper for getElementById
+        function $(id) {
+            return document.getElementById(id);
+        }
+
+        // Safe localStorage get
+        function safeGet(key, fallback) {
+            try {
+                var v = localStorage.getItem(key);
+                return v === null ? fallback : v;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        // Safe JSON get from localStorage
+        function safeJsonGet(key, fallback) {
+            try {
+                var raw = localStorage.getItem(key);
+                if (!raw) return fallback;
+                return JSON.parse(raw);
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        // Safe JSON save to localStorage
+        function safeJsonSet(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {}
+        }
+
+        // Convert value to number or null
+        function numOrNull(x) {
+            var n = Number(x);
+            return Number.isFinite(n) ? n : null;
+        }
+
+        // Return today date in YYYY-MM-DD
+        function isoToday() {
+            var d = new Date();
+            var yyyy = d.getFullYear();
+            var mm = String(d.getMonth() + 1).padStart(2, "0");
+            var dd = String(d.getDate()).padStart(2, "0");
+            return yyyy + "-" + mm + "-" + dd;
+        }
+
+        // Make ending name easier to read
+        function prettyEndingName(raw) {
+            raw = String(raw || "").trim();
+            if (!raw) return "Not Reached";
+            if (raw === "true") return "True Ending";
+            if (raw === "heroic") return "Heroic Ending";
+            if (raw === "normal") return "Normal Ending";
+            return raw;
+        }
+
+        // Escape text before showing in HTML
+        function escapeHtmlText(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Collect game and story progress from localStorage
+        function getContext() {
+            return {
+                playerName: safeGet("bca_username", "Guest"),
+                imageGuess: numOrNull(safeGet("bca_best_imageGuess", "")),
+                memoryTest: numOrNull(safeGet("bca_best_memoryTest", "")),
+                cardMatching: numOrNull(safeGet("bca_best_cardMatching", "")),
+                storyProgress: numOrNull(safeGet("bca_story_progress", "0")),
+                ending: safeGet("bca_story_ending", ""),
+                storyStore: safeJsonGet("bca_story_achievements", {}) || {},
+                charm: safeGet("bca_story_inv_charm", "0") === "1",
+                map: safeGet("bca_story_inv_map", "0") === "1",
+                sword: safeGet("bca_story_inv_sword", "0") === "1",
+                test1: safeGet("bca_story_test_test1_first_puzzle", "0") === "1",
+                test7: safeGet("bca_story_test_test7_castle_gate", "0") === "1",
+                test6: safeGet("bca_story_test_test6_final_battle", "0") === "1",
+                mount: safeGet("bca_story_mount", "")
+            };
+        }
+
+        // Key name for unlocked achievement dates
+        var UNLOCK_KEY = "bca_achievements_unlocked";
+
+        // Load unlocked dates
+        function loadUnlockDates() {
+            var obj = safeJsonGet(UNLOCK_KEY, {});
+            return obj && typeof obj === "object" ? obj : {};
+        }
+
+        // Save unlocked dates
+        function saveUnlockDates(obj) {
+            safeJsonSet(UNLOCK_KEY, obj);
+        }
+
+        // Achievement list
+        var ACHIEVEMENTS = [{
+            id: "first_play",
+            title: "First Steps",
+            icon: "👣",
+            desc: "Play any mini-game at least once.",
+            hint: "Finish one mini-game.",
+            category: "game",
+            group: "General",
+            route: "games.html",
+            check: function(c) {
+                return c.imageGuess !== null || c.memoryTest !== null || c.cardMatching !== null;
+            }
+        }, {
+            id: "image_guess_5",
+            title: "Sharp Eyes",
+            icon: "🖼️",
+            desc: "Reach a best score of 5 or more in Image Guess.",
+            hint: "Get 5+ in Image Guess.",
+            category: "game",
+            group: "Image Guess",
+            route: "games.html",
+            check: function(c) {
+                return c.imageGuess !== null && c.imageGuess >= 5;
+            }
+        }, {
+            id: "image_guess_10",
+            title: "Eagle Vision",
+            icon: "🦅",
+            desc: "Reach a best score of 10 or more in Image Guess.",
+            hint: "Get 10+ in Image Guess.",
+            category: "game",
+            group: "Image Guess",
+            route: "games.html",
+            check: function(c) {
+                return c.imageGuess !== null && c.imageGuess >= 10;
+            }
+        }, {
+            id: "memory_3",
+            title: "Pattern Starter",
+            icon: "🧠",
+            desc: "Reach level 3 or higher in Memory Test.",
+            hint: "Reach level 3 in Memory Test.",
+            category: "game",
+            group: "Memory Test",
+            route: "games.html",
+            check: function(c) {
+                return c.memoryTest !== null && c.memoryTest >= 3;
+            }
+        }, {
+            id: "memory_6",
+            title: "Mind Builder",
+            icon: "🏗️",
+            desc: "Reach level 6 or higher in Memory Test.",
+            hint: "Reach level 6 in Memory Test.",
+            category: "game",
+            group: "Memory Test",
+            route: "games.html",
+            check: function(c) {
+                return c.memoryTest !== null && c.memoryTest >= 6;
+            }
+        }, {
+            id: "match_complete",
+            title: "Match Maker",
+            icon: "🃏",
+            desc: "Complete Card Matching at least once.",
+            hint: "Finish one Card Matching game.",
+            category: "game",
+            group: "Card Matching",
+            route: "games.html",
+            check: function(c) {
+                return c.cardMatching !== null && c.cardMatching >= 1;
+            }
+        }, {
+            id: "started_story",
+            title: "Story Begins",
+            icon: "📖",
+            desc: "Start Story Mode.",
+            hint: "Open the story and begin the journey.",
+            category: "story",
+            group: "Story Mode",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.started_story || c.storyProgress > 0;
+            }
+        }, {
+            id: "solved_first_puzzle",
+            title: "Seal Breaker",
+            icon: "✨",
+            desc: "Solve the first story puzzle.",
+            hint: "Complete the first story brain test.",
+            category: "story",
+            group: "Story Mode",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.solved_first_puzzle || c.test1;
+            }
+        }, {
+            id: "chose_horse",
+            title: "Royal Rider",
+            icon: "🐎",
+            desc: "Choose the horse route.",
+            hint: "Pick the horse in Chapter 10.",
+            category: "story",
+            group: "Story Choice",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.chose_horse || c.mount === "Horse";
+            }
+        }, {
+            id: "chose_dragon",
+            title: "Skybound Prince",
+            icon: "🐉",
+            desc: "Choose the dragon route.",
+            hint: "Pick the dragon in Chapter 10.",
+            category: "story",
+            group: "Story Choice",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.chose_dragon || c.mount === "Dragon";
+            }
+        }, {
+            id: "earned_lucky_charm",
+            title: "Light of Fortune",
+            icon: "🍀",
+            desc: "Earn the Lucky Charm.",
+            hint: "Help the traveler and complete the related challenge.",
+            category: "story",
+            group: "Story Inventory",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.earned_lucky_charm || c.charm;
+            }
+        }, {
+            id: "earned_magic_map",
+            title: "Path Reader",
+            icon: "🗺️",
+            desc: "Earn the Magic Map.",
+            hint: "Complete the Magic Map challenge.",
+            category: "story",
+            group: "Story Inventory",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.earned_magic_map || c.map;
+            }
+        }, {
+            id: "earned_sword_of_light",
+            title: "Radiant Blade",
+            icon: "⚔️",
+            desc: "Earn the Sword of Light.",
+            hint: "Pass the warrior's challenge.",
+            category: "story",
+            group: "Story Inventory",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.earned_sword_of_light || c.sword;
+            }
+        }, {
+            id: "opened_castle_gate",
+            title: "Gatebreaker",
+            icon: "🏰",
+            desc: "Open the witch's castle gate.",
+            hint: "Complete the castle gate challenge.",
+            category: "story",
+            group: "Story Mode",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.opened_castle_gate || c.test7;
+            }
+        }, {
+            id: "won_final_battle",
+            title: "Shadowbreaker",
+            icon: "🔥",
+            desc: "Win the final battle.",
+            hint: "Complete the final battle challenge.",
+            category: "story",
+            group: "Story Mode",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.won_final_battle || c.test6;
+            }
+        }, {
+            id: "finished_story",
+            title: "Kingdom Saved",
+            icon: "👑",
+            desc: "Finish the story.",
+            hint: "Reach the final chapter.",
+            category: "story",
+            group: "Story Mode",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.finished_story || (c.storyProgress !== null && c.storyProgress >= 100);
+            }
+        }, {
+            id: "ending_normal",
+            title: "New Dawn",
+            icon: "🌅",
+            desc: "Unlock the Normal Ending.",
+            hint: "Complete the story.",
+            category: "ending",
+            group: "Story Ending",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.ending_normal || c.ending === "normal";
+            }
+        }, {
+            id: "ending_heroic",
+            title: "Hero of Light",
+            icon: "🌟",
+            desc: "Unlock the Heroic Ending.",
+            hint: "Finish with all sacred items.",
+            category: "ending",
+            group: "Story Ending",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.ending_heroic || c.ending === "heroic";
+            }
+        }, {
+            id: "ending_true",
+            title: "Legend of the Kingdom",
+            icon: "💎",
+            desc: "Unlock the True Ending.",
+            hint: "Complete every major challenge and finish the strongest route.",
+            category: "ending",
+            group: "Story Ending",
+            route: "story.html",
+            check: function(c) {
+                return !!c.storyStore.ending_true || c.ending === "true";
+            }
+        }];
+
+        // Current selected filter and search text
+        var currentFilter = "all";
+        var currentSearch = "";
+
+        // Add unlock date when an achievement becomes unlocked
+        function ensureUnlockDates() {
+            var context = getContext();
+            var unlocks = loadUnlockDates();
+            var today = isoToday();
+            var changed = false;
+
+            for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+                var a = ACHIEVEMENTS[i];
+                if (!unlocks[a.id] && a.check(context)) {
+                    unlocks[a.id] = today;
+                    changed = true;
+                }
+            }
+
+            if (changed) saveUnlockDates(unlocks);
+            return unlocks;
+        }
+
+        // Create badge card HTML
+        function badgeTileHTML(a, date) {
+            var locked = !date;
+            var chip = locked ? "🔒 Locked" : "✅ Unlocked";
+            var meta = locked ? ("Hint: " + a.hint) : ("Unlocked on: " + date);
+
+            return "" +
+                '<article class="badge-tile ' + (locked ? 'locked' : 'unlocked') + '">' +
+                '  <div class="badge-top">' +
+                '    <div class="badge-icon" aria-hidden="true">' + a.icon + '</div>' +
+                '    <span class="badge-chip">' + chip + '</span>' +
+                '  </div>' +
+                '  <h3 class="badge-title">' + escapeHtmlText(a.title) + '</h3>' +
+                '  <p class="badge-desc">' + escapeHtmlText(a.desc) + '</p>' +
+                '  <div class="badge-tags">' +
+                '    <span class="badge-tag">' + escapeHtmlText(a.group) + '</span>' +
+                '    <span class="badge-tag">' + escapeHtmlText(a.category) + '</span>' +
+                '  </div>' +
+                '  <p class="badge-meta">' + escapeHtmlText(meta) + '</p>' +
+                '  <div class="badge-action">' +
+                '    <a class="badge-link" href="' + a.route + '">Open</a>' +
+                '  </div>' +
+                '</article>';
+        }
+
+        // Highlight the selected filter button
+        function setActiveFilterButton() {
+            var buttons = document.querySelectorAll(".filter-btn");
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.toggle("active", buttons[i].getAttribute("data-filter") === currentFilter);
+            }
+        }
+
+        // Return filtered achievement list
+        function getFilteredAchievements(unlocks) {
+            var out = [];
+
+            for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+                var a = ACHIEVEMENTS[i];
+                var isUnlocked = !!unlocks[a.id];
+
+                if (currentFilter === "unlocked" && !isUnlocked) continue;
+                if (currentFilter === "locked" && isUnlocked) continue;
+                if (currentFilter === "story" && a.category !== "story") continue;
+                if (currentFilter === "game" && a.category !== "game") continue;
+                if (currentFilter === "ending" && a.category !== "ending") continue;
+
+                if (currentSearch) {
+                    var hay = (a.title + " " + a.desc + " " + a.hint + " " + a.group + " " + a.category).toLowerCase();
+                    if (hay.indexOf(currentSearch) === -1) continue;
+                }
+
+                out.push(a);
+            }
+
+            return out;
+        }
+
+        // Render all page content
+        function renderPage() {
+            var context = getContext();
+            var unlocks = ensureUnlockDates();
+
+            $("playerName").textContent = context.playerName;
+            $("endingType").textContent = prettyEndingName(context.ending);
+
+            var unlockedCount = 0;
+            for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+                if (unlocks[ACHIEVEMENTS[i].id]) unlockedCount++;
+            }
+
+            var total = ACHIEVEMENTS.length;
+            var pct = total === 0 ? 0 : Math.round((unlockedCount / total) * 100);
+
+            $("unlockedCount").textContent = String(unlockedCount);
+            $("totalCount").textContent = String(total);
+            $("progressFill").style.width = pct + "%";
+            document.querySelector(".progressbar").setAttribute("aria-valuenow", String(pct));
+
+            if (unlockedCount === 0) {
+                $("progressMsg").textContent = "No badges unlocked yet. Start with Story Mode or any mini-game.";
+            } else if (unlockedCount === total) {
+                $("progressMsg").textContent = "Excellent work. You unlocked every achievement.";
+            } else {
+                $("progressMsg").textContent = "You have unlocked " + unlockedCount + " of " + total + " achievements.";
+            }
+
+            var filtered = getFilteredAchievements(unlocks);
+            var grid = $("badgeGrid");
+            var empty = $("emptyState");
+
+            if (!filtered.length) {
+                grid.innerHTML = "";
+                empty.classList.remove("hidden");
+                return;
+            }
+
+            empty.classList.add("hidden");
+            grid.innerHTML = filtered.map(function(a) {
+                return badgeTileHTML(a, unlocks[a.id]);
+            }).join("");
+        }
+
+        // Re-check button animation
+        function bindRecheckButton() {
+            var btn = $("btnRecheck");
+            if (!btn) return;
+
+            btn.addEventListener("click", function() {
+                var oldText = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = "⏳ Checking...";
+
+                window.setTimeout(function() {
+                    renderPage();
+                    btn.innerHTML = "✅ Updated";
+
+                    window.setTimeout(function() {
+                        btn.innerHTML = oldText;
+                        btn.disabled = false;
+                    }, 900);
+                }, 250);
+            });
+        }
+
+        // Filter button click events
+        document.querySelectorAll(".filter-btn").forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                currentFilter = btn.getAttribute("data-filter") || "all";
+                setActiveFilterButton();
+                renderPage();
+            });
+        });
+
+        // Search input event
+        $("searchInput").addEventListener("input", function() {
+            currentSearch = String(this.value || "").trim().toLowerCase();
+            renderPage();
+        });
+
+        // Update page if storage changes in another tab
+        window.addEventListener("storage", function() {
+            renderPage();
+        });
+
+        // Start page
+        bindRecheckButton();
+        setActiveFilterButton();
+        renderPage();
+    </script>
+</body>
+
+</html>

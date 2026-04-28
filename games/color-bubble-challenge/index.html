@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<!--
+============================================================
+ Color Bubble Challenge
+ Brain Challenge Arcade
+
+ Full Correct Complete Updated index.html
+
+ Fixes included:
+ - Bubble Shooter Classic style start page structure
+ - Correct map HTML structure
+ - Map is visible again
+ - Bottom home button is outside the map frame/header
+ - Rookie panel removed
+ - Gift box removed
+ - Piggy bank kept
+ - Single life heart support
+ - Correct hidden values for game.js
+ - Correct gameplay HUD
+ - Correct result overlay
+============================================================
+-->
+<html lang="en" class="theme-loading">
+
+<head>
+    <!-- =====================================================
+         HEAD SECTION
+    ====================================================== -->
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <title>Color Bubble Challenge • Brain Challenge Arcade</title>
+
+    <meta name="description" content="Play Color Bubble Challenge, a colorful bubble shooter with level map, stars, progress saving, achievements, and responsive gameplay." />
+    <meta name="theme-color" content="#3fa1e5" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="index,follow" />
+    <meta name="application-name" content="Brain Challenge Arcade" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Color Bubble Challenge" />
+
+    <meta property="og:title" content="Color Bubble Challenge • Brain Challenge Arcade" />
+    <meta property="og:description" content="Pop bubbles, unlock stages, earn stars, and complete colorful arcade levels." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Brain Challenge Arcade" />
+
+    <!-- =====================================================
+         THEME SCRIPT
+    ====================================================== -->
+    <script>
+        (function() {
+            function getTheme() {
+                try {
+                    return localStorage.getItem("bca_theme") || "system";
+                } catch (e) {
+                    return "system";
+                }
+            }
+
+            function systemPrefersDark() {
+                return window.matchMedia &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches;
+            }
+
+            var theme = getTheme();
+            var root = document.documentElement;
+
+            root.classList.remove("theme-light", "theme-dark", "theme-loading");
+
+            if (theme === "dark") {
+                root.classList.add("theme-dark");
+            } else if (theme === "light") {
+                root.classList.add("theme-light");
+            } else {
+                root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+            }
+        })();
+    </script>
+
+    <!-- =====================================================
+         CSS FILES
+    ====================================================== -->
+    <link rel="stylesheet" href="../../css/style.css" />
+    <link rel="stylesheet" href="../../css/components.css" />
+    <link rel="stylesheet" href="../../css/games.css" />
+    <link rel="stylesheet" href="./game.css" />
+</head>
+
+<body>
+    <!-- Accessibility skip link -->
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <!-- =====================================================
+         LOADING SCREEN
+    ====================================================== -->
+    <div id="cbcLoadingScreen" class="cbc-loading-screen" role="status" aria-live="polite">
+        <div class="cbc-loading-card">
+            <div class="cbc-loading-logo" aria-hidden="true"></div>
+
+            <h1>Bubble Blast</h1>
+
+            <div class="cbc-loading-track" aria-hidden="true">
+                <div id="cbcLoadingFill" class="cbc-loading-fill"></div>
+            </div>
+
+            <p id="cbcLoadingText" class="cbc-loading-text">Almost there...</p>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         HEADER / NAVBAR
+    ====================================================== -->
+    <header class="navbar" role="banner">
+        <div class="container navbar-inner">
+            <a class="brand" href="../../index.html" aria-label="Brain Challenge Arcade Home">
+                <span class="brand-mark" aria-hidden="true">🧠</span>
+                <span class="brand-text">Brain Challenge Arcade</span>
+            </a>
+
+            <nav class="nav" aria-label="Primary navigation" id="desktopNav">
+                <a class="nav-link" href="../../index.html">Home</a>
+                <a class="nav-link" href="../../games.html" aria-current="page">Games</a>
+                <a class="nav-link" href="../../leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="../../achievements.html">Achievements</a>
+                <a class="nav-link" href="../../profile.html">Profile</a>
+                <a class="nav-link" href="../../settings.html">Settings</a>
+                <a class="nav-link" href="../../about.html">About</a>
+            </nav>
+
+            <button class="icon-btn nav-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+                <span aria-hidden="true">☰</span>
+            </button>
+        </div>
+
+        <div class="mobile-menu hidden" id="mobileMenu" hidden>
+            <div class="container mobile-menu-inner">
+                <a class="nav-link" href="../../index.html">Home</a>
+                <a class="nav-link" href="../../games.html" aria-current="page">Games</a>
+                <a class="nav-link" href="../../leaderboard.html">Leaderboard</a>
+                <a class="nav-link" href="../../achievements.html">Achievements</a>
+                <a class="nav-link" href="../../profile.html">Profile</a>
+                <a class="nav-link" href="../../settings.html">Settings</a>
+                <a class="nav-link" href="../../about.html">About</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- =====================================================
+         MAIN GAME CONTENT
+    ====================================================== -->
+    <main id="main" class="cbc-page" tabindex="-1">
+
+        <!-- =================================================
+             START SCREEN - BUBBLE SHOOTER CLASSIC STYLE
+        ================================================== -->
+        <section id="cbcStartScreen" class="cbc-screen cbc-screen--active cbc-start-screen" aria-labelledby="cbcStartTitle">
+            <div class="cbc-start-bg" aria-hidden="true">
+                <div class="cbc-start-cloud cbc-start-cloud--a"></div>
+                <div class="cbc-start-cloud cbc-start-cloud--b"></div>
+
+                <div class="cbc-start-bubble cbc-start-bubble--a"></div>
+                <div class="cbc-start-bubble cbc-start-bubble--b"></div>
+                <div class="cbc-start-bubble cbc-start-bubble--c"></div>
+
+                <div class="cbc-start-mushroom cbc-start-mushroom--a"></div>
+                <div class="cbc-start-mushroom cbc-start-mushroom--b"></div>
+            </div>
+
+            <div class="cbc-start-card">
+                <p class="cbc-start-kicker">Brain Challenge Arcade</p>
+
+                <h1 id="cbcStartTitle" class="cbc-start-title">
+                    <span>Bubble</span>
+                    <strong>Shooter Classic</strong>
+                </h1>
+
+                <button id="cbcStartPlayBtn" class="cbc-start-play-circle" type="button" aria-label="Play">
+                    ▶
+                </button>
+
+                <div class="cbc-start-actions" aria-label="Game actions">
+                    <button id="cbcStartContinueBtn" class="cbc-btn cbc-btn--secondary" type="button">
+                        Continue
+                    </button>
+
+                    <button id="cbcBackHomeBtn" class="cbc-btn cbc-btn--secondary" type="button">
+                        🏠 Home
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- =================================================
+             MAP SCREEN
+        ================================================== -->
+        <section id="cbcMapScreen" class="cbc-screen cbc-map-screen cbc-map-screen--bubble-blast" aria-labelledby="cbcMapTitle" hidden>
+            <h2 id="cbcMapTitle" class="sr-only">Level map</h2>
+
+            <div class="cbc-map-frame">
+                <!-- Top blue bar -->
+                <header class="cbc-bb-map-topbar">
+                    <div class="cbc-bb-top-left">
+                        <div class="cbc-bb-heart-wrap">
+                            <div class="cbc-bb-heart" id="cbcMapLivesVisual">5</div>
+                            <div class="cbc-bb-max" id="cbcLifeTimer">Max</div>
+                        </div>
+                    </div>
+
+                    <div class="cbc-bb-top-right">
+                        <div class="cbc-bb-coin-wrap">
+                            <span class="cbc-bb-coin" aria-hidden="true"></span>
+                            <strong class="cbc-bb-coin-count" id="cbcCoinCount">200</strong>
+                            <button class="cbc-bb-plus" type="button" aria-label="Add coins">+</button>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Piggy bank -->
+                <aside class="cbc-bb-piggy" aria-label="Piggy bank">
+                    <div class="cbc-bb-piggy-price">
+                        <span aria-hidden="true">⭐</span>
+                        <strong id="cbcPiggyStarCount">0</strong>
+                    </div>
+
+                    <div class="cbc-bb-piggy-icon" aria-hidden="true">🐷</div>
+                    <div class="cbc-bb-piggy-label">Piggy Bank</div>
+                </aside>
+
+                <!-- Dotted path and level nodes -->
+                <div class="cbc-bb-map-area">
+                    <svg class="cbc-bb-map-dots" viewBox="0 0 820 7200" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                        <path id="cbcBbMapDotPath" d=""></path>
+                    </svg>
+
+                    <div id="cbcMapNodes" class="cbc-map-nodes cbc-bb-map-nodes" role="list" aria-label="Level nodes"></div>
+
+                    <!-- Hidden selected-level panel kept for game.js compatibility -->
+                    <section id="cbcMapPlayPanel" class="cbc-map-play-panel cbc-map-play-panel--hidden" aria-label="Selected level">
+                        <div class="cbc-map-play-panel__top">
+                            <div>
+                                <strong id="cbcSelectedLevelText">Level 1</strong>
+                                <span id="cbcSelectedLevelName" class="cbc-map-play-panel__name">Warm Up</span>
+                            </div>
+
+                            <div id="cbcSelectedStars" class="cbc-selected-stars" aria-label="Selected level stars"></div>
+                        </div>
+
+                        <button id="cbcPlaySelectedBtn" class="cbc-btn cbc-btn--primary cbc-btn--big" type="button">
+                            <span class="cbc-btn__big">Play</span>
+                        </button>
+                    </section>
+                </div>
+
+                <!-- Hidden old map values used by game.js -->
+                <div class="hidden" aria-hidden="true">
+                    <span id="cbcMapLives">5</span>
+                    <span id="cbcMapTotalStars">0</span>
+                    <span id="cbcMapBestScore">0</span>
+                    <span id="cbcMapNotifyBadge">0</span>
+
+                    <button id="cbcMapSettingsBtn" type="button">Settings</button>
+                </div>
+            </div>
+
+            <!-- Bottom home dock must stay OUTSIDE .cbc-map-frame -->
+            <div class="cbc-map-bottom-dock">
+                <button id="cbcMapBackToStartBtn" class="cbc-map-bottom-home" type="button" aria-label="Back to home">
+                    🏠
+                </button>
+            </div>
+        </section>
+
+        <!-- =================================================
+             PLAY SCREEN
+        ================================================== -->
+        <section id="cbcPlayScreen" class="cbc-screen cbc-play-screen cbc-play-screen--stage-only" aria-labelledby="cbcPlayTitle" hidden>
+            <h2 id="cbcPlayTitle" class="sr-only">Bubble gameplay screen</h2>
+
+            <!-- Top gameplay HUD -->
+            <div class="cbc-mobile-topbar">
+                <div class="cbc-top-left-hud" aria-hidden="true">
+                    <span class="cbc-top-mini-bubbles">🔵🟢🔴</span>
+                </div>
+
+                <div class="cbc-top-center-hud">
+                    <div class="cbc-top-star-track" aria-label="Star progress">
+                        <div class="cbc-top-star-fill" id="cbcTopStarFill"></div>
+                        <span class="cbc-top-star" id="cbcTopStar1" aria-hidden="true">★</span>
+                        <span class="cbc-top-star" id="cbcTopStar2" aria-hidden="true">★</span>
+                        <span class="cbc-top-star" id="cbcTopStar3" aria-hidden="true">★</span>
+                    </div>
+                </div>
+
+                <div class="cbc-top-right-info" aria-label="Score">
+                    <strong id="cbcTopScoreText">0</strong>
+                </div>
+
+                <button id="cbcTopMenuBtn" class="cbc-top-icon-btn cbc-top-icon-btn--right cbc-top-icon-btn--settings" type="button" aria-label="Open settings" aria-expanded="false" aria-controls="cbcGameMenuPanel">
+                    ⚙
+                </button>
+
+                <!-- Hidden value used by game.js -->
+                <span id="cbcTopBubbleCount" class="sr-only">0</span>
+            </div>
+
+            <!-- Settings modal -->
+            <div id="cbcGameMenuPanel" class="cbc-settings-modal hidden" aria-label="Game settings" aria-hidden="true" hidden>
+                <div class="cbc-settings-backdrop" data-close-settings="true"></div>
+
+                <div class="cbc-settings-card" role="dialog" aria-modal="true" aria-labelledby="cbcSettingsTitle">
+                    <button id="cbcCloseSettingsBtn" class="cbc-settings-close" type="button" aria-label="Close settings">
+                        ✕
+                    </button>
+
+                    <div class="cbc-settings-head">
+                        <h3 id="cbcSettingsTitle">Settings</h3>
+                    </div>
+
+                    <div class="cbc-settings-actions">
+                        <button id="cbcBackToMapBtn" class="cbc-settings-action-btn" type="button" aria-label="Back to map">
+                            <span class="cbc-settings-action-icon" aria-hidden="true">🗺</span>
+                            <span>Map</span>
+                        </button>
+
+                        <button id="cbcPauseBtn" class="cbc-settings-action-btn" type="button" aria-label="Pause game">
+                            <span class="cbc-settings-action-icon" aria-hidden="true">⏸</span>
+                            <span>Pause</span>
+                        </button>
+
+                        <button id="cbcRestartBtn" class="cbc-settings-action-btn" type="button" aria-label="Restart level">
+                            <span class="cbc-settings-action-icon" aria-hidden="true">↻</span>
+                            <span>Restart</span>
+                        </button>
+
+                        <button id="cbcSoundBtn" class="cbc-settings-action-btn" type="button" aria-label="Toggle sound">
+                            <span class="cbc-settings-action-icon" aria-hidden="true">🔊</span>
+                            <span>Sound On</span>
+                        </button>
+
+                        <button id="cbcExitGameBtn" class="cbc-settings-action-btn cbc-settings-action-btn--exit" type="button" aria-label="Exit game and go to map">
+                            <span class="cbc-settings-action-icon" aria-hidden="true">🚪</span>
+                            <span>Exit Game</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                 EXIT CONFIRM MODAL
+            ========================================================= -->
+            <div id="cbcExitConfirmModal" class="cbc-exit-confirm hidden" aria-hidden="true">
+                <div class="cbc-exit-confirm__backdrop"></div>
+
+                <div class="cbc-exit-confirm__card" role="dialog" aria-modal="true" aria-labelledby="cbcExitConfirmTitle">
+                    <div class="cbc-exit-confirm__top">
+                        <h3 id="cbcExitConfirmTitle">Exit?</h3>
+                    </div>
+
+                    <div class="cbc-exit-confirm__body">
+                        <div class="cbc-exit-confirm__life">
+                            <span class="cbc-exit-confirm__heart">🩵</span>
+                            <span class="cbc-exit-confirm__life-text">-1</span>
+                        </div>
+
+                        <p class="cbc-exit-confirm__message">You will lose a life</p>
+
+                        <div class="cbc-exit-confirm__actions">
+                            <button id="cbcExitConfirmYes" type="button" class="cbc-exit-confirm__btn cbc-exit-confirm__btn--yes">
+                    Yes
+                </button>
+
+                            <button id="cbcExitConfirmNo" type="button" class="cbc-exit-confirm__btn cbc-exit-confirm__btn--no">
+                    No
+                </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================================
+                RESTART CONFIRM MODAL
+            ========================================================= -->
+            <div id="cbcRestartConfirmModal" class="cbc-exit-confirm hidden" aria-hidden="true" hidden>
+                <div class="cbc-exit-confirm__backdrop"></div>
+
+                <div class="cbc-exit-confirm__card" role="dialog" aria-modal="true" aria-labelledby="cbcRestartConfirmTitle">
+                    <div class="cbc-exit-confirm__top">
+                        <h3 id="cbcRestartConfirmTitle">Restart?</h3>
+                    </div>
+
+                    <div class="cbc-exit-confirm__body">
+                        <div class="cbc-exit-confirm__life">
+                            <span class="cbc-exit-confirm__heart">🩵</span>
+                            <span class="cbc-exit-confirm__life-text">-1</span>
+                        </div>
+
+                        <p class="cbc-exit-confirm__message">You will lose a life</p>
+
+                        <div class="cbc-exit-confirm__actions">
+                            <button id="cbcRestartConfirmYes" type="button" class="cbc-exit-confirm__btn cbc-exit-confirm__btn--yes">
+                    Yes
+                </button>
+
+                            <button id="cbcRestartConfirmNo" type="button" class="cbc-exit-confirm__btn cbc-exit-confirm__btn--no">
+                    No
+                </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gameplay canvas -->
+            <section class="cbc-game-stage cbc-game-stage--only" aria-label="Bubble gameplay board">
+                <canvas id="cbcCanvas" width="400" height="560" aria-label="Bubble gameplay canvas" tabindex="0">
+                    Your browser does not support the canvas element needed for this game.
+                </canvas>
+            </section>
+
+            <!-- Bottom booster dock -->
+            <div class="cbc-bottom-dock" aria-label="Game tools and locked boosters">
+                <button class="cbc-bottom-gear" type="button" aria-label="Open settings">⚙</button>
+
+                <div class="cbc-lock-box" aria-label="Locked until level 31">
+                    <span aria-hidden="true">🔒</span>
+                    <small>LVL 31</small>
+                </div>
+
+                <div class="cbc-lock-box" aria-label="Locked until level 27">
+                    <span aria-hidden="true">🔒</span>
+                    <small>LVL 27</small>
+                </div>
+
+                <div class="cbc-lock-box" aria-label="Locked until level 6">
+                    <span aria-hidden="true">🔒</span>
+                    <small>LVL 6</small>
+                </div>
+
+
+            </div>
+
+            <!-- Hidden helper values used by game.js -->
+            <div class="hidden" aria-hidden="true">
+                <span id="cbcLevelName"></span>
+                <span id="cbcHudLevel"></span>
+                <span id="cbcHudScore"></span>
+                <span id="cbcHudShots"></span>
+                <span id="cbcHudTarget"></span>
+                <span id="cbcHudStars"></span>
+                <span id="cbcMissionText"></span>
+            </div>
+
+            <!-- Live region for screen readers -->
+            <div class="sr-only" aria-live="polite" aria-atomic="true" id="cbcLiveRegion">
+                Color Bubble Challenge ready.
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================
+         RESULT OVERLAY
+    ====================================================== -->
+    <div id="cbcOverlay" class="cbc-overlay hidden" aria-hidden="true">
+        <div class="cbc-overlay-card" role="dialog" aria-modal="true" aria-labelledby="cbcOverlayTitle" aria-describedby="cbcOverlayMessage">
+            <h2 id="cbcOverlayTitle">1</h2>
+
+            <div id="cbcOverlayStars" class="cbc-overlay-stars" aria-label="Awarded stars">
+                <span>★</span>
+                <span>★</span>
+                <span>★</span>
+            </div>
+
+            <p id="cbcOverlayMessage">
+                New High Score<br />
+                <span class="cbc-result-score">0</span>
+            </p>
+
+            <div class="cbc-overlay-actions">
+                <button id="cbcNextBtn" class="cbc-btn cbc-btn--primary" type="button">
+                    Next
+                </button>
+
+                <button id="cbcOverlayMapBtn" class="cbc-btn cbc-btn--secondary" type="button">
+                    Back to Map
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+    <footer class="footer" role="contentinfo">
+        <div class="container footer-inner">
+            <div class="muted">© <span id="year"></span> Brain Challenge Arcade</div>
+
+            <div class="footer-links">
+                <a href="../../index.html">Home</a>
+                <a href="../../games.html">Games</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- =====================================================
+         JAVASCRIPT FILES
+         Keep this order.
+    ====================================================== -->
+    <script src="../../js/storage.js"></script>
+    <script src="./levels.js"></script>
+    <script src="./game.js"></script>
+
+    <!-- =====================================================
+         PAGE HELPERS
+    ====================================================== -->
+    <script>
+        (function() {
+            var yearEl = document.getElementById("year");
+
+            if (yearEl) {
+                yearEl.textContent = new Date().getFullYear();
+            }
+
+            var navBtn = document.querySelector(".nav-toggle");
+            var mobileMenu = document.getElementById("mobileMenu");
+
+            function setMenuState(isOpen) {
+                if (!navBtn || !mobileMenu) return;
+
+                navBtn.setAttribute("aria-expanded", String(isOpen));
+                mobileMenu.classList.toggle("hidden", !isOpen);
+                mobileMenu.hidden = !isOpen;
+            }
+
+            if (navBtn && mobileMenu) {
+                setMenuState(false);
+
+                navBtn.addEventListener("click", function() {
+                    var isOpen = navBtn.getAttribute("aria-expanded") === "true";
+                    setMenuState(!isOpen);
+                });
+
+                document.addEventListener("keydown", function(event) {
+                    if (event.key === "Escape") {
+                        setMenuState(false);
+                    }
+                });
+
+                document.addEventListener("click", function(event) {
+                    if (!mobileMenu || !navBtn) return;
+
+                    var isOpen = navBtn.getAttribute("aria-expanded") === "true";
+
+                    if (!isOpen) return;
+
+                    if (mobileMenu.contains(event.target) || navBtn.contains(event.target)) return;
+
+                    setMenuState(false);
+                });
+            }
+
+            /*
+               Bottom gear button opens the same settings modal as top gear.
+               This keeps game.js unchanged.
+            */
+            var bottomGear = document.querySelector(".cbc-bottom-gear");
+            var topMenuBtn = document.getElementById("cbcTopMenuBtn");
+
+            if (bottomGear && topMenuBtn) {
+                bottomGear.addEventListener("click", function() {
+                    topMenuBtn.click();
+                });
+            }
+        })();
+
+        (function() {
+            var backHomeBtn = document.getElementById("cbcBackHomeBtn");
+
+            if (backHomeBtn) {
+                backHomeBtn.addEventListener("click", function() {
+                    window.location.href = "../../index.html";
+                });
+            }
+        })();
+    </script>
+</body>
+
+</html>
