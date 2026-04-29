@@ -2,6 +2,7 @@
    Brain Challenge Arcade - ui.js
    Reusable UI helpers for ALL pages & games
 
+   
    Includes:
    - Toast notifications
    - Modal helpers

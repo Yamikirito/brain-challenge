@@ -2,7 +2,7 @@
 ============================================================
  Color Bubble Challenge / Bubble Blast Style Game
  game.js
- Full Correct Updated Version
+
 
  Includes:
  - Custom No Lives modal instead of browser alert

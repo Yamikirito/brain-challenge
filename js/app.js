@@ -2,6 +2,7 @@
    Brain Challenge Arcade - app.js
    Global application logic
 
+   
    - Initialize defaults
    - Apply saved settings: theme, sound, motion
    - Sync header badges: story and achievements

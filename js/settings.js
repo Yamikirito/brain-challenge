@@ -2,6 +2,7 @@
    Brain Challenge Arcade - settings.js
    Settings page logic (theme, sound, reduced motion)
 
+   
    Expected IDs in settings.html:
    - themeSelect
    - soundToggle, motionToggle

@@ -2,6 +2,7 @@
    Brain Challenge Arcade - storage.js
    Centralized storage layer for ALL pages & games
 
+   
    PURPOSE:
    - Provide safe localStorage access
    - Standardize keys and data structure

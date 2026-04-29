@@ -5,6 +5,7 @@
    - Show player stats (plays, achievements, best scores, story progress)
    - Reset profile / reset all data (optional)
 
+   
    Expected IDs in profile.html:
    - usernameInput
    - btnSave, btnGuest, btnResetProfile, btnResetAll, btnRefresh

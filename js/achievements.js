@@ -6,7 +6,7 @@
    - achievements.html (renders badges + progress)
    - leaderboard / games (reads best scores saved in localStorage)
 
-   Storage Keys used (same as your site):
+   Storage Keys used (same as site):
    - bca_username
    - bca_best_imageGuess
    - bca_best_memoryTest

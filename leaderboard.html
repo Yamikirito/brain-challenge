@@ -5,7 +5,7 @@
     <!-- =========================================================
          Brain Challenge Arcade - leaderboard.html
 
-         Full corrected version:
+        
          - Reads saved leaderboard runs from localStorage.
          - Uses best-score fallback when run history is missing.
          - Supports Image Guess, Memory Test, Card Matching,
@@ -838,6 +838,137 @@
             }
             .leaderboard-page .lb-table {
                 min-width: 720px;
+            }
+        }
+        /* =========================================================
+   FIX: Mobile responsive leaderboard table
+   Put this at the VERY END of leaderboard.html <style>
+========================================================= */
+        
+        .leaderboard-page .lb-table-wrap {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .leaderboard-page .lb-table {
+            width: 100%;
+        }
+        /* Tablet: allow normal sideways scrolling if needed */
+        
+        @media (max-width: 860px) {
+            .leaderboard-page .lb-card {
+                padding: 14px;
+            }
+            .leaderboard-page .lb-table-wrap {
+                display: block;
+                max-width: 100%;
+            }
+            .leaderboard-page .lb-table {
+                min-width: 680px;
+            }
+        }
+        /* Phone: convert table into stacked cards */
+        
+        @media (max-width: 600px) {
+            .leaderboard-page .lb-section-head {
+                justify-content: flex-start;
+                text-align: left;
+            }
+            .leaderboard-page .lb-section-head-right,
+            .leaderboard-page .lb-section-head-right h2 {
+                justify-content: flex-start;
+                text-align: left;
+                margin-left: 0;
+            }
+            .leaderboard-page .lb-card {
+                padding: 12px;
+                border-radius: 22px;
+            }
+            .leaderboard-page .lb-table-wrap {
+                overflow: visible;
+                border: 0;
+                border-radius: 0;
+            }
+            .leaderboard-page .lb-table {
+                min-width: 0 !important;
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0 12px;
+                background: transparent;
+            }
+            .leaderboard-page .lb-table thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+                white-space: nowrap;
+            }
+            .leaderboard-page .lb-table tbody,
+            .leaderboard-page .lb-table tr,
+            .leaderboard-page .lb-table td {
+                display: block;
+                width: 100%;
+            }
+            .leaderboard-page .lb-table tr {
+                border: 1px solid var(--border);
+                border-radius: 20px;
+                background: rgba(255, 255, 255, .05);
+                box-shadow: var(--shadow-md);
+                padding: 12px;
+            }
+            .theme-light .leaderboard-page .lb-table tr {
+                background: rgba(255, 255, 255, .92);
+            }
+            .leaderboard-page .lb-table td {
+                border-bottom: 1px solid var(--border);
+                padding: 10px 4px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 14px;
+                text-align: right;
+                word-break: break-word;
+            }
+            .leaderboard-page .lb-table td:last-child {
+                border-bottom: 0;
+            }
+            .leaderboard-page .lb-table td::before {
+                flex: 0 0 auto;
+                color: var(--muted2);
+                font-size: 12px;
+                font-weight: 950;
+                text-transform: uppercase;
+                letter-spacing: .3px;
+                text-align: left;
+            }
+            .leaderboard-page .lb-table td:nth-child(1)::before {
+                content: "Rank";
+            }
+            .leaderboard-page .lb-table td:nth-child(2)::before {
+                content: "Name";
+            }
+            .leaderboard-page .lb-table td:nth-child(3)::before {
+                content: "Score";
+            }
+            .leaderboard-page .lb-table td:nth-child(4)::before {
+                content: "Level";
+            }
+            .leaderboard-page .lb-table td:nth-child(5)::before {
+                content: "Extra";
+            }
+            .leaderboard-page .lb-table td:nth-child(6)::before {
+                content: "Date";
+            }
+            .leaderboard-page .lb-badge-inline {
+                white-space: normal;
+                text-align: center;
+            }
+            .leaderboard-page .lb-rank-badge {
+                margin-left: auto;
             }
         }
     </style>

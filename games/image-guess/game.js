@@ -1,6 +1,7 @@
 (function() {
     "use strict";
 
+
     /* =========================================================
        Image Guess - Full Screen Game Show Version
        Works with:
