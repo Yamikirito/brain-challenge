@@ -25,6 +25,10 @@
    ✅ Saves story pass:
       bca_story_test_memory_test_1 = 1
    ✅ Returns to story page after win
+   ✅ Saves leaderboard runs:
+      bca_runs_cardMatching
+      bca_best_cardMatching
+      bca_progress_cardMatching
 ========================================================= */
 
 (function() {
@@ -39,6 +43,17 @@
             this.SOUND_KEY = "mc_sound_muted";
             this.MUSIC_KEY = "mc_music_muted";
             this.TUTORIAL_KEY = "mc_tutorial_done";
+
+            /* =====================================================
+               Brain Challenge Arcade Leaderboard Keys
+            ===================================================== */
+            this.GAME_ID = "card-matching";
+            this.BCA_RUNS_KEY = "bca_runs_cardMatching";
+            this.BCA_BEST_KEY = "bca_best_cardMatching";
+            this.BCA_PROGRESS_KEY = "bca_progress_cardMatching";
+            this.BCA_LEVEL_CAP_KEY = "bca_levelcap_cardMatching";
+            this.BCA_USERNAME_KEY = "bca_username";
+            this.BCA_TOTAL_PLAYS_KEY = "bca_totalPlays";
 
             this.SOUNDS_BASE_PATH = "../../assets/sounds/";
             this.BG_MUSIC_SRC = this.SOUNDS_BASE_PATH + "card-matching-bgmusic.mp3";
@@ -81,6 +96,71 @@
             this.cacheElements();
             this.bindEvents();
             this.init();
+        }
+
+        /* =====================================================
+           Safe Storage Helpers
+        ===================================================== */
+
+        safeGet(key, fallback) {
+            try {
+                const value = localStorage.getItem(key);
+                return value === null ? fallback : value;
+            } catch (error) {
+                return fallback;
+            }
+        }
+
+        safeSet(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (error) {
+                /* Ignore localStorage errors */
+            }
+        }
+
+        safeJsonGet(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+
+                if (!raw) {
+                    return fallback;
+                }
+
+                return JSON.parse(raw);
+            } catch (error) {
+                return fallback;
+            }
+        }
+
+        safeJsonSet(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (error) {
+                /* Ignore localStorage errors */
+            }
+        }
+
+        todayISO() {
+            const d = new Date();
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, "0");
+            const dd = String(d.getDate()).padStart(2, "0");
+
+            return yyyy + "-" + mm + "-" + dd;
+        }
+
+        getUsername() {
+            const name = String(this.safeGet(this.BCA_USERNAME_KEY, "Guest") || "Guest").trim();
+            return name || "Guest";
+        }
+
+        dispatchLeaderboardUpdate() {
+            try {
+                window.dispatchEvent(new Event("bca:leaderboard-updated"));
+            } catch (error) {
+                /* Ignore event errors */
+            }
         }
 
         /* =====================================================
@@ -235,10 +315,6 @@
                     difficulty = "LEGEND";
                 }
 
-                /*
-                   You currently have 24 animal images.
-                   Do not go over 24 pairs unless you add more images.
-                */
                 pairs = Math.min(pairs, 24);
 
                 if (pairs <= 3) cols = 3;
@@ -570,10 +646,6 @@
 
             let pool = this.shuffle(this.animalImages());
 
-            /*
-               Because each image should only appear as one pair,
-               pairs are capped to available image count.
-            */
             const maxPairs = pool.length;
             const pairCount = Math.min(cfg.pairs, maxPairs);
 
@@ -595,11 +667,6 @@
 
             deck = this.shuffle(deck);
 
-            /*
-               Tutorial fix:
-               Move one existing pair to the first two positions.
-               This avoids extra duplicate images.
-            */
             if (this.level === 1 && !this.tutorialDone && deck.length >= 2) {
                 const tutorialPairId = deck[0].id;
                 const tutorialCards = deck.filter((card) => card.id === tutorialPairId);
@@ -952,7 +1019,7 @@
         }
 
         /* =====================================================
-           Stars, Score, Progress
+           Stars, Score, Progress, Leaderboard
         ===================================================== */
 
         calculateStars() {
@@ -1001,6 +1068,86 @@
 
             localStorage.setItem(this.UNLOCKED_KEY, String(unlockedLevel));
             localStorage.setItem(this.STARS_KEY, JSON.stringify(starData));
+
+            const currentProgress = Number(this.safeGet(this.BCA_PROGRESS_KEY, "0")) || 0;
+
+            if (this.level > currentProgress) {
+                this.safeSet(this.BCA_PROGRESS_KEY, String(this.level));
+            }
+        }
+
+        getBestLeaderboardValue() {
+            const raw = this.safeGet(this.BCA_BEST_KEY, "");
+
+            if (!raw) {
+                return null;
+            }
+
+            try {
+                const obj = JSON.parse(raw);
+
+                if (obj && typeof obj === "object" && Number.isFinite(Number(obj.value))) {
+                    return Number(obj.value);
+                }
+            } catch (error) {
+                /* Continue to number fallback */
+            }
+
+            const n = Number(raw);
+
+            return Number.isFinite(n) ? n : null;
+        }
+
+        saveBestLeaderboard(score, starsEarned) {
+            const currentBest = this.getBestLeaderboardValue();
+
+            if (currentBest === null || score > currentBest) {
+                this.safeSet(this.BCA_BEST_KEY, JSON.stringify({
+                    value: score,
+                    date: this.todayISO(),
+                    level: this.level,
+                    stars: starsEarned,
+                    moves: this.moves,
+                    mistakes: this.mistakes
+                }));
+            }
+        }
+
+        saveLeaderboardRun(score, starsEarned) {
+            if (this.isStoryMode) {
+                return;
+            }
+
+            const run = {
+                name: this.getUsername(),
+                value: score,
+                level: this.level,
+                stars: starsEarned,
+                moves: this.moves,
+                mistakes: this.mistakes,
+                date: this.todayISO()
+            };
+
+            let runs = this.safeJsonGet(this.BCA_RUNS_KEY, []);
+
+            if (!Array.isArray(runs)) {
+                runs = [];
+            }
+
+            runs.unshift(run);
+
+            if (runs.length > 200) {
+                runs = runs.slice(0, 200);
+            }
+
+            this.safeJsonSet(this.BCA_RUNS_KEY, runs);
+
+            this.saveBestLeaderboard(score, starsEarned);
+
+            const totalPlays = Number(this.safeGet(this.BCA_TOTAL_PLAYS_KEY, "0")) || 0;
+            this.safeSet(this.BCA_TOTAL_PLAYS_KEY, String(totalPlays + 1));
+
+            this.dispatchLeaderboardUpdate();
         }
 
         /* =====================================================
@@ -1013,13 +1160,18 @@
             this.playWin();
 
             const starsEarned = this.calculateStars();
+            const finalScore = this.calculateScore();
+
+            if (!this.isStoryMode) {
+                this.saveLeaderboardRun(finalScore, starsEarned);
+            }
 
             if (this.winLevel) {
                 this.winLevel.textContent = String(this.level);
             }
 
             if (this.winScore) {
-                this.winScore.textContent = String(this.calculateScore());
+                this.winScore.textContent = String(finalScore);
             }
 
             if (this.winStars) {

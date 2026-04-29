@@ -16,6 +16,7 @@
        ✅ Timer, score, streak, hints
        ✅ Story mode support
        ✅ Settings restart and sound toggle
+       ✅ Leaderboard saving fix
     ========================================================== */
 
     /* ----------------------- Helpers ----------------------- */
@@ -52,6 +53,12 @@
     function safeJsonSet(key, value) {
         try {
             localStorage.setItem(key, JSON.stringify(value));
+        } catch (e) {}
+    }
+
+    function safeRemove(key) {
+        try {
+            localStorage.removeItem(key);
         } catch (e) {}
     }
 
@@ -96,6 +103,14 @@
         return new Date().toISOString();
     }
 
+    function todayISO() {
+        var d = new Date();
+        var yyyy = d.getFullYear();
+        var mm = String(d.getMonth() + 1).padStart(2, "0");
+        var dd = String(d.getDate()).padStart(2, "0");
+        return yyyy + "-" + mm + "-" + dd;
+    }
+
     function hashString(str) {
         var h = 0;
         var s = String(str || "");
@@ -121,6 +136,12 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+    function dispatchLeaderboardUpdate() {
+        try {
+            window.dispatchEvent(new Event("bca:leaderboard-updated"));
+        } catch (e) {}
     }
 
     /* ----------------------- Query Params ----------------------- */
@@ -205,6 +226,8 @@
     var KEYS = {
         bestScore: "bca_best_imageGuess",
         runs: "bca_runs_imageGuess",
+        progress: "bca_progress_imageGuess",
+        levelCap: "bca_levelcap_imageGuess",
         username: "bca_username",
         totalPlays: "bca_totalPlays",
         achievements: "bca_imageGuess_achievements",
@@ -1061,6 +1084,113 @@
         return opts;
     }
 
+    /* -------------------- Leaderboard Helpers ------------------- */
+
+    function getLeaderboardLevel() {
+        if (questions && questions.length > 0) {
+            return questions.length;
+        }
+
+        return 1;
+    }
+
+    function getBestScoreObject() {
+        var raw = safeGet(KEYS.bestScore, "");
+
+        if (!raw) {
+            return {
+                value: 0,
+                date: "",
+                level: null
+            };
+        }
+
+        try {
+            var obj = JSON.parse(raw);
+
+            if (obj && typeof obj === "object" && isFinite(Number(obj.value))) {
+                return {
+                    value: Number(obj.value),
+                    date: typeof obj.date === "string" ? obj.date : "",
+                    level: isFinite(Number(obj.level)) ? Math.max(1, Math.round(Number(obj.level))) : null
+                };
+            }
+        } catch (e) {}
+
+        var n = Number(raw);
+
+        if (isFinite(n)) {
+            return {
+                value: n,
+                date: "",
+                level: null
+            };
+        }
+
+        return {
+            value: 0,
+            date: "",
+            level: null
+        };
+    }
+
+    function getBestScoreValue() {
+        return getBestScoreObject().value || 0;
+    }
+
+    function saveBestScoreIfNeeded(runLevel) {
+        var best = getBestScoreObject();
+
+        if (score > Number(best.value || 0)) {
+            safeSet(KEYS.bestScore, JSON.stringify({
+                value: score,
+                date: todayISO(),
+                level: runLevel
+            }));
+        }
+    }
+
+    function saveProgressIfNeeded(runLevel) {
+        var currentProgress = Number(safeGet(KEYS.progress, "0")) || 0;
+
+        if (runLevel > currentProgress) {
+            safeSet(KEYS.progress, String(runLevel));
+        }
+    }
+
+    function saveLeaderboardRunNormal() {
+        var runLevel = getLeaderboardLevel();
+
+        saveBestScoreIfNeeded(runLevel);
+        saveProgressIfNeeded(runLevel);
+
+        var runs = safeJsonGet(KEYS.runs, []);
+
+        if (!Array.isArray(runs)) runs = [];
+
+        runs.unshift({
+            name: safeGet(KEYS.username, "Guest"),
+            value: score,
+            level: runLevel,
+            correct: correctCount,
+            wrong: wrongCount,
+            accuracy: accuracyPercent(),
+            bestStreak: bestStreak,
+            hintsUsed: startHints - hintsLeft,
+            durationSec: runDurationSeconds(),
+            questionCount: questions.length,
+            date: todayISO()
+        });
+
+        if (runs.length > 200) {
+            runs = runs.slice(0, 200);
+        }
+
+        safeJsonSet(KEYS.runs, runs);
+
+        dispatchLeaderboardUpdate();
+    }
+
     /* -------------------- HUD / Feedback ------------------- */
 
     function setFeedback(msg) {
@@ -1104,7 +1234,7 @@
 
     function updateHud() {
         setText("scoreText", String(score));
-        setText("bestText", safeGet(KEYS.bestScore, "0"));
+        setText("bestText", String(getBestScoreValue()));
 
         var total = questions.length || 1;
         var current = total ? Math.min(index + 1, total) : 0;
@@ -1722,34 +1852,7 @@
     }
 
     function saveStatsNormal() {
-        var best = Number(safeGet(KEYS.bestScore, "0")) || 0;
-
-        if (score > best) {
-            safeSet(KEYS.bestScore, String(score));
-        }
-
-        var runs = safeJsonGet(KEYS.runs, []);
-
-        if (!Array.isArray(runs)) runs = [];
-
-        runs.push({
-            name: safeGet(KEYS.username, "Guest"),
-            value: score,
-            correct: correctCount,
-            wrong: wrongCount,
-            accuracy: accuracyPercent(),
-            bestStreak: bestStreak,
-            hintsUsed: startHints - hintsLeft,
-            durationSec: runDurationSeconds(),
-            questionCount: questions.length,
-            date: nowIso()
-        });
-
-        if (runs.length > 20) {
-            runs = runs.slice(runs.length - 20);
-        }
-
-        safeJsonSet(KEYS.runs, runs);
+        saveLeaderboardRunNormal();
 
         var totalPlays = Number(safeGet(KEYS.totalPlays, "0")) || 0;
         safeSet(KEYS.totalPlays, String(totalPlays + 1));

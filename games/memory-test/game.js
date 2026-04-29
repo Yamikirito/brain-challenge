@@ -17,6 +17,7 @@
        - Settings modal
        - Local storage best score
        - Story mode compatibility
+       - Leaderboard saving fix
     ========================================================= */
 
     /* =========================================================
@@ -31,6 +32,9 @@
     var RUNS_KEY = "bca_runs_memoryTest";
     var BEST_LB_KEY = "bca_best_memoryTest";
     var LEVELCAP_KEY = "bca_levelcap_memoryTest";
+
+    var TOTAL_PLAYS_KEY = "bca_totalPlays";
+    var USERNAME_KEY = "bca_username";
 
     var STORY_COMPAT_PASS_KEY = "bca_story_pass_memoryTest_L1";
     var STORY_FORCE_LEVEL = 1;
@@ -67,6 +71,28 @@
     function safeRemove(key) {
         try {
             localStorage.removeItem(key);
+        } catch (e) {
+            /* Ignore localStorage errors */
+        }
+    }
+
+    function safeJsonGet(key, fallback) {
+        try {
+            var raw = localStorage.getItem(key);
+
+            if (!raw) {
+                return fallback;
+            }
+
+            return JSON.parse(raw);
+        } catch (e) {
+            return fallback;
+        }
+    }
+
+    function safeJsonSet(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
         } catch (e) {
             /* Ignore localStorage errors */
         }
@@ -178,11 +204,27 @@
     }
 
     function storyReturnUrl() {
-        return getQueryParam("return") || "../../story.html";
+        var raw = getQueryParam("return") || "../../story.html";
+
+        if (/^(https?:)?\/\//i.test(raw)) {
+            return "../../story.html";
+        }
+
+        if (/^javascript:/i.test(raw)) {
+            return "../../story.html";
+        }
+
+        return raw;
     }
 
     function storyTestKey(testId) {
         return "bca_story_test_" + safeTestId(testId);
+    }
+
+    function dispatchLeaderboardUpdate() {
+        try {
+            window.dispatchEvent(new Event("bca:leaderboard-updated"));
+        } catch (e) {}
     }
 
     /* =========================================================
@@ -242,6 +284,8 @@
 
     var audioCtx = null;
     var soundEnabled = loadSoundPreference();
+
+    var lastSavedRunKey = "";
 
     /* =========================================================
        5. Sound System
@@ -465,6 +509,28 @@
         setBoardGlow(false);
     }
 
+    function getBestLevel() {
+        var bestLegacy = toNum(safeGet(BEST_LEVEL_KEY, "0"), 0);
+        var bestLeaderboardValue = 0;
+        var raw = safeGet(BEST_LB_KEY, "");
+
+        try {
+            var obj = raw ? JSON.parse(raw) : null;
+
+            if (
+                obj &&
+                typeof obj === "object" &&
+                Number.isFinite(Number(obj.value))
+            ) {
+                bestLeaderboardValue = Number(obj.value);
+            }
+        } catch (e) {
+            bestLeaderboardValue = toNum(raw, 0);
+        }
+
+        return Math.max(bestLegacy, bestLeaderboardValue || 0);
+    }
+
     function updateHud() {
         if (levelEl) {
             levelEl.textContent = "Level " + String(level).padStart(2, "0");
@@ -485,7 +551,7 @@
         }
 
         if (bestEl) {
-            var best = toNum(safeGet(BEST_LEVEL_KEY, "0"), 0);
+            var best = getBestLevel();
             bestEl.textContent = best > 0 ? "Best level: " + best : "";
         }
     }
@@ -705,7 +771,7 @@
 
     function getUsername() {
         var name =
-            safeGet("bca_username", "") ||
+            safeGet(USERNAME_KEY, "") ||
             safeGet("bca_player_name", "") ||
             safeGet("playerName", "") ||
             "Guest";
@@ -715,26 +781,34 @@
         return name ? name : "Guest";
     }
 
-    function pushRunToLocal(lv, resultLabel) {
-        var runs = safeJsonParse(safeGet(RUNS_KEY, "[]"), []);
+    function normaliseCompletedLevel(levelCompleted) {
+        return clampInt(levelCompleted, 1, 9999);
+    }
 
-        if (!Array.isArray(runs)) {
-            runs = [];
-        }
-
-        runs.unshift({
+    function makeRunObject(lv, resultLabel) {
+        return {
             name: getUsername(),
             value: lv,
             level: lv,
             date: todayISO(),
             result: resultLabel || "run"
-        });
+        };
+    }
+
+    function pushRunToLocal(lv, resultLabel) {
+        var runs = safeJsonGet(RUNS_KEY, []);
+
+        if (!Array.isArray(runs)) {
+            runs = [];
+        }
+
+        runs.unshift(makeRunObject(lv, resultLabel));
 
         if (runs.length > 200) {
             runs = runs.slice(0, 200);
         }
 
-        safeSet(RUNS_KEY, safeJsonStringify(runs, "[]"));
+        safeJsonSet(RUNS_KEY, runs);
     }
 
     function updateBestKeys(lv) {
@@ -785,26 +859,32 @@
         }
     }
 
+    function incrementTotalPlaysOnce(resultLabel) {
+        if (resultLabel !== "game_over" && resultLabel !== "win") {
+            return;
+        }
+
+        var totalPlays = toNum(safeGet(TOTAL_PLAYS_KEY, "0"), 0);
+        safeSet(TOTAL_PLAYS_KEY, String(totalPlays + 1));
+    }
+
     function saveProgressAndLeaderboard(levelCompleted, resultLabel) {
         if (story) {
             return;
         }
 
-        var lv = clampInt(levelCompleted, 1, 9999);
+        var lv = normaliseCompletedLevel(levelCompleted);
+        var runKey = lv + "|" + String(resultLabel || "run");
 
         updateBestKeys(lv);
 
-        if (window.BCA && typeof window.BCA.recordRun === "function") {
-            window.BCA.recordRun(GAME_ID, {
-                value: lv,
-                level: lv,
-                name: getUsername(),
-                date: todayISO()
-            });
-        } else {
+        if (lastSavedRunKey !== runKey) {
             pushRunToLocal(lv, resultLabel);
+            lastSavedRunKey = runKey;
         }
 
+        incrementTotalPlaysOnce(resultLabel);
+        dispatchLeaderboardUpdate();
         updateHud();
     }
 
@@ -814,8 +894,11 @@
         safeRemove(RUNS_KEY);
         safeRemove(BEST_LB_KEY);
 
+        lastSavedRunKey = "";
+
         updateHud();
         setStatus("Progress reset. Press Start for a fresh challenge.");
+        dispatchLeaderboardUpdate();
     }
 
     /* =========================================================
@@ -829,8 +912,29 @@
 
         safeSet(storyTestKey(tid), "1");
         safeSet("bca_story_last_test", tid);
+        safeSet("bca_story_last_game", GAME_ID);
 
         window.location.href = storyReturnUrl();
+    }
+
+    function completeStoryTestIfNeeded() {
+        var isStory = isStoryMode();
+        var testId = storyTestId() || "test2_traveler";
+        var returnUrl = storyReturnUrl();
+
+        if (!isStory || !returnUrl) {
+            return;
+        }
+
+        safeSet(STORY_COMPAT_PASS_KEY, "1");
+        safeSet(storyTestKey(testId), "1");
+        safeSet("bca_story_last_test", testId);
+        safeSet("bca_story_last_game", GAME_ID);
+
+        var separator = returnUrl.indexOf("?") === -1 ? "?" : "&";
+        var finalUrl = returnUrl + separator + "from=" + encodeURIComponent(testId);
+
+        window.location.href = finalUrl;
     }
 
     /* =========================================================
@@ -843,6 +947,8 @@
 
         gameStarted = true;
         hideStartButton();
+
+        lastSavedRunKey = "";
 
         level = story ? STORY_FORCE_LEVEL : 1;
         lives = START_LIVES;
@@ -989,21 +1095,6 @@
         setTimeout(function() {
             completeStoryTestIfNeeded();
         }, 800);
-    }
-
-    function completeStoryTestIfNeeded() {
-        var params = new URLSearchParams(window.location.search);
-
-        var isStoryMode = params.get("story") === "1";
-        var testId = params.get("test") || "test2_traveler";
-        var returnUrl = params.get("return");
-
-        if (!isStoryMode || !returnUrl) return;
-
-        var separator = returnUrl.indexOf("?") === -1 ? "?" : "&";
-        var finalUrl = returnUrl + separator + "from=" + encodeURIComponent(testId);
-
-        window.location.href = finalUrl;
     }
 
     /* =========================================================
@@ -1229,18 +1320,3 @@
 
     init();
 })();
-
-function completeStoryTestIfNeeded() {
-    var params = new URLSearchParams(window.location.search);
-
-    var isStoryMode = params.get("story") === "1";
-    var testId = params.get("test") || "test2_traveler";
-    var returnUrl = params.get("return");
-
-    if (!isStoryMode || !returnUrl) return;
-
-    var separator = returnUrl.indexOf("?") === -1 ? "?" : "&";
-    var finalUrl = returnUrl + separator + "from=" + encodeURIComponent(testId);
-
-    window.location.href = finalUrl;
-}

@@ -886,6 +886,7 @@ Easier changes:
                 chapterLabel: world.worldName
             },
 
+
             narrative: {
                 shortIntro: getSpecialIntroText(id, world.worldName, objective.type),
                 worldMessage: isMilestoneLevel ?

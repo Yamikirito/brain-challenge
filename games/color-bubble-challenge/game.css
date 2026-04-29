@@ -2668,13 +2668,3 @@ html.theme-dark .cbc-settings-card {
         box-shadow: inset 16px 0 0 rgba(87, 97, 154, 0.14), inset -16px 0 0 rgba(87, 97, 154, 0.14) !important;
     }
 }
-
-body.cbc-screen-play #cbcMapScreen,
-body.cbc-screen-play .cbc-map-frame,
-body.cbc-screen-play .cbc-bb-map-area,
-body.cbc-screen-play #cbcMapNodes,
-body.cbc-screen-play .cbc-bb-map-dots {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-}

@@ -5,17 +5,18 @@
     <!-- =========================================================
          Brain Challenge Arcade - leaderboard.html
 
-         Updated fix:
-         - Color Bubble Challenge now clears cbc_progress_v3 data.
-         - Color Bubble Challenge now clears cbc_selected_level_v3 data.
-         - Color Bubble Challenge now clears cbc_settings_v3 data.
-         - Color Bubble Challenge now clears cbc_achievements_v3 data.
-         - Clear This Game and Clear All Data now clear the real Color Bubble game storage keys.
-         - Leaderboard reads Color Bubble progress from v3 first, then older v2/legacy keys.
-
-         Important:
-         If Color Bubble still shows level 3 unlocked / 6 stars after clearing,
-         also update game.js default progress because the game itself creates those defaults.
+         Full corrected version:
+         - Reads saved leaderboard runs from localStorage.
+         - Uses best-score fallback when run history is missing.
+         - Supports Image Guess, Memory Test, Card Matching,
+           Color Bubble Challenge, and Story Mode.
+         - Card Matching is now score-based, higher-is-better.
+         - Color Bubble Challenge reads v3 progress first,
+           then v2 / legacy keys.
+         - Story Mode derives progress from story localStorage.
+         - Clear This Game and Clear All Data clear real game keys.
+         - Runs table is kept as "Recent Leaderboard Records"
+           because it demonstrates localStorage and dynamic JS.
     ========================================================== -->
 
     <meta charset="UTF-8" />
@@ -39,11 +40,20 @@
 
             var theme = getTheme();
             var root = document.documentElement;
+
             root.classList.remove("theme-dark", "theme-light");
 
-            if (theme === "dark") root.classList.add("theme-dark");
-            else if (theme === "light") root.classList.add("theme-light");
-            else root.classList.add(systemPrefersDark() ? "theme-dark" : "theme-light");
+            if (theme === "dark") {
+                root.classList.add("theme-dark");
+                root.setAttribute("data-theme", "dark");
+            } else if (theme === "light") {
+                root.classList.add("theme-light");
+                root.setAttribute("data-theme", "light");
+            } else {
+                var dark = systemPrefersDark();
+                root.classList.add(dark ? "theme-dark" : "theme-light");
+                root.setAttribute("data-theme", dark ? "dark" : "light");
+            }
         })();
     </script>
 
@@ -300,6 +310,10 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+        }
+        
+        .leaderboard-page .lb-stat-card.is-hidden {
+            display: none;
         }
         
         .leaderboard-page .lb-stat-label {
@@ -858,7 +872,7 @@
                 <a class="nav-link" href="index.html">Home</a>
                 <a class="nav-link" href="story.html">Story Mode</a>
                 <a class="nav-link" href="games.html">Games</a>
-                <a class="nav-link nav-active" href="leaderboard.html">Leaderboard</a>
+                <a class="nav-link nav-active" href="leaderboard.html" aria-current="page">Leaderboard</a>
                 <a class="nav-link" href="achievements.html">Achievements</a>
                 <a class="nav-link" href="profile.html">Profile</a>
                 <a class="nav-link" href="settings.html">Settings</a>
@@ -873,7 +887,7 @@
                 <div class="lb-hero-left">
                     <div class="lb-top-tags">
                         <div class="lb-pill">🏆 Leaderboard</div>
-                        <div class="lb-pill">📋 Your best scores</div>
+                        <div class="lb-pill">📋 Local saved records</div>
                     </div>
 
                     <h1 id="lbTitle" class="lb-hero-title">
@@ -881,7 +895,7 @@
                     </h1>
 
                     <p class="lb-hero-sub">
-                        Scores are saved locally on this device (localStorage). If you open the site on another device or browser, your leaderboard will be different.
+                        Scores are saved locally on this device using localStorage. If you open the site on another device or browser, your leaderboard will be different.
                     </p>
 
                     <div class="lb-hero-actions">
@@ -915,22 +929,22 @@
                                 <div class="lb-stat-value" id="bestLevel">—</div>
                             </div>
 
-                            <div class="lb-stat-card">
+                            <div class="lb-stat-card" id="cbcStarsCard">
                                 <div class="lb-stat-label">Stars</div>
                                 <div class="lb-stat-value" id="cbcTotalStars">0</div>
                             </div>
 
-                            <div class="lb-stat-card">
+                            <div class="lb-stat-card" id="cbcComboCard">
                                 <div class="lb-stat-label">Combo</div>
                                 <div class="lb-stat-value" id="cbcBestCombo">0</div>
                             </div>
 
-                            <div class="lb-stat-card">
+                            <div class="lb-stat-card" id="cbcLivesCard">
                                 <div class="lb-stat-label">Lives</div>
                                 <div class="lb-stat-value" id="cbcLives">0</div>
                             </div>
 
-                            <div class="lb-stat-card">
+                            <div class="lb-stat-card" id="cbcCompletedCard">
                                 <div class="lb-stat-label">Cleared</div>
                                 <div class="lb-stat-value" id="cbcCompleted">0</div>
                             </div>
@@ -963,7 +977,7 @@
                 </div>
 
                 <div class="lb-row">
-                    <div class="lb-label">Sort runs</div>
+                    <div class="lb-label">Sort records</div>
                     <div class="lb-chip-row" role="group" aria-label="Sort options">
                         <button class="lb-chip active" type="button" data-sort="best">Best</button>
                         <button class="lb-chip" type="button" data-sort="recent">Recent</button>
@@ -1012,18 +1026,18 @@
             <article class="lb-card lb-info-card">
                 <h3>About scoring</h3>
                 <div class="lb-muted-note" id="scoringInfo">
-                    Image Guess and Memory Test are usually higher-is-better games. Card Matching is usually lower-time-is-better. Color Bubble Challenge is a score-based arcade game, so higher scores rank higher.
+                    Score-based games rank higher values first. Story Mode is tracked by progress. Your records are saved locally in the browser.
                 </div>
             </article>
         </section>
 
         <div class="lb-section-head lb-section-head-right">
-            <h2>Runs</h2>
+            <h2>Recent Leaderboard Records</h2>
         </div>
 
-        <section class="lb-card" aria-label="Leaderboard runs table">
+        <section class="lb-card" aria-label="Leaderboard records table">
             <div class="lb-table-wrap">
-                <table class="lb-table" aria-label="Scores table">
+                <table class="lb-table" aria-label="Leaderboard records table">
                     <thead>
                         <tr>
                             <th scope="col">Rank</th>
@@ -1039,7 +1053,7 @@
             </div>
 
             <div class="lb-empty-state" id="emptyMsg" style="display:none;">
-                No saved runs yet.<br>Play the selected game to create leaderboard entries.
+                No leaderboard records yet.<br>Finish a game to save your first score.
             </div>
         </section>
     </main>
@@ -1093,9 +1107,9 @@
 
         function safeGet(key, fallback) {
             try {
-                const v = localStorage.getItem(key);
-                return v === null ? fallback : v;
-            } catch {
+                const value = localStorage.getItem(key);
+                return value === null ? fallback : value;
+            } catch (e) {
                 return fallback;
             }
         }
@@ -1103,13 +1117,13 @@
         function safeSet(key, value) {
             try {
                 localStorage.setItem(key, value);
-            } catch {}
+            } catch (e) {}
         }
 
         function safeRemove(key) {
             try {
                 localStorage.removeItem(key);
-            } catch {}
+            } catch (e) {}
         }
 
         function safeJsonGet(key, fallback) {
@@ -1117,7 +1131,7 @@
                 const raw = localStorage.getItem(key);
                 if (!raw) return fallback;
                 return JSON.parse(raw);
-            } catch {
+            } catch (e) {
                 return fallback;
             }
         }
@@ -1125,7 +1139,7 @@
         function safeJsonSet(key, value) {
             try {
                 localStorage.setItem(key, JSON.stringify(value));
-            } catch {}
+            } catch (e) {}
         }
 
         function todayISO() {
@@ -1140,6 +1154,21 @@
             const x = Math.trunc(Number(n));
             if (!Number.isFinite(x)) return min;
             return Math.max(min, Math.min(max, x));
+        }
+
+        function escapeHtml(value) {
+            return String(value === undefined || value === null ? "" : value)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function cleanDate(value) {
+            const s = String(value || todayISO());
+            if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+            return s;
         }
 
         const GAMES = {
@@ -1161,7 +1190,7 @@
                 progressKey: "bca_progress_memoryTest",
                 levelCapKey: "bca_levelcap_memoryTest",
                 betterIs: "high",
-                valueLabel: "Score"
+                valueLabel: "Level"
             },
             "card-matching": {
                 label: "Card Matching",
@@ -1170,8 +1199,8 @@
                 runsKey: "bca_runs_cardMatching",
                 progressKey: "bca_progress_cardMatching",
                 levelCapKey: "bca_levelcap_cardMatching",
-                betterIs: "low",
-                valueLabel: "Time"
+                betterIs: "high",
+                valueLabel: "Score"
             },
             "color-bubble-challenge": {
                 label: "Color Bubble Challenge",
@@ -1204,6 +1233,8 @@
             "bca_story_last_test",
             "bca_story_last_game",
             "mc_story_last_level",
+            "bca_story_test_test3_wise_old_man",
+            "bca_story_test_test4_magic_map",
             "bca_story_test_memory_test_1",
             "bca_story_test_memory_cards_story_test"
         ];
@@ -1228,7 +1259,33 @@
             "bca_best_colorBubbleChallenge",
             "bca_runs_colorBubbleChallenge",
             "bca_progress_colorBubbleChallenge",
-            "bca_levelcap_colorBubbleChallenge"
+            "bca_levelcap_colorBubbleChallenge",
+            "bca_story_test_test5_sword_light",
+            "bca_story_test_test6_final_battle"
+        ];
+
+        const MEMORY_TEST_KEYS = [
+            "bca_best_memoryTest_level",
+            "bca_best_memoryTest",
+            "bca_runs_memoryTest",
+            "bca_progress_memoryTest",
+            "bca_levelcap_memoryTest",
+            "bca_story_pass_memoryTest_L1",
+            "bca_story_test_test2_traveler",
+            "bca_story_test_memory_test_1"
+        ];
+
+        const IMAGE_GUESS_KEYS = [
+            "bca_best_imageGuess",
+            "bca_runs_imageGuess",
+            "bca_progress_imageGuess",
+            "bca_levelcap_imageGuess",
+            "bca_imageGuess_achievements",
+            "bca_stats_imageGuess",
+            "bca_story_stats_imageGuess",
+            "bca_story_pass_imageGuess_L1",
+            "bca_story_test_test1_first_puzzle",
+            "bca_story_test_test7_castle_gate"
         ];
 
         function clearCardMatchingGameData() {
@@ -1269,6 +1326,11 @@
         const elCbcWorldRow = $("cbcWorldRow");
         const elCbcWorldText = $("cbcWorldText");
 
+        const elCbcStarsCard = $("cbcStarsCard");
+        const elCbcComboCard = $("cbcComboCard");
+        const elCbcLivesCard = $("cbcLivesCard");
+        const elCbcCompletedCard = $("cbcCompletedCard");
+
         const elConfirmModal = $("confirmModal");
         const elConfirmTitle = $("confirmTitle");
         const elConfirmText = $("confirmText");
@@ -1280,26 +1342,34 @@
         const elActionToastText = $("actionToastText");
 
         const chips = Array.from(document.querySelectorAll(".lb-chip"));
+
         let sortMode = "best";
         let toastTimer = null;
         let confirmAction = null;
+        let capTimer = null;
 
         function applyHashSelection() {
             const hash = (location.hash || "").replace("#", "").trim();
-            if (hash && GAMES[hash]) elGameSelect.value = hash;
+            if (hash && GAMES[hash]) {
+                elGameSelect.value = hash;
+            }
         }
 
         function getUsername() {
-            return safeGet("bca_username", "Guest");
+            return safeGet("bca_username", "Guest") || "Guest";
         }
 
         function normalizeRun(raw) {
-            const name = raw && raw.name ? String(raw.name).trim() : "Guest";
+            const name = raw && raw.name ? String(raw.name).trim() : getUsername();
             const value = Number(raw && raw.value);
-            const date = raw && raw.date ? String(raw.date) : todayISO();
+            const date = raw && raw.date ? cleanDate(raw.date) : todayISO();
             const level = raw && raw.level !== undefined && raw.level !== null && raw.level !== "" ? Number(raw.level) : null;
             const stars = raw && raw.stars !== undefined && raw.stars !== null ? Number(raw.stars) : null;
             const combo = raw && raw.combo !== undefined && raw.combo !== null ? Number(raw.combo) : null;
+            const moves = raw && raw.moves !== undefined && raw.moves !== null ? Number(raw.moves) : null;
+            const mistakes = raw && raw.mistakes !== undefined && raw.mistakes !== null ? Number(raw.mistakes) : null;
+            const accuracy = raw && raw.accuracy !== undefined && raw.accuracy !== null ? Number(raw.accuracy) : null;
+            const durationSec = raw && raw.durationSec !== undefined && raw.durationSec !== null ? Number(raw.durationSec) : null;
 
             return {
                 name: name || "Guest",
@@ -1307,7 +1377,12 @@
                 date,
                 level: Number.isFinite(level) ? Math.max(1, Math.trunc(level)) : null,
                 stars: Number.isFinite(stars) ? Math.max(0, Math.trunc(stars)) : null,
-                combo: Number.isFinite(combo) ? Math.max(0, Math.trunc(combo)) : null
+                combo: Number.isFinite(combo) ? Math.max(0, Math.trunc(combo)) : null,
+                moves: Number.isFinite(moves) ? Math.max(0, Math.trunc(moves)) : null,
+                mistakes: Number.isFinite(mistakes) ? Math.max(0, Math.trunc(mistakes)) : null,
+                accuracy: Number.isFinite(accuracy) ? Math.max(0, Math.min(100, Math.round(accuracy))) : null,
+                durationSec: Number.isFinite(durationSec) ? Math.max(0, Math.trunc(durationSec)) : null,
+                result: raw && raw.result ? String(raw.result) : ""
             };
         }
 
@@ -1327,6 +1402,7 @@
         function getCbcDerivedRuns() {
             const progress = getCbcProgress();
             const username = getUsername();
+
             if (!progress || !Array.isArray(progress.levels)) return [];
 
             return progress.levels
@@ -1371,9 +1447,11 @@
 
         function getStoryEndingLabel() {
             const ending = safeGet("bca_story_ending", "");
+
             if (ending === "true") return "True Ending";
             if (ending === "heroic") return "Heroic Ending";
             if (ending === "normal") return "Normal Ending";
+
             return "In Progress";
         }
 
@@ -1395,40 +1473,6 @@
             })];
         }
 
-        function getRuns(gameId) {
-            const meta = GAMES[gameId];
-            const savedRuns = safeJsonGet(meta.runsKey, []);
-            let runs = Array.isArray(savedRuns) ? savedRuns.map(normalizeRun).filter(r => Number.isFinite(r.value)) : [];
-
-            if (gameId === "color-bubble-challenge") {
-                const derivedRuns = getCbcDerivedRuns();
-
-                if (runs.length === 0) {
-                    runs = derivedRuns;
-                } else {
-                    derivedRuns.forEach(dRun => {
-                        const exists = runs.some(r => r.level === dRun.level && r.value === dRun.value);
-                        if (!exists) runs.push(dRun);
-                    });
-                }
-            }
-
-            if (gameId === "story-mode") {
-                const derivedRuns = getStoryDerivedRuns();
-
-                if (runs.length === 0) {
-                    runs = derivedRuns;
-                } else {
-                    derivedRuns.forEach(dRun => {
-                        const exists = runs.some(r => r.level === dRun.level && r.value === dRun.value);
-                        if (!exists) runs.push(dRun);
-                    });
-                }
-            }
-
-            return runs;
-        }
-
         function getBestObj(gameId) {
             const meta = GAMES[gameId];
             const raw = safeGet(meta.bestKey, "");
@@ -1436,44 +1480,56 @@
             if (raw) {
                 try {
                     const obj = JSON.parse(raw);
+
                     if (obj && typeof obj === "object" && Number.isFinite(Number(obj.value))) {
                         return {
                             value: Number(obj.value),
-                            date: typeof obj.date === "string" ? obj.date : todayISO(),
-                            level: Number.isFinite(Number(obj.level)) ? Math.max(1, Math.trunc(Number(obj.level))) : null
+                            date: typeof obj.date === "string" ? cleanDate(obj.date) : todayISO(),
+                            level: Number.isFinite(Number(obj.level)) ? Math.max(1, Math.trunc(Number(obj.level))) : null,
+                            stars: Number.isFinite(Number(obj.stars)) ? Math.max(0, Math.trunc(Number(obj.stars))) : null,
+                            combo: Number.isFinite(Number(obj.combo)) ? Math.max(0, Math.trunc(Number(obj.combo))) : null
                         };
                     }
-                } catch {}
+                } catch (e) {}
 
                 const n = Number(raw);
+
                 if (Number.isFinite(n)) {
                     return {
                         value: n,
                         date: todayISO(),
-                        level: null
+                        level: null,
+                        stars: null,
+                        combo: null
                     };
                 }
             }
 
             if (gameId === "color-bubble-challenge") {
                 const derived = getCbcDerivedRuns();
+
                 if (derived.length) {
                     const best = derived.reduce((a, b) => b.value > a.value ? b : a);
                     return {
                         value: best.value,
                         date: best.date,
-                        level: best.level
+                        level: best.level,
+                        stars: best.stars,
+                        combo: best.combo
                     };
                 }
             }
 
             if (gameId === "story-mode") {
                 const derived = getStoryDerivedRuns();
+
                 if (derived.length) {
                     return {
                         value: derived[0].value,
                         date: derived[0].date,
-                        level: derived[0].level
+                        level: derived[0].level,
+                        stars: null,
+                        combo: null
                     };
                 }
             }
@@ -1483,19 +1539,94 @@
 
         function setBestObj(gameId, bestObj) {
             const meta = GAMES[gameId];
+
             if (!bestObj || !Number.isFinite(Number(bestObj.value))) return;
 
             safeSet(meta.bestKey, JSON.stringify({
                 value: Number(bestObj.value),
                 date: bestObj.date || todayISO(),
-                level: Number.isFinite(Number(bestObj.level)) ? Math.max(1, Math.trunc(Number(bestObj.level))) : undefined
+                level: Number.isFinite(Number(bestObj.level)) ? Math.max(1, Math.trunc(Number(bestObj.level))) : undefined,
+                stars: Number.isFinite(Number(bestObj.stars)) ? Math.max(0, Math.trunc(Number(bestObj.stars))) : undefined,
+                combo: Number.isFinite(Number(bestObj.combo)) ? Math.max(0, Math.trunc(Number(bestObj.combo))) : undefined
             }));
         }
 
         function isBetter(meta, candidateValue, currentBestValue) {
             if (!Number.isFinite(candidateValue)) return false;
             if (!Number.isFinite(currentBestValue)) return true;
+
             return meta.betterIs === "low" ? candidateValue < currentBestValue : candidateValue > currentBestValue;
+        }
+
+        function getRunFromBest(gameId) {
+            const best = getBestObj(gameId);
+
+            if (!best || !Number.isFinite(Number(best.value))) {
+                return null;
+            }
+
+            return normalizeRun({
+                name: getUsername(),
+                value: Number(best.value),
+                date: best.date || todayISO(),
+                level: best.level || getHighestLevel(gameId),
+                stars: best.stars,
+                combo: best.combo
+            });
+        }
+
+        function getRuns(gameId) {
+            const meta = GAMES[gameId];
+            const savedRuns = safeJsonGet(meta.runsKey, []);
+
+            let runs = Array.isArray(savedRuns) ?
+                savedRuns.map(normalizeRun).filter(run => Number.isFinite(run.value)) : [];
+
+            const bestRun = getRunFromBest(gameId);
+
+            if (bestRun) {
+                const exists = runs.some(run =>
+                    run.value === bestRun.value &&
+                    run.level === bestRun.level &&
+                    run.date === bestRun.date
+                );
+
+                if (!exists) {
+                    runs.push(bestRun);
+                }
+            }
+
+            if (gameId === "color-bubble-challenge") {
+                const derivedRuns = getCbcDerivedRuns();
+
+                derivedRuns.forEach(dRun => {
+                    const exists = runs.some(run =>
+                        run.level === dRun.level &&
+                        run.value === dRun.value
+                    );
+
+                    if (!exists) {
+                        runs.push(dRun);
+                    }
+                });
+            }
+
+            if (gameId === "story-mode") {
+                const derivedRuns = getStoryDerivedRuns();
+
+                derivedRuns.forEach(dRun => {
+                    const exists = runs.some(run =>
+                        run.level === dRun.level &&
+                        run.value === dRun.value
+                    );
+
+                    if (!exists) {
+                        runs.push(dRun);
+                    }
+                });
+            }
+
+            return runs;
         }
 
         function getHighestLevel(gameId) {
@@ -1507,13 +1638,23 @@
 
             if (gameId === "card-matching") {
                 const mcUnlocked = Number(safeGet("mc_unlocked_level", ""));
+
                 if (Number.isFinite(mcUnlocked) && mcUnlocked > 0) {
                     return Math.max(0, Math.trunc(mcUnlocked));
                 }
             }
 
+            if (gameId === "memory-test") {
+                const legacyBest = Number(safeGet("bca_best_memoryTest_level", ""));
+
+                if (Number.isFinite(legacyBest) && legacyBest > 0) {
+                    return Math.max(0, Math.trunc(legacyBest));
+                }
+            }
+
             if (gameId === "color-bubble-challenge") {
                 const progress = getCbcProgress();
+
                 if (!progress) return 0;
 
                 if (Number.isFinite(Number(progress.unlockedLevel))) {
@@ -1522,39 +1663,54 @@
 
                 if (Array.isArray(progress.levels)) {
                     let highest = 0;
+
                     progress.levels.forEach(level => {
                         if (level && level.unlocked && Number.isFinite(Number(level.level))) {
                             highest = Math.max(highest, Math.trunc(Number(level.level)));
                         }
                     });
+
                     return highest;
                 }
             }
 
             const n = Number(safeGet(meta.progressKey, ""));
+
             return Number.isFinite(n) ? Math.max(0, Math.trunc(n)) : 0;
         }
 
         function setHighestLevel(gameId, level) {
             const meta = GAMES[gameId];
             const lv = clampInt(level, 0, 9999);
-            safeSet(meta.progressKey, String(lv));
+
+            if (meta.progressKey) {
+                safeSet(meta.progressKey, String(lv));
+            }
 
             if (gameId === "card-matching") {
                 safeSet("mc_unlocked_level", String(Math.max(1, lv)));
+            }
+
+            if (gameId === "memory-test") {
+                safeSet("bca_best_memoryTest_level", String(Math.max(1, lv)));
             }
         }
 
         function getLevelCap(gameId) {
             const meta = GAMES[gameId];
+
             if (!meta.levelCapKey) return 10;
+
             const n = Number(safeGet(meta.levelCapKey, ""));
+
             return Number.isFinite(n) ? clampInt(n, 1, 9999) : 10;
         }
 
         function setLevelCap(gameId, cap) {
             const meta = GAMES[gameId];
+
             if (!meta.levelCapKey) return;
+
             safeSet(meta.levelCapKey, String(clampInt(cap, 1, 9999)));
         }
 
@@ -1579,6 +1735,7 @@
             const unlocked = Number(progress.unlockedLevel) || 1;
 
             let worldText = "Tutorial Meadow";
+
             if (unlocked >= 91) worldText = "Champion Summit";
             else if (unlocked >= 81) worldText = "Crown Heights";
             else if (unlocked >= 66) worldText = "River Route";
@@ -1607,13 +1764,29 @@
                 return;
             }
 
+            if (gameId === "memory-test") {
+                elScoringInfo.textContent = "Memory Test records the highest level reached. Higher levels show stronger memory skill and pattern recognition.";
+                elValueHeading.textContent = "Level";
+                elBestLabel.textContent = "Best Level";
+                elBestLabel2.textContent = "Best Level";
+                return;
+            }
+
+            if (gameId === "card-matching") {
+                elScoringInfo.textContent = "Card Matching uses a score system. Higher scores rank higher. The score rewards faster play with fewer moves and fewer mistakes.";
+                elValueHeading.textContent = "Score";
+                elBestLabel.textContent = "Best Score";
+                elBestLabel2.textContent = "Best Score";
+                return;
+            }
+
             if (meta.betterIs === "low") {
-                elScoringInfo.textContent = `${meta.label} is configured as a lower-is-better game, so smaller values rank higher. This is useful for timer-based gameplay where faster completion produces a better run.`;
-                elValueHeading.textContent = "Time";
-                elBestLabel.textContent = "Best Time";
-                elBestLabel2.textContent = "Best Time";
+                elScoringInfo.textContent = `${meta.label} is configured as a lower-is-better game, so smaller values rank higher.`;
+                elValueHeading.textContent = meta.valueLabel;
+                elBestLabel.textContent = `Best ${meta.valueLabel}`;
+                elBestLabel2.textContent = `Best ${meta.valueLabel}`;
             } else {
-                elScoringInfo.textContent = `${meta.label} is configured as a higher-is-better game, so larger values rank higher. Score-based games reward strong performance, replay value, and player improvement over time.`;
+                elScoringInfo.textContent = `${meta.label} is configured as a higher-is-better game. Larger values rank higher and show stronger performance.`;
                 elValueHeading.textContent = meta.valueLabel;
                 elBestLabel.textContent = `Best ${meta.valueLabel}`;
                 elBestLabel2.textContent = `Best ${meta.valueLabel}`;
@@ -1621,6 +1794,13 @@
         }
 
         function renderCbcExtras(show) {
+            const cards = [elCbcStarsCard, elCbcComboCard, elCbcLivesCard, elCbcCompletedCard];
+
+            cards.forEach(card => {
+                if (!card) return;
+                card.classList.toggle("is-hidden", !show);
+            });
+
             elCbcWorldRow.hidden = !show;
 
             if (!show) {
@@ -1632,6 +1812,7 @@
             }
 
             const summary = getCbcSummary();
+
             elCbcTotalStars.textContent = String(summary.totalStars);
             elCbcBestCombo.textContent = String(summary.bestCombo);
             elCbcLives.textContent = String(summary.lives);
@@ -1743,7 +1924,12 @@
                 date: data && data.date ? String(data.date) : todayISO(),
                 level: data && data.level,
                 stars: data && data.stars,
-                combo: data && data.combo
+                combo: data && data.combo,
+                moves: data && data.moves,
+                mistakes: data && data.mistakes,
+                accuracy: data && data.accuracy,
+                durationSec: data && data.durationSec,
+                result: data && data.result
             });
 
             if (!Number.isFinite(run.value)) return;
@@ -1755,11 +1941,14 @@
             safeJsonSet(meta.runsKey, normalizedRuns.slice(0, 200));
 
             const best = getBestObj(gameId);
+
             if (!best || isBetter(meta, run.value, best.value)) {
                 setBestObj(gameId, {
                     value: run.value,
                     date: run.date,
-                    level: run.level
+                    level: run.level,
+                    stars: run.stars,
+                    combo: run.combo
                 });
             }
 
@@ -1773,8 +1962,10 @@
 
         window.BCA.setProgress = function(gameId, level) {
             if (!GAMES[gameId]) return;
+
             const lv = clampInt(level, 0, 9999);
             const current = getHighestLevel(gameId);
+
             if (lv > current) setHighestLevel(gameId, lv);
             if (elGameSelect.value === gameId) renderAll();
         };
@@ -1821,6 +2012,11 @@
                 elBestValue2.textContent = best ? `${best.value}%` : "—";
                 elBestLevel.textContent = best && best.level ? `Chapter ${best.level}` : "—";
                 elBestLevel2.textContent = best && best.level ? `Chapter ${best.level}` : "—";
+            } else if (gameId === "memory-test") {
+                elBestValue.textContent = best ? `Level ${best.value}` : "—";
+                elBestValue2.textContent = best ? `Level ${best.value}` : "—";
+                elBestLevel.textContent = highest > 0 ? String(highest) : "—";
+                elBestLevel2.textContent = highest > 0 ? String(highest) : "—";
             } else {
                 elBestValue.textContent = best ? String(best.value) : "—";
                 elBestValue2.textContent = best ? String(best.value) : "—";
@@ -1833,13 +2029,36 @@
 
         function makeExtraCell(run, gameId) {
             if (gameId === "story-mode") {
-                return `<span class="lb-badge-inline">${getStoryEndingLabel()}</span> <span class="lb-badge-inline">${getStoryRouteLabel()}</span>`;
+                return `<span class="lb-badge-inline">${escapeHtml(getStoryEndingLabel())}</span> <span class="lb-badge-inline">${escapeHtml(getStoryRouteLabel())}</span>`;
             }
 
             const parts = [];
-            if (run.stars !== null) parts.push(`<span class="lb-badge-inline">★ ${run.stars}</span>`);
-            if (run.combo !== null && run.combo > 0) parts.push(`<span class="lb-badge-inline">🔥 x${run.combo}</span>`);
-            return parts.length ? parts.join(" ") : `<span class="lb-badge-inline">Standard Run</span>`;
+
+            if (run.stars !== null) {
+                parts.push(`<span class="lb-badge-inline">★ ${escapeHtml(run.stars)}</span>`);
+            }
+
+            if (run.combo !== null && run.combo > 0) {
+                parts.push(`<span class="lb-badge-inline">🔥 x${escapeHtml(run.combo)}</span>`);
+            }
+
+            if (run.moves !== null) {
+                parts.push(`<span class="lb-badge-inline">${escapeHtml(run.moves)} moves</span>`);
+            }
+
+            if (run.mistakes !== null) {
+                parts.push(`<span class="lb-badge-inline">${escapeHtml(run.mistakes)} mistakes</span>`);
+            }
+
+            if (run.accuracy !== null) {
+                parts.push(`<span class="lb-badge-inline">${escapeHtml(run.accuracy)}% accuracy</span>`);
+            }
+
+            if (run.durationSec !== null) {
+                parts.push(`<span class="lb-badge-inline">${escapeHtml(run.durationSec)}s</span>`);
+            }
+
+            return parts.length ? parts.join(" ") : `<span class="lb-badge-inline">Saved Run</span>`;
         }
 
         function renderTable(gameId) {
@@ -1865,18 +2084,23 @@
                 const rankClass = index === 0 ? "lb-rank-1" : index === 1 ? "lb-rank-2" : index === 2 ? "lb-rank-3" : "";
                 const tr = document.createElement("tr");
 
-                const valueText = gameId === "story-mode" ? `${run.value}%` : `${run.value}`;
+                const valueText = gameId === "story-mode" ?
+                    `${run.value}%` :
+                    gameId === "memory-test" ?
+                    `Level ${run.value}` :
+                    `${run.value}`;
+
                 const levelText = gameId === "story-mode" ?
-                    (run.level !== null ? `<span class="lb-badge-inline">Chapter ${run.level}</span>` : "—") :
-                    (run.level !== null ? `<span class="lb-badge-inline">Level ${run.level}</span>` : "—");
+                    (run.level !== null ? `<span class="lb-badge-inline">Chapter ${escapeHtml(run.level)}</span>` : "—") :
+                    (run.level !== null ? `<span class="lb-badge-inline">Level ${escapeHtml(run.level)}</span>` : "—");
 
                 tr.innerHTML = `
                     <td><span class="lb-rank-badge ${rankClass}">${index + 1}</span></td>
-                    <td>${run.name}</td>
-                    <td><strong>${valueText}</strong></td>
+                    <td>${escapeHtml(run.name)}</td>
+                    <td><strong>${escapeHtml(valueText)}</strong></td>
                     <td>${levelText}</td>
                     <td>${makeExtraCell(run, gameId)}</td>
-                    <td>${run.date}</td>
+                    <td>${escapeHtml(cleanDate(run.date))}</td>
                 `;
 
                 elRows.appendChild(tr);
@@ -1885,7 +2109,9 @@
 
         function renderAll() {
             const gameId = elGameSelect.value;
+
             history.replaceState(null, "", `#${gameId}`);
+
             renderSummary(gameId);
             renderTable(gameId);
         }
@@ -1901,6 +2127,18 @@
 
             if (gameId === "color-bubble-challenge") {
                 clearColorBubbleGameData();
+                renderAll();
+                return;
+            }
+
+            if (gameId === "image-guess") {
+                IMAGE_GUESS_KEYS.forEach(key => safeRemove(key));
+                renderAll();
+                return;
+            }
+
+            if (gameId === "memory-test") {
+                MEMORY_TEST_KEYS.forEach(key => safeRemove(key));
                 renderAll();
                 return;
             }
@@ -1928,7 +2166,18 @@
                     return;
                 }
 
+                if (gameId === "image-guess") {
+                    IMAGE_GUESS_KEYS.forEach(key => safeRemove(key));
+                    return;
+                }
+
+                if (gameId === "memory-test") {
+                    MEMORY_TEST_KEYS.forEach(key => safeRemove(key));
+                    return;
+                }
+
                 const meta = GAMES[gameId];
+
                 safeRemove(meta.runsKey);
                 safeRemove(meta.bestKey);
                 safeRemove(meta.progressKey);
@@ -2009,6 +2258,10 @@
 
             safeRemove(meta.progressKey);
 
+            if (gameId === "memory-test") {
+                safeRemove("bca_best_memoryTest_level");
+            }
+
             if (gameId === "card-matching") {
                 resetCardMatchingProgressOnly();
             }
@@ -2033,7 +2286,7 @@
             openConfirmModal(
                 gameId === "story-mode" ? "Reset story progress?" : "Reset highest level?",
                 gameId === "story-mode" ?
-                `Reset all Story Mode progress, choices, achievements, and chapter data?` :
+                "Reset all Story Mode progress, choices, achievements, and chapter data?" :
                 `Reset highest level and progression for "${GAMES[gameId].label}"?`,
                 "Reset",
                 function() {
@@ -2050,7 +2303,7 @@
             openConfirmModal(
                 "Clear this game?",
                 gameId === "story-mode" ?
-                `Clear all saved data for Story Mode?` :
+                "Clear all saved data for Story Mode?" :
                 `Clear saved leaderboard, best result, and progress for "${GAMES[gameId].label}"?`,
                 "Clear Game",
                 function() {
@@ -2096,15 +2349,16 @@
             }
         });
 
-        let capTimer = null;
         elLevelCapInput.addEventListener("input", function() {
             const gameId = elGameSelect.value;
+
             if (gameId === "story-mode") return;
 
             clearTimeout(capTimer);
 
             capTimer = setTimeout(function() {
                 const cap = Number(elLevelCapInput.value);
+
                 if (!Number.isFinite(cap)) return;
 
                 setLevelCap(gameId, cap);
@@ -2113,13 +2367,12 @@
             }, 250);
         });
 
-        window.addEventListener("storage", function(e) {
-            if (!e || !e.key) return;
-
+        function shouldRefreshForStorageKey(key) {
             const watched = [
                 "bca_username",
                 "bca_best_imageGuess",
                 "bca_best_memoryTest",
+                "bca_best_memoryTest_level",
                 "bca_best_cardMatching",
                 "bca_best_colorBubbleChallenge",
                 "bca_best_storyMode",
@@ -2160,11 +2413,30 @@
                 "bca_story_last_test",
                 "bca_story_last_game",
                 "mc_story_last_level",
+                "bca_story_test_test1_first_puzzle",
+                "bca_story_test_test2_traveler",
+                "bca_story_test_test3_wise_old_man",
+                "bca_story_test_test4_magic_map",
+                "bca_story_test_test5_sword_light",
+                "bca_story_test_test7_castle_gate",
+                "bca_story_test_test6_final_battle",
                 "bca_story_test_memory_test_1",
                 "bca_story_test_memory_cards_story_test"
             ];
 
-            if (watched.includes(e.key)) renderAll();
+            return watched.includes(key);
+        }
+
+        window.addEventListener("storage", function(e) {
+            if (!e || !e.key) return;
+
+            if (shouldRefreshForStorageKey(e.key)) {
+                renderAll();
+            }
+        });
+
+        window.addEventListener("bca:leaderboard-updated", function() {
+            renderAll();
         });
 
         applyHashSelection();
